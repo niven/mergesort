@@ -14,4 +14,9 @@ The bad news: std implementations do much better
 I need to run it a bit more often to get some better averages (this was just a first test to see how it goes)
 image: terrible_result_1.png
 
+Update 2:
+Compiled with -O3. Results now super close to stdlib!
+Still not seeing any kind of cache related problem.
+
+Need to run it with larger datasets I guess.
 
