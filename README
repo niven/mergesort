@@ -5,3 +5,13 @@ Now that I did, I realize I also need to actually test different inner-sort-wind
 Thing I want to do: generate some numbers, and create a version of mergesort that merges left to right as much as possible so we have better cache usage and see if that actually makes a difference.
 
 Cleanups: there's a bunch of printfs everywhere so you can see what's going on, maybe have the code take some switches to let you specify the inner sort window width, or plugin different types of algorithms or something.
+
+Update 1:
+Ran some test to compare how different widths for inner shellsort do and made a graph comparing them to std qsort and mergesort.
+The good news: my mergesort looks like N log(N)
+The bad news: std implementations do much better
+
+I need to run it a bit more often to get some better averages (this was just a first test to see how it goes)
+image: terrible_result_1.png
+
+

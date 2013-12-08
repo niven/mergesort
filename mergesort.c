@@ -3,8 +3,11 @@
 #include "string.h"
 #include "errno.h"
 #include "assert.h"
-
+#include "time.h"
+#include "unistd.h"
 #include "sys/stat.h"
+
+#include "mach/mach_time.h"
 
 typedef void (*sorter)(int* numbers, int start, int end);
 
@@ -181,7 +184,7 @@ void shellsort_marcin( int* numbers, int start, int end ) {
 
 // read all numbers (space separated)
 // (random.org output)
-int read_numbers( const char* filename, int** numbers ) {
+size_t read_numbers( const char* filename, int** numbers ) {
 	
 	FILE* in = fopen( filename, "rb" );
 	if( in == NULL ) {
@@ -247,6 +250,17 @@ int read_numbers( const char* filename, int** numbers ) {
 	return count;
 }
 
+int compare_int(const void* a, const void* b) {
+
+	if ( *(int*)a == *(int*)b )
+		return 0;
+
+	if (*(int*)a < *(int*)b)
+		return -1;
+
+	return 1;
+}
+
 int main(int argc, char *argv[]) {  
 	
 	if( argc != 3 ) {
@@ -259,13 +273,32 @@ int main(int argc, char *argv[]) {
 	printf("Sorting file %s, writing to %s\n", filename_in, filename_out);
 	
 	int* numbers = NULL;
-	int count = read_numbers( filename_in, &numbers );
+	size_t count = read_numbers( filename_in, &numbers );
 //	printf( "Read %d numbers\n", count);
 	for(int i=0; i<count; i++ ) {
 //		printf( "N[%02d] = %d\n", i, numbers[i] );
 	}
 //	printf("numbers premerge %p\n", numbers);
-	merge_sort( &numbers, count, 5, shellsort_marcin );
+	unsigned long start, stop;
+	start = mach_absolute_time();
+
+	merge_sort( &numbers, count, 701, shellsort_marcin );
+
+// use builtin sort
+//	mergesort( numbers, count, sizeof(int), compare_int);
+
+	stop = mach_absolute_time();
+
+	mach_timebase_info_data_t timebase_info;
+	mach_timebase_info( &timebase_info );
+	
+	unsigned long elapsed_nano = (stop-start) * timebase_info.numer / timebase_info.denom;
+
+//	printf("Diff %ld %ld  = %ld -> %ld nanos = %ld micros = %ld millis = %ld sec\n", start, stop, stop-start, elapsed_nano, elapsed_nano/1000, elapsed_nano/(1000*1000), elapsed_nano/(1000*1000*1000));
+
+	// write count,nano, micro, milli, sec
+	fprintf(stderr, "%ld,%ld,%ld,%ld,%ld\n", count,elapsed_nano, elapsed_nano/1000, elapsed_nano/(1000*1000), elapsed_nano/(1000*1000*1000));
+
 //	printf("numbers postmerge %p\n", numbers);
 	
 	for( int i=0; i<count; i++ ) {
