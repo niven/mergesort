@@ -1,0 +1,7 @@
+I wanted to do some C for fun, and also finally implement a sort that uses another sort in it's inner loop.
+
+Now that I did, I realize I also need to actually test different inner-sort-windows and different ways of implementing the sort and do some testing. So there's also a thing to generate some random ints.
+
+Thing I want to do: generate some numbers, and create a version of mergesort that merges left to right as much as possible so we have better cache usage and see if that actually makes a difference.
+
+Cleanups: there's a bunch of printfs everywhere so you can see what's going on, maybe have the code take some switches to let you specify the inner sort window width, or plugin different types of algorithms or something.
