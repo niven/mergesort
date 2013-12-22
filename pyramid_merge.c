@@ -198,6 +198,10 @@ printf("Every block sorted (from=%d), now doing remaining merges\n", from);
 
 if( blocks_done % 2 == 0 ) {
 	printf("Even blocks done, last thing we did was a merge to: %p\n", left);
+} else if( blocks_done == 1 ) {
+	// inelegent special case: if block_width > number of items, shellsort did all the
+	// work and we can just return the input pointer
+	return;
 } else {
 	printf("Odd number of blocks, single remaining block to merge is here: %p\n", in);
 	right = in;
