@@ -24,3 +24,5 @@ size_t read_numbers( const char* filename, int** numbers );
 
 int write_numbers( int* numbers, size_t count, const char* filename_out );
 
+// just printf but not doing anthing if not VERBOSE
+void say( const char* format, ... );

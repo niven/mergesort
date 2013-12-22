@@ -65,31 +65,31 @@ void mergesort_pyramid( int** numbers, int count ) {
 	int* right = in;
 	int* to = buf;
 
-#ifdef VERBOSE
-	printf("in array: %p, buf %p\n", in, buf);
-#endif
+
+	say("in array: %p, buf %p\n", in, buf);
+
 	while( from < count ) {
 
 		int from_to = MIN(from + block_width, count);// temp name, too manythings called "to"
 	
-#ifdef VERBOSE
-		printf( "\nSorting [%d - %d]\n[ ", from, from_to-1 );
+
+		say( "\nSorting [%d - %d]\n[ ", from, from_to-1 );
 		for(int i=from; i<from_to; i++) {
-			printf("%3d ", in[i]);
+			say("%3d ", in[i]);
 		}
-		printf("]\n");
-#endif
+		say("]\n");
+
 
 		// shellsort will inplace sort a block of the in array
 		shellsort( in, from, from_to-1 ); // maybe not range but start and count would be better
 		blocks_done++;
-#ifdef VERBOSE
-		printf("Blocks done %d\n[ ", blocks_done);
+
+		say("Blocks done %d\n[ ", blocks_done);
 		for(int i=from; i<from_to; i++) {
-			printf("%3d ", in[i]);
+			say("%3d ", in[i]);
 		}
-		printf("]\n");
-#endif	
+		say("]\n");
+	
 	
 		int mergecounter = blocks_done;
 		int merge_width = block_width;
@@ -100,9 +100,9 @@ void mergesort_pyramid( int** numbers, int count ) {
 		to = buf;
 		left = right = in;
 		while( mergecounter % 2 == 0 ) {
-#ifdef VERBOSE
-			printf("Mergecounter at %d\n", mergecounter );
-#endif		
+
+			say("Mergecounter at %d\n", mergecounter );
+		
 			// how much we would have done if each block were block_width (every single one is except maybe the last one)
 			int start = (blocks_done*block_width) - 2*merge_width; 
 			int L = start; // start of "left" array
@@ -110,39 +110,38 @@ void mergesort_pyramid( int** numbers, int count ) {
 
 			int L_end = MIN( R-1, count-1 );
 			int R_end = MIN( R+merge_width-1, count-1 ); 
-			int sent=0;
 			int t = start; // where we start writing to the target array (corresponds to a)
-#ifdef VERBOSE
-			printf( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", from_to-L, L, L_end, left, R, R_end, right, t, R_end, to );
-			printf("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
+
+			say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", from_to-L, L, L_end, left, R, R_end, right, t, R_end, to );
+			say("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
 			for(int i=L; i<=L_end; i++) {
-				printf("%3d ", left[i]);
+				say("%3d ", left[i]);
 				if( i< L_end-1 && (i+1)%block_width==0 ) {
-					printf("]\n[ ");
+					say("]\n[ ");
 				}
 			}
-			printf("]\n");
-			printf("Premerge [%d - %d] (%p):\n[ ", R, R_end, right);
+			say("]\n");
+			say("Premerge [%d - %d] (%p):\n[ ", R, R_end, right);
 			for(int i=R; i<=R_end; i++) {
-				printf("%3d ", right[i]);
+				say("%3d ", right[i]);
 				if( i< R_end-1 && (i+1)%block_width==0 ) {
-					printf("]\n[ ");
+					say("]\n[ ");
 				}
 			}
-			printf("]\n");
-#endif
+			say("]\n");
+
 
 			while( t <= R_end ) { // until we've copied everything to the target array
-#ifdef VERBOSE
-				printf("\t L=%d\t R=%d\t t=%d\n", L, R, t);
-#endif
+
+				say("\t L=%d\t R=%d\t t=%d\n", L, R, t);
+
 				// copy items from left array as long as they are lte
 				// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 				// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
 				while( L <= L_end && (R > R_end || left[L] <= right[R]) ) {
-#ifdef VERBOSE
-					printf("\tto[%d] = L[%d] (%3d)\n", t, L, left[L] );
-#endif
+
+					say("\tto[%d] = L[%d] (%3d)\n", t, L, left[L] );
+
 					to[t] = left[L];
 					t++;
 					L++;
@@ -150,9 +149,9 @@ void mergesort_pyramid( int** numbers, int count ) {
 
 				// copy items from right array as long as they are lte
 				while( R <= R_end && (L > L_end || right[R] <= left[L]) ) {
-#ifdef VERBOSE
-					printf("\tto[%d] = R[%d] (%3d)\n", t, R, right[R] );
-#endif
+
+					say("\tto[%d] = R[%d] (%3d)\n", t, R, right[R] );
+
 					to[t] = right[R];
 					t++;
 					R++;
@@ -161,24 +160,24 @@ void mergesort_pyramid( int** numbers, int count ) {
 				// maybe memcpy?
 			}
 
-#ifdef VERBOSE
-			printf("Postmerge [%d - %d] (%p):\n[ ", start, from_to-1, to);
+
+			say("Postmerge [%d - %d] (%p):\n[ ", start, from_to-1, to);
 			for(int i=start; i<from_to; i++) {
-				printf("%3d ", to[i]);
+				say("%3d ", to[i]);
 				if( i< from_to-1 &&  (i+1)%block_width==0 ) {
-					printf("]\n[ ");
+					say("]\n[ ");
 				}
 			}
-			printf("]\n");
-#endif
+			say("]\n");
+
 			// if we do sequential merges, we merge the result of what we just did, with an older one (of equal size)
 			// so where we read from and write to swaps
 			to = to == in ? buf : in; // target is the other one
 			left = right = ( to == in ? buf : in );	// we read from wherever we're not writing
 		
-#ifdef VERBOSE
-			printf("Pointers now: to=%p, left=right=%p=%p\n", to, left, right);
-#endif		
+
+			say("Pointers now: to=%p, left=right=%p=%p\n", to, left, right);
+		
 			// while we have even numbers, we merge blocks up
 			mergecounter /= 2;
 			merge_width *= 2; // every time we merge twice as much
@@ -190,9 +189,9 @@ void mergesort_pyramid( int** numbers, int count ) {
 		from += block_width;
 	}
 
-#ifdef VERBOSE
-	printf("Every block sorted (from=%d), now doing remaining merges\n", from);
-#endif
+
+	say("Every block sorted (from=%d), now doing remaining merges\n", from);
+
 
 	// at this point every block is sorted and the last thing that happened was either
 	// a sort: left/right/in has unmerged blocks, to/buf has the merged rest
@@ -204,17 +203,17 @@ void mergesort_pyramid( int** numbers, int count ) {
 		// if count=30 and block_width is 5 we end up with blocks_done=6 
 	//	left = in;
 	//	to = right = buf;
-#ifdef VERBOSE
-		printf("Even blocks done, last thing we did was a merge to: %p\n", left);
-#endif
+
+		say("Even blocks done, last thing we did was a merge to: %p\n", left);
+
 	} else if( blocks_done == 1 ) {
 		// inelegent special case: if block_width > number of items, shellsort did all the
 		// work and we can just return the input pointer
 		return;
 	} else {
-#ifdef VERBOSE
-		printf("Odd number of blocks, single remaining block to merge is here: %p\n", in);
-#endif
+
+		say("Odd number of blocks, single remaining block to merge is here: %p\n", in);
+
 		right = in; // this is the last block and it was sorted in place so it's in "in"
 		left = buf; // before this there must have been a merge so it has to be not-in-in, so "buf"
 		to = in; // we merge to the location of the right, since there we have the space
@@ -231,9 +230,9 @@ void mergesort_pyramid( int** numbers, int count ) {
 	// etc
 	// conveniently, numbers are actually made up of powers of two (unless you're running this on a decimal computer)
 
-#ifdef VERBOSE
-	printf( "Doing wrapup merges for %d blocks\n", blocks_done );
-#endif
+
+	say( "Doing wrapup merges for %d blocks\n", blocks_done );
+
 	int first, second;
 	while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 		// so getting the two lowest powers of 2 from blocks_done would be easier if we could read the shift carry-out
@@ -273,28 +272,27 @@ void mergesort_pyramid( int** numbers, int count ) {
 		blocks_done ^= first; // remove this power
 		second = ((blocks_done ^ (blocks_done-1)) +1) >> 1;
 
-#ifdef VERBOSE
-		printf( "Remainder: %d first: %d second: %d\n", blocks_done, first, second );
+		say( "Remainder: %d first: %d second: %d\n", blocks_done, first, second );
 		// so now merge the first to last block with the second to last one
 		// YOYOYO those widths make no sense, and the right is always until end of array
 		// maybe swap meaning of first and second since we're doing this backwards?
-		printf("Current in [%d - %d] (%p):\n[ 0-%2d] [ ", 0, count, in, block_width-1);
+		say("Current in [%d - %d] (%p):\n[ 0-%2d] [ ", 0, count, in, block_width-1);
 		for(int i=0; i<count; i++) {
-			printf("%3d ", in[i]);
+			say("%3d ", in[i]);
 			if( i< count-1 &&  (i+1)%block_width==0 ) {
-				printf("]\n[%2d-%2d] [ ", i+1, MIN(i+block_width, count-1));
+				say("]\n[%2d-%2d] [ ", i+1, MIN(i+block_width, count-1));
 			}
 		}
-		printf("]\n");
-		printf("Current buf [%d - %d] (%p):\n[ 0-%2d] [ ", 0, count, buf, block_width-1);
+		say("]\n");
+		say("Current buf [%d - %d] (%p):\n[ 0-%2d] [ ", 0, count, buf, block_width-1);
 		for(int i=0; i<count; i++) {
-			printf("%3d ", buf[i]);
+			say("%3d ", buf[i]);
 			if( i< count-1 &&  (i+1)%block_width==0 ) {
-				printf("]\n[%2d-%2d] [ ", i+1, MIN(i+block_width, count-1));
+				say("]\n[%2d-%2d] [ ", i+1, MIN(i+block_width, count-1));
 			}
 		}
-		printf("]\n");
-#endif	
+		say("]\n");
+	
 		// merge step here
 		// the start offsets are "back from the end by offsets" which we'd have to keep track of over more merges
 		// but blocks_done already remove "first" every time which makes it work. think about it :)
@@ -305,38 +303,38 @@ void mergesort_pyramid( int** numbers, int count ) {
 		int L_end = R-1;
 		int R_end = count-1; // in this case it's always the end of the array 
 		int t = start; // where we start writing to the target array (corresponds to a)
-#ifdef VERBOSE
-		printf("Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, left, first, right );
-		printf( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", R_end-L+1, L, L_end, left, R, R_end, right, t, R_end, to );
-		printf("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
+
+		say("Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, left, first, right );
+		say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", R_end-L+1, L, L_end, left, R, R_end, right, t, R_end, to );
+		say("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
 		for(int i=L; i<=L_end; i++) {
-			printf("%3d ", left[i]);
+			say("%3d ", left[i]);
 			if( i< L_end-1 && (i+1)%block_width==0 ) {
-				printf("]\n[ ");
+				say("]\n[ ");
 			}
 		}
-		printf("]\n");
-		printf("Premerge [%d - %d] (%p):\n[ ", R, R_end, right);
+		say("]\n");
+		say("Premerge [%d - %d] (%p):\n[ ", R, R_end, right);
 		for(int i=R; i<=R_end; i++) {
-			printf("%3d ", right[i]);
+			say("%3d ", right[i]);
 			if( i< R_end-1 && (i+1)%block_width==0 ) {
-				printf("]\n[ ");
+				say("]\n[ ");
 			}
 		}
-		printf("]\n");
-#endif
+		say("]\n");
+
 
 		while( t <= R_end ) { // until we've copied everything to the target array
-#ifdef VERBOSE
-			printf("\t L=%d\t R=%d\t t=%d\n", L, R, t);
-#endif
+
+			say("\t L=%d\t R=%d\t t=%d\n", L, R, t);
+
 			// copy items from left array as long as they are lte
 			// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 			// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
 			while( L <= L_end && (R > R_end || left[L] <= right[R]) ) {
-#ifdef VERBOSE
-				printf("\tto[%d] = L[%d] (%3d)\n", t, L, left[L] );
-#endif
+
+				say("\tto[%d] = L[%d] (%3d)\n", t, L, left[L] );
+
 				to[t] = left[L];
 				t++;
 				L++;
@@ -344,9 +342,9 @@ void mergesort_pyramid( int** numbers, int count ) {
 
 			// copy items from right array as long as they are lte
 			while( R <= R_end && (L > L_end || right[R] <= left[L]) ) {
-#ifdef VERBOSE
-				printf("\tto[%d] = R[%d] (%3d)\n", t, R, right[R] );
-#endif
+
+				say("\tto[%d] = R[%d] (%3d)\n", t, R, right[R] );
+
 				to[t] = right[R];
 				t++;
 				R++;
@@ -355,16 +353,16 @@ void mergesort_pyramid( int** numbers, int count ) {
 			// maybe memcpy?
 		}
 
-#ifdef VERBOSE
-		printf("Postmerge [%d - %d] (%p):\n[ ", start, t, to);
+
+		say("Postmerge [%d - %d] (%p):\n[ ", start, t, to);
 		for(int i=start; i<t; i++) {
-			printf("%3d ", to[i]);
+			say("%3d ", to[i]);
 			if( i< t-1 &&  (i+1)%block_width==0 ) {
-				printf("]\n[ ");
+				say("]\n[ ");
 			}
 		}
-		printf("]\n");
-#endif
+		say("]\n");
+
 	
 		// now swap pointers
 		right = to; // to is what we created, which is the smaller block at the end
@@ -396,24 +394,24 @@ int main(int argc, char *argv[]) {
 	block_width = atoi( argv[1] );
 	const char* filename_in = argv[2];
 	const char* filename_out = argv[3];
-	printf("Sorting file %s, writing to %s\n", filename_in, filename_out);
+	say("Sorting file %s, writing to %s\n", filename_in, filename_out);
 	
 	int* numbers = NULL;
 	size_t count = read_numbers( filename_in, &numbers );
-#ifdef VERBOSE
-	printf( "Read %zu numbers\n", count);
+
+	say( "Read %zu numbers\n", count);
 	for(size_t i=0; i<count; i++ ) {
-		printf( "N[%02zu] = %d\n", i, numbers[i] );
+		say( "N[%02zu] = %d\n", i, numbers[i] );
 	}
-	printf("numbers premerge %p\n", numbers);
-#endif
+	say("numbers premerge %p\n", numbers);
+
 	unsigned long start, stop;
 	start = mach_absolute_time();
 
 	mergesort_pyramid( &numbers, count );
-#ifdef VERBOSE
-	printf("numbers postmerge %p\n", numbers);
-#endif
+
+	say("numbers postmerge %p\n", numbers);
+
 // use builtin sort
 	//	mergesort( numbers, count, sizeof(int), compare_int);
 
@@ -427,17 +425,16 @@ int main(int argc, char *argv[]) {
 	// write count,nano, micro, milli, sec
 	fprintf(stderr, "%zu,%ld\n", count,elapsed_nano);
 	
-#ifdef VERBOSE
+
 	for( size_t i=0; i<count; i++ ) {
-		printf("n[%02zu] = %d\n", i, numbers[i] );
+		say("n[%02zu] = %d\n", i, numbers[i] );
 	}
-#endif
+
 	
 	is_sorted( numbers, 0, count );
 	
-	int result = write_numbers( numbers, count, filename_out );
-	// ignore result as there is nothing we can do and we don't care
-	
+	write_numbers( numbers, count, filename_out );
+
 	free( numbers );
 	
 	exit( EXIT_SUCCESS );

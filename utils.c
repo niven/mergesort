@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <stdarg.h>
 
 #include "utils.h"
 
@@ -14,23 +15,21 @@ void shellsort( int* numbers, int start, int end ) {
 
 	int i, j, g;
 
-#ifdef VERBOSE
-	printf("Shellsort [%d - %d] [", start, end );
+	say("Shellsort [%d - %d] [", start, end );
 	for(int i=start; i<=end; i++) {
-		printf("%3d ", numbers[i]);
+		say("%3d ", numbers[i]);
 		if( i< end-1 &&  (i+1)%((end-start)+1)==0 ) {
-			printf("]\n[ ");
+			say("]\n[ ");
 		}
 	}
-	printf("]\n");
-#endif
+	say("]\n");
 	
 	// Do an insertion sort for each gap size.
 	for( g=0; g<8; g++ ) {
 		int gap = gaps[g];
-#ifdef VERBOSE
-		printf("Shellsort Gap %d (%d,%d,%d)\n", gap, start+gap, end, gap );
-#endif
+
+		say("Shellsort Gap %d (%d,%d,%d)\n", gap, start+gap, end, gap );
+
 		// i iterates over a virtual array defined by gapsize
 		// so if gap=3 then i iterates n[3], n[6], n[9] (starting at element 2)
 		// But we increment i by 1, so what gives?
@@ -39,9 +38,9 @@ void shellsort( int* numbers, int start, int end ) {
 		// j iterates backwards from i in gapsize steps so the end result is the same 
 		for (i = start+gap; i <= end; i++ ) { 
 		    int number_to_place = numbers[i];
-#ifdef VERBOSE
-			printf("Shellsort n[%d] = %d\n", i, number_to_place );
-#endif
+
+			say("Shellsort n[%d] = %d\n", i, number_to_place );
+
 			// now iterate over every "gapth" element back to the left, moving items until
 			// we find one that is lower/equal than number_to_place
 			// For the first iteration, either the second number is larger and we're done, or move it to the position of the first element
@@ -50,16 +49,16 @@ void shellsort( int* numbers, int start, int end ) {
 		        numbers[j+gap] = numbers[j];
 		    }
 		    numbers[j+gap] = number_to_place;
-#ifdef VERBOSE
-			printf("Shellsort [%d - %d] [", start, end );
+
+			say("Shellsort [%d - %d] [", start, end );
 			for(int i=start; i<=end; i++) {
-				printf("%3d ", numbers[i]);
+				say("%3d ", numbers[i]);
 				if( i< end-1 &&  (i+1)%(end-start+1)==0 ) {
-					printf("]\n[ ");
+					say("]\n[ ");
 				}
 			}
-			printf("]\n");
-#endif
+			say("]\n");
+
 		}
 		
 	}
@@ -70,7 +69,7 @@ void is_sorted(int* numbers, int from, int to) {
 
 	for( int i=from; i<to-1; i++ ) {
 		if( numbers[i] > numbers[i+1] ) {
-			printf("Fail at %d/%d (%d/%d)\n", i, i+1, numbers[i], numbers[i+1]);
+			say("Fail at %d/%d (%d/%d)\n", i, i+1, numbers[i], numbers[i+1]);
 			exit(0);
 		}
 	}
@@ -94,7 +93,7 @@ size_t read_numbers( const char* filename, int** numbers ) {
 		exit(0);
 	}
 	size_t count = st.st_size / sizeof(int);
-	printf("Number of integers of size %ld bytes in file: %zu\n", sizeof(int), count);
+	say("Number of integers of size %ld bytes in file: %zu\n", sizeof(int), count);
 	
 	int* target = malloc( sizeof(int)*count );
 	if( target ==  NULL ) {
@@ -103,7 +102,7 @@ size_t read_numbers( const char* filename, int** numbers ) {
 	}
 	size_t read = fread( target, sizeof(int), count, in );
 	if( read != count ) {
-		printf("Read %zu ints, expected %zu\n", read, count);
+		say("Read %zu ints, expected %zu\n", read, count);
 		free( target );
 		exit( EXIT_FAILURE );
 	}	
@@ -130,5 +129,14 @@ int write_numbers( int* numbers, size_t count, const char* filename_out ) {
 	fclose( out );
 
 	return 0;
+}
+
+void say( const char* format, ... ) {
+#ifdef VERBOSE	
+	va_list arglist;
+	va_start( arglist, format );
+	vprintf( format, arglist );
+	va_end( arglist );
+#endif	
 }
 
