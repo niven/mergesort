@@ -1,3 +1,4 @@
+CC=clang
 CFLAGS=-Wall -O3
 
 clean:
