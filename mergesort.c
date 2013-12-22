@@ -44,9 +44,9 @@ void merge_sort(int** list, unsigned int count, unsigned int inner_sort_width, s
 	inner_sorter( numbers, from, count-1);
 	is_sorted( numbers, from, count);
 
-	for(int i=0; i<count; i++ ) {
+//	for(int i=0; i<count; i++ ) {
 //		printf( "is[%02d] = %d\n", i, numbers[i] );
-	}
+//	}
 
 	
 	// now perform the merge
@@ -95,7 +95,7 @@ void merge_sort(int** list, unsigned int count, unsigned int inner_sort_width, s
 
 			}
 
-			is_sorted( buf, L, R_end-1);
+//			is_sorted( buf, L, R_end-1);
 
 //			printf("buf: %p, num: %p\n", buf, numbers);
 			for(int i=0; i<R_end; i++ ) {
@@ -119,9 +119,9 @@ void merge_sort(int** list, unsigned int count, unsigned int inner_sort_width, s
 	free(buf);
 
 //	printf("numbers @ %p\n", *list);
-	for(int i=0; i<count; i++ ) {
+//	for(int i=0; i<count; i++ ) {
 //		printf( "D[%02d] = %d\n", i, (*list)[i] );
-	}
+//	}
 
 }
 
@@ -282,10 +282,10 @@ int main(int argc, char *argv[]) {
 	unsigned long start, stop;
 	start = mach_absolute_time();
 
-	merge_sort( &numbers, count, 701, shellsort_marcin );
+		merge_sort( &numbers, count, 701, shellsort_marcin );
 
 // use builtin sort
-//	mergesort( numbers, count, sizeof(int), compare_int);
+	//	mergesort( numbers, count, sizeof(int), compare_int);
 
 	stop = mach_absolute_time();
 
@@ -302,7 +302,7 @@ int main(int argc, char *argv[]) {
 //	printf("numbers postmerge %p\n", numbers);
 	
 	for( int i=0; i<count; i++ ) {
-//		printf("n[%02d] = %d\n", i, numbers[i] );
+	//		printf("n[%02d] = %d\n", i, numbers[i] );
 	}
 	
 	is_sorted( numbers, 0, count );

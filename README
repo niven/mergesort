@@ -2,7 +2,7 @@ I wanted to do some C for fun, and also finally implement a sort that uses anoth
 
 Now that I did, I realize I also need to actually test different inner-sort-windows and different ways of implementing the sort and do some testing. So there's also a thing to generate some random ints.
 
-Thing I want to do: generate some numbers, and create a version of mergesort that merges left to right as much as possible so we have better cache usage and see if that actually makes a difference.
+I've also implemented a mergesort that merges blocks as soon as they are sorted, which the literature tells me has better L1/L2/L3 cache use characteristics. So far I see nothing, but I haven't ran a lot of tests either.
 
 Cleanups: there's a bunch of printfs everywhere so you can see what's going on, maybe have the code take some switches to let you specify the inner sort window width, or plugin different types of algorithms or something.
 
