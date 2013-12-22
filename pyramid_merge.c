@@ -211,6 +211,9 @@ printf("Every block sorted (from=%d), now doing remaining merges\n", from);
 // so which one is it?
 
 if( blocks_done % 2 == 0 ) {
+	// The bug is here. the last thing was a merge, so the thing before that also I guess
+	// if count=30 and block_width is 5 we end up with blocks_done=6 and we should
+	// move left and to, but now we don't
 #ifdef VERBOSE
 	printf("Even blocks done, last thing we did was a merge to: %p\n", left);
 #endif
