@@ -5,7 +5,7 @@ clean:
 
 all: mergesort gen_random_ints pyramid_merge
 	
-pyramid_merge: utils.o
+pyramid_merge: pyramid_merge.c utils.o
 	clang utils.o pyramid_merge.c -o pyramid_merge
 
 utils.o: utils.h utils.c
