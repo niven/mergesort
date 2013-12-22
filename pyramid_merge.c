@@ -2,13 +2,12 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "sys/stat.h"
 #include "time.h"
 #include "unistd.h"
 
 #include "mach/mach_time.h"
 
-#include "utils.c"
+#include "utils.h"
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
@@ -17,7 +16,7 @@ struct statictics {
 	int moves;
 } stats;
 
-const int block_width = 8;
+int block_width = 8;
 
 void mergesort_pyramid( int** numbers, int count ) {
 
@@ -373,62 +372,17 @@ if( to == in ) {
 }
 
 
-size_t read_numbers( const char* filename, int** numbers ) {
-	
-	FILE* in = fopen( filename, "rb" );
-	if( in == NULL ) {
-		perror("open()");
-		exit(0);
-	}
-	
-	// find out how many 4 byte ints
-	struct stat st;
-	int result = fstat( fileno(in), &st );
-	if( result == -1 ) {
-		perror("fstat()");
-		fclose( in );
-		exit(0);
-	}
-	size_t count = st.st_size / sizeof(int);
-	printf("Number of integers of size %ld bytes in file: %zu\n", sizeof(int), count);
-	
-	int* target = malloc( sizeof(int)*count );
-	if( target ==  NULL ) {
-		perror("malloc()");
-		exit( EXIT_FAILURE );
-	}
-	size_t read = fread( target, sizeof(int), count, in );
-	if( read != count ) {
-		printf("Read %zu ints, expected %zu\n", read, count);
-		free( target );
-		exit( EXIT_FAILURE );
-	}	
-	fclose( in );
-	*numbers = target;
-	
-	return count;
-}
-
-void is_sorted(int* numbers, int from, int to) {
-
-	for( int i=from; i<to-1; i++ ) {
-		if( numbers[i] > numbers[i+1] ) {
-			printf("Fail at %d/%d (%d/%d)\n", i, i+1, numbers[i], numbers[i+1]);
-			exit(0);
-		}
-	}
-
-}
 
 int main(int argc, char *argv[]) {  
 	
-	if( argc != 3 ) {
-		puts("Usage: pyramid_merge infile outfile");
+	if( argc != 4 ) {
+		puts("Usage: pyramid_merge block_width infile outfile");
 		exit(0);
 	}
 		
-	const char* filename_in = argv[1];
-	const char* filename_out = argv[2];
+	block_width = atoi( argv[1] );
+	const char* filename_in = argv[2];
+	const char* filename_out = argv[3];
 	printf("Sorting file %s, writing to %s\n", filename_in, filename_out);
 	
 	int* numbers = NULL;

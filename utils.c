@@ -1,4 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+
 #include "utils.h"
+
+
+const int gaps[8] = {701, 301, 132, 57, 23, 10, 4, 1};
+
 
 // Sort an array a[start...end].
 // end is inclusive (seems like a bad idea)
@@ -9,7 +17,7 @@ void shellsort( int* numbers, int start, int end ) {
 	printf("Shellsort [%d - %d] [", start, end );
 	for(int i=start; i<=end; i++) {
 		printf("%3d ", numbers[i]);
-		if( i< end-1 &&  (i+1)%(end-start+1)==0 ) {
+		if( i< end-1 &&  (i+1)%((end-start)+1)==0 ) {
 			printf("]\n[ ");
 		}
 	}
@@ -49,3 +57,53 @@ void shellsort( int* numbers, int start, int end ) {
 	}
 	
 }
+
+void is_sorted(int* numbers, int from, int to) {
+
+	for( int i=from; i<to-1; i++ ) {
+		if( numbers[i] > numbers[i+1] ) {
+			printf("Fail at %d/%d (%d/%d)\n", i, i+1, numbers[i], numbers[i+1]);
+			exit(0);
+		}
+	}
+
+}
+
+size_t read_numbers( const char* filename, int** numbers ) {
+	
+	FILE* in = fopen( filename, "rb" );
+	if( in == NULL ) {
+		perror("open()");
+		exit(0);
+	}
+	
+	// find out how many 4 byte ints
+	struct stat st;
+	int result = fstat( fileno(in), &st );
+	if( result == -1 ) {
+		perror("fstat()");
+		fclose( in );
+		exit(0);
+	}
+	size_t count = st.st_size / sizeof(int);
+	printf("Number of integers of size %ld bytes in file: %zu\n", sizeof(int), count);
+	
+	int* target = malloc( sizeof(int)*count );
+	if( target ==  NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	size_t read = fread( target, sizeof(int), count, in );
+	if( read != count ) {
+		printf("Read %zu ints, expected %zu\n", read, count);
+		free( target );
+		exit( EXIT_FAILURE );
+	}	
+	fclose( in );
+	*numbers = target;
+	
+	return count;
+}
+
+
+
