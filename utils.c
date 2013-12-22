@@ -14,6 +14,7 @@ void shellsort( int* numbers, int start, int end ) {
 
 	int i, j, g;
 
+#ifdef VERBOSE
 	printf("Shellsort [%d - %d] [", start, end );
 	for(int i=start; i<=end; i++) {
 		printf("%3d ", numbers[i]);
@@ -22,11 +23,14 @@ void shellsort( int* numbers, int start, int end ) {
 		}
 	}
 	printf("]\n");
-
+#endif
+	
 	// Do an insertion sort for each gap size.
 	for( g=0; g<8; g++ ) {
 		int gap = gaps[g];
+#ifdef VERBOSE
 		printf("Shellsort Gap %d (%d,%d,%d)\n", gap, start+gap, end, gap );
+#endif
 		// i iterates over a virtual array defined by gapsize
 		// so if gap=3 then i iterates n[3], n[6], n[9] (starting at element 2)
 		// But we increment i by 1, so what gives?
@@ -35,7 +39,9 @@ void shellsort( int* numbers, int start, int end ) {
 		// j iterates backwards from i in gapsize steps so the end result is the same 
 		for (i = start+gap; i <= end; i++ ) { 
 		    int number_to_place = numbers[i];
+#ifdef VERBOSE
 			printf("Shellsort n[%d] = %d\n", i, number_to_place );
+#endif
 			// now iterate over every "gapth" element back to the left, moving items until
 			// we find one that is lower/equal than number_to_place
 			// For the first iteration, either the second number is larger and we're done, or move it to the position of the first element
@@ -44,6 +50,7 @@ void shellsort( int* numbers, int start, int end ) {
 		        numbers[j+gap] = numbers[j];
 		    }
 		    numbers[j+gap] = number_to_place;
+#ifdef VERBOSE
 			printf("Shellsort [%d - %d] [", start, end );
 			for(int i=start; i<=end; i++) {
 				printf("%3d ", numbers[i]);
@@ -52,6 +59,7 @@ void shellsort( int* numbers, int start, int end ) {
 				}
 			}
 			printf("]\n");
+#endif
 		}
 		
 	}

@@ -70,25 +70,31 @@ int* left = in;
 int* right = in;
 int* to = buf;
 
+#ifdef VERBOSE
 printf("in array: %p, buf %p\n", in, buf);
+#endif
 while( from < count ) {
 
 	int from_to = MIN(from + block_width, count);// temp name, too manythings called "to"
 	
 	// shellsort will inplace sort a block of the in array
+#ifdef VERBOSE
 	printf( "\nSorting [%d - %d]\n[ ", from, from_to-1 );
 	for(int i=from; i<from_to; i++) {
 		printf("%3d ", in[i]);
 	}
 	printf("]\n");
+#endif
+
 	shellsort( in, from, from_to-1 ); // maybe not range but start and count would be better
 	blocks_done++;
+#ifdef VERBOSE
 	printf("Blocks done %d\n[ ", blocks_done);
 	for(int i=from; i<from_to; i++) {
 		printf("%3d ", in[i]);
 	}
 	printf("]\n");
-	
+#endif	
 	
 	int mergecounter = blocks_done;
 	int merge_width = block_width;
@@ -99,8 +105,9 @@ while( from < count ) {
 	to = buf;
 	left = right = in;
 	while( mergecounter % 2 == 0 ) {
+#ifdef VERBOSE
 		printf("Mergecounter at %d\n", mergecounter );
-		
+#endif		
 		// how much we would have done if each block were block_width (every single one is except maybe the last one)
 		int start = (blocks_done*block_width) - 2*merge_width; 
 		int L = start; // start of "left" array
@@ -110,6 +117,7 @@ while( from < count ) {
 		int R_end = MIN( R+merge_width-1, count-1 ); 
 		int sent=0;
 		int t = start; // where we start writing to the target array (corresponds to a)
+#ifdef VERBOSE
 		printf( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", from_to-L, L, L_end, left, R, R_end, right, t, R_end, to );
 		printf("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
 		for(int i=L; i<=L_end; i++) {
@@ -127,19 +135,20 @@ while( from < count ) {
 			}
 		}
 		printf("]\n");
-
+#endif
 
 		while( t <= R_end ) { // until we've copied everything to the target array
+#ifdef VERBOSE
 			printf("\t L=%d\t R=%d\t t=%d\n", L, R, t);
-			if(sent++ > 200 ) {
-				exit(0);
-			}
+#endif
 			// copy items from left array as long as they are lte
 			// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 			// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
 			stats.comparisons++;
 			while( L <= L_end && (R > R_end || left[L] <= right[R]) ) {
+#ifdef VERBOSE
 				printf("\tto[%d] = L[%d] (%3d)\n", t, L, left[L] );
+#endif
 				to[t] = left[L];
 				t++;
 				L++;
@@ -150,7 +159,9 @@ while( from < count ) {
 			// copy items from right array as long as they are lte
 			stats.comparisons++;
 			while( R <= R_end && (L > L_end || right[R] <= left[L]) ) {
+#ifdef VERBOSE
 				printf("\tto[%d] = R[%d] (%3d)\n", t, R, right[R] );
+#endif
 				to[t] = right[R];
 				t++;
 				R++;
@@ -161,6 +172,7 @@ while( from < count ) {
 			// maybe memcpy?
 		}
 
+#ifdef VERBOSE
 		printf("Postmerge [%d - %d] (%p):\n[ ", start, from_to-1, to);
 		for(int i=start; i<from_to; i++) {
 			printf("%3d ", to[i]);
@@ -169,14 +181,15 @@ while( from < count ) {
 			}
 		}
 		printf("]\n");
-
+#endif
 		// if we do sequential merges, we merge the result of what we just did, with an older one (of equal size)
 		// so where we read from and write to swaps
 		to = to == in ? buf : in; // target is the other one
 		left = right = ( to == in ? buf : in );	// we read from wherever we're not writing
 		
+#ifdef VERBOSE
 		printf("Pointers now: to=%p, left=right=%p=%p\n", to, left, right);
-		
+#endif		
 		// while we have even numbers, we merge blocks up
 		mergecounter /= 2;
 		merge_width *= 2; // every time we merge twice as much
@@ -188,8 +201,9 @@ while( from < count ) {
 	from += block_width;
 }
 
+#ifdef VERBOSE
 printf("Every block sorted (from=%d), now doing remaining merges\n", from);
-
+#endif
 
 // at this point every block is sorted and the last thing that happened was either
 // a sort: left/right/in has unmerged blocks, to/buf has the merged rest
@@ -197,13 +211,17 @@ printf("Every block sorted (from=%d), now doing remaining merges\n", from);
 // so which one is it?
 
 if( blocks_done % 2 == 0 ) {
+#ifdef VERBOSE
 	printf("Even blocks done, last thing we did was a merge to: %p\n", left);
+#endif
 } else if( blocks_done == 1 ) {
 	// inelegent special case: if block_width > number of items, shellsort did all the
 	// work and we can just return the input pointer
 	return;
 } else {
+#ifdef VERBOSE
 	printf("Odd number of blocks, single remaining block to merge is here: %p\n", in);
+#endif
 	right = in;
 	left = buf;
 	to = in;
@@ -220,13 +238,11 @@ if( blocks_done % 2 == 0 ) {
 // etc
 // conveniently, numbers are actually made up of powers of two (unless you're running this on a decimal computer)
 
+#ifdef VERBOSE
 printf( "Doing wrapup merges for %d blocks\n", blocks_done );
-int s2 = 0;
+#endif
 int first, second;
 while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
-	if( s2++ > 20 ) {
-		exit( EXIT_FAILURE );
-	}
 	// so getting the two lowest powers of 2 from blocks_done would be easier if we could read the shift carry-out
 	// but that's not a thing. Never figured not having access to the carry bit would be a problem I'd be having.
 	
@@ -264,8 +280,8 @@ while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 	blocks_done ^= first; // remove this power
 	second = ((blocks_done ^ (blocks_done-1)) +1) >> 1;
 
+#ifdef VERBOSE
 	printf( "Remainder: %d first: %d second: %d\n", blocks_done, first, second );
-	
 	// so now merge the first to last block with the second to last one
 	// YOYOYO those widths make no sense, and the right is always until end of array
 	// maybe swap meaning of first and second since we're doing this backwards?
@@ -285,7 +301,7 @@ while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 		}
 	}
 	printf("]\n");
-	
+#endif	
 	// merge step here
 	// the start offsets are "back from the end by offsets" which we'd have to keep track of over more merges
 	// but blocks_done already remove "first" every time which makes it work. think about it :)
@@ -296,6 +312,7 @@ while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 	int L_end = R-1;
 	int R_end = count-1; // in this case it's always the end of the array 
 	int t = start; // where we start writing to the target array (corresponds to a)
+#ifdef VERBOSE
 	printf("Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, left, first, right );
 	printf( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", R_end-L+1, L, L_end, left, R, R_end, right, t, R_end, to );
 	printf("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
@@ -314,16 +331,20 @@ while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 		}
 	}
 	printf("]\n");
-
+#endif
 
 	while( t <= R_end ) { // until we've copied everything to the target array
+#ifdef VERBOSE
 		printf("\t L=%d\t R=%d\t t=%d\n", L, R, t);
+#endif
 		// copy items from left array as long as they are lte
 		// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 		// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
 		stats.comparisons++;
 		while( L <= L_end && (R > R_end || left[L] <= right[R]) ) {
+#ifdef VERBOSE
 			printf("\tto[%d] = L[%d] (%3d)\n", t, L, left[L] );
+#endif
 			to[t] = left[L];
 			t++;
 			L++;
@@ -334,7 +355,9 @@ while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 		// copy items from right array as long as they are lte
 		stats.comparisons++;
 		while( R <= R_end && (L > L_end || right[R] <= left[L]) ) {
+#ifdef VERBOSE
 			printf("\tto[%d] = R[%d] (%3d)\n", t, R, right[R] );
+#endif
 			to[t] = right[R];
 			t++;
 			R++;
@@ -345,6 +368,7 @@ while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 		// maybe memcpy?
 	}
 
+#ifdef VERBOSE
 	printf("Postmerge [%d - %d] (%p):\n[ ", start, t, to);
 	for(int i=start; i<t; i++) {
 		printf("%3d ", to[i]);
@@ -353,7 +377,7 @@ while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 		}
 	}
 	printf("]\n");
-
+#endif
 	
 	// now swap pointers
 	right = to; // to is what we created, which is the smaller block at the end
@@ -391,19 +415,22 @@ int main(int argc, char *argv[]) {
 	
 	int* numbers = NULL;
 	size_t count = read_numbers( filename_in, &numbers );
+#ifdef VERBOSE
 	printf( "Read %zu numbers\n", count);
 	for(size_t i=0; i<count; i++ ) {
 		printf( "N[%02zu] = %d\n", i, numbers[i] );
 	}
 	printf("numbers premerge %p\n", numbers);
+#endif
 	unsigned long start, stop;
 	start = mach_absolute_time();
 
 	stats.comparisons = 0;
 	stats.moves = 0;
 	mergesort_pyramid( &numbers, count );
+#ifdef VERBOSE
 	printf("numbers postmerge %p\n", numbers);
-
+#endif
 // use builtin sort
 	//	mergesort( numbers, count, sizeof(int), compare_int);
 
@@ -417,12 +444,13 @@ int main(int argc, char *argv[]) {
 	// write count,nano, micro, milli, sec
 	fprintf(stderr, "%zu,%ld\n", count,elapsed_nano);
 	
+#ifdef VERBOSE
 	for( size_t i=0; i<count; i++ ) {
 		printf("n[%02zu] = %d\n", i, numbers[i] );
 	}
 
 	printf( "Stats\n\tComparisons: %d\n\tMoves: %d\n", stats.comparisons, stats.moves );
-	
+#endif	
 	is_sorted( numbers, 0, count );
 	
 	// write to out
