@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-Wall -O3
+CFLAGS=-Wall -O3 -pedantic 
 
 clean:
 	rm -f mergesort gen_random_ints pyramid_merge utils.o
