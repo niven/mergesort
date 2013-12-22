@@ -435,20 +435,10 @@ int main(int argc, char *argv[]) {
 	
 	is_sorted( numbers, 0, count );
 	
-	// write to out
-	FILE* out = fopen( filename_out, "wb" );
-	if( out == NULL ) {
-		perror("fopen()");
-		free(numbers);
-		exit( EXIT_FAILURE );
-	}
-	size_t written = fwrite( numbers, sizeof(int), count, out );
-	if( written != count ) {
-		perror("frwrite()");
-		exit( EXIT_FAILURE );
-	}	
-	fclose( out );
+	int result = write_numbers( numbers, count, filename_out );
+	// ignore result as there is nothing we can do and we don't care
 	
 	free( numbers );
-	return 0;
+	
+	exit( EXIT_SUCCESS );
 }

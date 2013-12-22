@@ -113,5 +113,22 @@ size_t read_numbers( const char* filename, int** numbers ) {
 	return count;
 }
 
+int write_numbers( int* numbers, size_t count, const char* filename_out ) {
 
+	FILE* out = fopen( filename_out, "wb" );
+	if( out == NULL ) {
+		perror("fopen()");
+		return -1;
+	}
+	
+	size_t written = fwrite( numbers, sizeof(int), count, out );
+	if( written != count ) {
+		perror("frwrite()");
+		return -1;
+	}	
+	
+	fclose( out );
+
+	return 0;
+}
 

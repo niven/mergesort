@@ -21,3 +21,6 @@ void is_sorted( int* numbers, int from, int to );
 // exits on failure to malloc, open the file etc.
 // should maybe return negative numbers and set errno instead
 size_t read_numbers( const char* filename, int** numbers );
+
+int write_numbers( int* numbers, size_t count, const char* filename_out );
+
