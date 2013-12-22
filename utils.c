@@ -28,8 +28,9 @@ void shellsort( int* numbers, int start, int end ) {
 	for( g=0; g<8; g++ ) {
 		int gap = gaps[g];
 
-		say("Shellsort Gap %d (%d,%d,%d)\n", gap, start+gap, end, gap );
-
+		if( gap <= end-start+1 ){
+			say("Shellsort gap %d (%d,%d)\n", gap, start+gap, end );
+		}
 		// i iterates over a virtual array defined by gapsize
 		// so if gap=3 then i iterates n[3], n[6], n[9] (starting at element 2)
 		// But we increment i by 1, so what gives?
