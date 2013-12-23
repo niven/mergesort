@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 //	printf("Diff %ld %ld  = %ld -> %ld nanos = %ld micros = %ld millis = %ld sec\n", start, stop, stop-start, elapsed_nano, elapsed_nano/1000, elapsed_nano/(1000*1000), elapsed_nano/(1000*1000*1000));
 
 	// write count,nano, micro, milli, sec
-	fprintf(stderr, "%ld,%ld,%ld,%ld,%ld\n", count,elapsed_nano, elapsed_nano/1000, elapsed_nano/(1000*1000), elapsed_nano/(1000*1000*1000));
+	fprintf(stderr, "%ld,%ld\n", count,elapsed_nano);
 
 //	printf("numbers postmerge %p\n", numbers);
 	
