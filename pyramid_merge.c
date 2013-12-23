@@ -189,36 +189,14 @@ void mergesort_pyramid( int** numbers, int count ) {
 		from += block_width;
 	}
 
-
 	say("Every block sorted (from=%d), now doing remaining merges\n", from);
 
-
-	// at this point every block is sorted and the last thing that happened was either
-	// a sort: left/right/in has unmerged blocks, to/buf has the merged rest
-	// or a merge: this means to doesn't point to the merged stuff
-	// so which one is it?
-
-	if( blocks_done % 2 == 0 ) {
-		// The bug is here. the last thing was a merge, and everything else as well.
-		// if count=30 and block_width is 5 we end up with blocks_done=6 
-	//	left = in;
-	//	to = right = buf;
-
-		say("Even blocks done, last thing we did was a merge to: %p\n", left);
-
-	} else if( blocks_done == 1 ) {
-		// inelegent special case: if block_width > number of items, shellsort did all the
-		// work and we can just return the input pointer
+	// inelegent special case: if block_width > number of items, shellsort did all the
+	// work and we can just return
+	if( blocks_done == 1 ) {
 		return;
-	} else {
-
-		say("Odd number of blocks, single remaining block to merge is here: %p\n", in);
-
-		right = in; // this is the last block and it was sorted in place so it's in "in"
-		left = buf; // before this there must have been a merge so it has to be not-in-in, so "buf"
-		to = in; // we merge to the location of the right, since there we have the space
 	}
-
+	
 	// now we are either done or are left with a situation like example 14 or 13 or one of those
 	// how to proceed?
 	// the trick is to factor the blocks_done into powers of 2
@@ -230,49 +208,64 @@ void mergesort_pyramid( int** numbers, int count ) {
 	// etc
 	// conveniently, numbers are actually made up of powers of two (unless you're running this on a decimal computer)
 
-
 	say( "Doing wrapup merges for %d blocks\n", blocks_done );
 
 	int first, second;
 	while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
-		// so getting the two lowest powers of 2 from blocks_done would be easier if we could read the shift carry-out
-		// but that's not a thing. Never figured not having access to the carry bit would be a problem I'd be having.
+		/* 
+		Getting the two lowest powers of 2 from blocks_done would be easier if we could read the shift carry-out
+		but that's not a thing. Never figured not having access to the carry bit would be a problem I'd be having.
 	
-		// problem: we have 0b1100 and I want 0b1000 and 0b0100
-		// or: 0b10010001 and I want 0b10000 and 0b1
+		problem: we have 0b1100 and I want 0b1000 and 0b0100
+		or: 0b10010001 and I want 0b10000 and 0b1
 	
-		/*
-		Holy linecount Batman! I typed up all that code, FFS!
-		That is an incredibly dumb way of doing this. Leaving it here for posterity.
-	
-		pow2 = -1;
-		while( (blocks_done & 1) == 0 ) { // put the rightmost 1 in the LSBit position
-			blocks_done >>= 1;
-			pow2++;
-		}
-		blocks_done >>= 1; // move it off
-		pow2++;
-
-		first = 1 << pow2;
-
-		while( (blocks_done & 1) == 0 ) { // continue with the next one
-			blocks_done >>= 1;
-			pow2++;
-		}
-		blocks_done >>= 1; // move it off
-		pow2++;
-	
-		second = 1 << pow2;
+		assume blocks_done is XXX1000. then bd-1 = XXX0111
+		so XXX0111 ^ XXX1000 = 00001111
+		then add 1 to get 00010000, then shift to get 00001000 :)
 		*/
-
-		// assume blocks_done is XXX1000. then bd-1 = XXX0111
-		// so XXX0111 ^ XXX1000 = 00001111
-		// then add 1 to get 00010000, then shift to get 00001000 :)
 		first = ((blocks_done ^ (blocks_done-1)) +1) >> 1;
 		blocks_done ^= first; // remove this power
 		second = ((blocks_done ^ (blocks_done-1)) +1) >> 1;
-
 		say( "Remainder: %d first: %d second: %d\n", blocks_done, first, second );
+
+		/*
+		We have to figure out where left, right and to should point to. Once we do and we
+		go into the merge loop we alternate left/right and to which is correct since we always
+		merge a smaller block with a larger one (I think)
+		
+		So where do they point to?
+		If we merge 2 blocks they go from in to buf (2^1)
+		If we merge 2+2 blocks they go from buf to in (2^2)
+		If we merge 4+4 blocks they go from in to buf again etc (2^3)
+		so blocks_done = 2^n and if n is odd we wrote it to buf, if n is even we wrote it to in
+		*/
+		int n = first;
+		int pow = -1;
+		while( n > 0 ) {
+			n >>= 1;
+			pow++;
+		}
+		if( pow % 2 == 0 ) {
+			right = in;
+		} else {
+			right = buf;
+		}
+		say( "first=%d = 2^%d -> right=%p\n", first, pow, right );
+		n = second;
+		pow = -1;
+		while( n > 0 ) {
+			n >>= 1;
+			pow++;
+		}
+		if( pow % 2 == 0 ) {
+			left = in;
+			to = buf;
+		} else {
+			left = buf;
+			to = in;
+		}
+		say( "second=%d = 2^%d -> left=%p\n", second, pow, left );
+		say( "to=%p\n", to );
 		// so now merge the first to last block with the second to last one
 		// YOYOYO those widths make no sense, and the right is always until end of array
 		// maybe swap meaning of first and second since we're doing this backwards?
