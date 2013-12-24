@@ -27,7 +27,6 @@ void merge_sort(int** list, unsigned int count, unsigned int inner_sort_width, s
 	while( from + inner_sort_width < count ) {
 //		printf("is from %d to %d\n", from, from+inner_sort_width-1);
 		inner_sorter( numbers, from, from+inner_sort_width-1);
-		is_sorted( numbers, from, from+inner_sort_width);
 		from += inner_sort_width;
 	}
 //	printf("is from %d to %d\n", from, count-1);
