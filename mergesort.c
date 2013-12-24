@@ -154,11 +154,12 @@ int main(int argc, char *argv[]) {
 	
 	int* numbers = NULL;
 	size_t count = read_numbers( filename_in, &numbers );
-//	printf( "Read %d numbers\n", count);
-	for(int i=0; i<count; i++ ) {
-//		printf( "N[%02d] = %d\n", i, numbers[i] );
+	say( "Read %zu numbers\n", count);
+	for(size_t i=0; i<count; i++ ) {
+		say( "N[%02zu] = %d\n", i, numbers[i] );
 	}
-//	printf("numbers premerge %p\n", numbers);
+	say("numbers premerge %p\n", numbers);
+
 	unsigned long start, stop;
 	start = mach_absolute_time();
 
@@ -179,27 +180,12 @@ int main(int argc, char *argv[]) {
 	// write count,nano, micro, milli, sec
 	fprintf(stderr, "%ld,%ld\n", count,elapsed_nano);
 
-//	printf("numbers postmerge %p\n", numbers);
-	
-	for( int i=0; i<count; i++ ) {
-	//		printf("n[%02d] = %d\n", i, numbers[i] );
-	}
-	
+	say( "numbers postmerge %p\n", numbers );
+	print_array( numbers, 0, count, block_width );
+
 	is_sorted( numbers, 0, count );
 	
-	// write to out
-	FILE* out = fopen( filename_out, "wb" );
-	if( out == NULL ) {
-		perror("fopen()");
-		free(numbers);
-		exit( EXIT_FAILURE );
-	}
-	size_t written = fwrite( numbers, sizeof(int), count, out );
-	if( written != count ) {
-		perror("frwrite()");
-		exit( EXIT_FAILURE );
-	}	
-	fclose( out );
+	write_numbers( numbers, count, filename_out );
 	
 //	printf("Freeing %p\n", numbers);
 	free( numbers );
