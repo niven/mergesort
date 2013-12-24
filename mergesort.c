@@ -32,7 +32,6 @@ void merge_sort(int** list, unsigned int count, unsigned int inner_sort_width, s
 	}
 //	printf("is from %d to %d\n", from, count-1);
 	inner_sorter( numbers, from, count-1);
-	is_sorted( numbers, from, count);
 
 //	for(int i=0; i<count; i++ ) {
 //		printf( "is[%02d] = %d\n", i, numbers[i] );
