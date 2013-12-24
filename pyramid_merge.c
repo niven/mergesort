@@ -313,14 +313,18 @@ void mergesort_pyramid( int** numbers, int count ) {
 
 int main(int argc, char *argv[]) {  
 	
-	if( argc != 4 ) {
-		puts("Usage: pyramid_merge block_width infile outfile");
+	if( argc != 3 ) {
+		puts("Usage: pyramid_merge infile outfile");
+		printf("Set the environment variable SORTER_BLOCK_WIDTH to the desired width (default = %d)", block_width);
 		exit(0);
 	}
 		
-	block_width = atoi( argv[1] );
-	const char* filename_in = argv[2];
-	const char* filename_out = argv[3];
+	const char* env_block_width = getenv( "SORTER_BLOCK_WIDTH" );
+	if( env_block_width != NULL ) {
+		block_width = atoi( env_block_width );
+	}
+	const char* filename_in = argv[1];
+	const char* filename_out = argv[2];
 	say("Sorting file %s, writing to %s\n", filename_in, filename_out);
 	
 	int* numbers = NULL;
