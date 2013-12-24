@@ -13,6 +13,36 @@
 
 int block_width = 8;
 
+/*
+Merge sorted blocks as soon as possible to hopefully optimize cpu cache usage (well, that's the theory)
+
+After sorting block:
+
+	1: do nothing
+
+	2: merge 1+2
+
+	3: do nothing
+
+	4: merge 3+4, then (1+2) + (3+4)
+
+	6: merge 5+6, then do nothing. we now have (1+2+3+4)(5+6)
+
+	7: do nothing
+
+	8: merge 7+8, then (5+6)+(7+8), then ((1+2)+(3+4)) + ((5+6)+(7+8))
+
+	10: merge 9+10, then do nothing, we have (1+2+3+4+5+6+7+8),(9+10)
+
+	12: merge 11+12, then (9+10)+(11+12), then do nothing, we have (1+2+3+4+5+6+7+8),(9+10+11+12)
+
+	13: do nothing, we have (1+2+3+4+5+6+7+8),(9+10+11+12), 13
+
+	14: merge 13+14, then done. we should have  (1+2+3+4+5+6+7+8),(9+10+11+12),(13+14)
+
+	So every time we merge upto what we just sorted (the endpoint is always the same),
+	but how far we look back doubles and so does the block size
+*/
 void mergesort_pyramid( int** numbers, int count ) {
 
 	int* in = *numbers;
@@ -26,66 +56,32 @@ void mergesort_pyramid( int** numbers, int count ) {
 	// so if count=100 and block_width = 20 our array consists of 5 blocks
 	int blocks_done = 0;
 
-	/*
-	Some examples:
-
-	Just sorted block:
-	
-
-		1: do nothing
-	
-		2: merge 1+2
-	
-		3: do nothing
-	
-		4: merge 3+4, then (1+2) + (3+4)
-	
-		6: merge 5+6, then do nothing. we now have (1+2+3+4)(5+6)
-	
-		7: do nothing
-	
-		8: merge 7+8, then (5+6)+(7+8), then ((1+2)+(3+4)) + ((5+6)+(7+8))
-	
-		10: merge 9+10, then do nothing, we have (1+2+3+4+5+6+7+8),(9+10)
-	
-		12: merge 11+12, then (9+10)+(11+12), then do nothing, we have (1+2+3+4+5+6+7+8),(9+10+11+12)
-
-		13: do nothing, we have (1+2+3+4+5+6+7+8),(9+10+11+12), 13
-	
-		14: merge 13+14, then done. we should have  (1+2+3+4+5+6+7+8),(9+10+11+12),(13+14)
-	
-		So every time we merge upto what we just sorted (the endpoint is always the same),
-		but how far we look back doubles and so does the block size
-	*/
-
-	int from = 0;
+	int index_start = 0, index_end = 0;
 
 	// for the first merge (blocks_done==2) we have to read from in
 	int* left = in;
 	int* right = in;
 	int* to = buf;
 
-
 	say("in array: %p, buf %p\n", in, buf);
 
-	while( from < count ) {
+	while( index_start < count ) {
 
-		int from_to = MIN(from + block_width, count);// temp name, too manythings called "to"
+		index_end = MIN(index_start + block_width, count);// temp name, too manythings called "to"
 	
-
-		say( "\nSorting [%d - %d]\n[ ", from, from_to-1 );
-		for(int i=from; i<from_to; i++) {
+		say( "\nSorting [%d - %d]\n[ ", index_start, index_end-1 );
+		for(int i=index_start; i<index_end; i++) {
 			say("%3d ", in[i]);
 		}
 		say("]\n");
 
 
 		// shellsort will inplace sort a block of the in array
-		shellsort( in, from, from_to-1 ); // maybe not range but start and count would be better
+		shellsort( in, index_start, index_end-1 ); // maybe not range but start and count would be better
 		blocks_done++;
 
 		say("Blocks done %d\n[ ", blocks_done);
-		for(int i=from; i<from_to; i++) {
+		for(int i=index_start; i<index_end; i++) {
 			say("%3d ", in[i]);
 		}
 		say("]\n");
@@ -112,7 +108,7 @@ void mergesort_pyramid( int** numbers, int count ) {
 			int R_end = MIN( R+merge_width-1, count-1 ); 
 			int t = start; // where we start writing to the target array (corresponds to a)
 
-			say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", from_to-L, L, L_end, left, R, R_end, right, t, R_end, to );
+			say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", index_end-L, L, L_end, left, R, R_end, right, t, R_end, to );
 			say("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
 			for(int i=L; i<=L_end; i++) {
 				say("%3d ", left[i]);
@@ -161,10 +157,10 @@ void mergesort_pyramid( int** numbers, int count ) {
 			}
 
 
-			say("Postmerge [%d - %d] (%p):\n[ ", start, from_to-1, to);
-			for(int i=start; i<from_to; i++) {
+			say("Postmerge [%d - %d] (%p):\n[ ", start, index_end-1, to);
+			for(int i=start; i<index_end; i++) {
 				say("%3d ", to[i]);
-				if( i< from_to-1 &&  (i+1)%block_width==0 ) {
+				if( i< index_end-1 &&  (i+1)%block_width==0 ) {
 					say("]\n[ ");
 				}
 			}
@@ -186,10 +182,10 @@ void mergesort_pyramid( int** numbers, int count ) {
 	
 	
 		// process the next block
-		from += block_width;
+		index_start += block_width;
 	}
 
-	say("Every block sorted (from=%d), now doing remaining merges\n", from);
+	say("Every block sorted (index_start=%d), now doing remaining merges\n", index_start);
 
 	// inelegent special case: if block_width > number of items, shellsort did all the
 	// work and we can just return
