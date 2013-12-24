@@ -30,7 +30,7 @@ int main( int argc, char* argv[] ) {
 	unsigned long start, stop;
 	start = mach_absolute_time();
 
-	shellsort( numbers, 0, count );
+	shellsort( numbers, 0, count-1 );
 
 	stop = mach_absolute_time();
 
