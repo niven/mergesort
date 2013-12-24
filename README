@@ -4,7 +4,7 @@ Now that I did, I realize I also need to actually test different inner-sort-wind
 
 I've also implemented a mergesort that merges blocks as soon as they are sorted, which the literature tells me has better L1/L2/L3 cache use characteristics. So far I see nothing, but I haven't ran a lot of tests either.
 
-Cleanups: there's a bunch of printfs everywhere so you can see what's going on, maybe have the code take some switches to let you specify the inner sort window width, or plugin different types of algorithms or something.
+I've also added insertionsort so you can see O(n^2) in the graphs which is nice, and I added stdlib qsort. The latter is not the fastest, but that's probably because it's using a comparison function which I should make mine use as well.
 
 Update 1:
 Ran some test to compare how different widths for inner shellsort do and made a graph comparing them to std qsort and mergesort.
