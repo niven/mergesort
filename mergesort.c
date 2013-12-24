@@ -140,14 +140,18 @@ int compare_int(const void* a, const void* b) {
 
 int main(int argc, char *argv[]) {  
 	
-	if( argc != 4 ) {
-		puts("Usage: mergesort block_width infile outfile");
+	if( argc != 3 ) {
+		puts("Usage: mergesort infile outfile");
 		exit(0);
 	}
 	
-	const int block_width = atoi( argv[1] );
-	const char* filename_in = argv[2];
-	const char* filename_out = argv[3];
+	int block_width = 8;
+	const char* env_block_width = getenv( "SORTER_BLOCK_WIDTH" );
+	if( env_block_width != NULL ) {
+		block_width = atoi( env_block_width );
+	}
+	const char* filename_in = argv[1];
+	const char* filename_out = argv[2];
 	printf("Sorting file %s, writing to %s\n", filename_in, filename_out);
 	
 	int* numbers = NULL;
