@@ -20,3 +20,10 @@ Still not seeing any kind of cache related problem.
 
 Need to run it with larger datasets I guess.
 
+Building:
+
+make all
+or
+make verbose
+
+the latter will print a ton of information on what is happening exactly
