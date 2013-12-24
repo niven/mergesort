@@ -1,9 +1,0 @@
-With Perl!
-
-Make some datasets:
-mkdir data
-perl -le'my $sz=1024; for my $i (1..400) { my $s = $i*$sz; system("./gen_random_ints", $s, "data/dataset_$s.dat") or printf $!;  }'
-
-
-run tests: (results helpfully printed as count,nanos stderr)
-perl -le'my $sz=1024; for my $i (1..400) { my $s = $i*$sz; system("./mergesort", "data/dataset_$s.dat", "data/dataset_${s}_sorted.dat") or printf $!;  }' > /dev/null
