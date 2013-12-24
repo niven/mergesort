@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
 	}
 	const char* filename_in = argv[1];
 	const char* filename_out = argv[2];
-	printf("Sorting file %s, writing to %s\n", filename_in, filename_out);
+	say("Sorting file %s, writing to %s\n", filename_in, filename_out);
 	
 	int* numbers = NULL;
 	size_t count = read_numbers( filename_in, &numbers );
