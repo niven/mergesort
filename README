@@ -29,4 +29,4 @@ make all
 or
 make verbose
 
-the latter will print a ton of information on what is happening exactly
+the latter will print a ton of information on what is happening exactly when you run the sorts

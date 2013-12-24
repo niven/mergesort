@@ -8,6 +8,26 @@
 
 #include "utils.h"
 
+void insertionsort( int* n, int count ) {
+	
+	int value, hole_index;
+	for(int i=0; i<count; i++ ) {
+		value = n[i];
+		hole_index = i; // this is where we took the value from, it's vacant
+		
+		say( "Moving value %d and creating a hole at %d\n", value, hole_index );
+		
+		while( hole_index > 0 && n[hole_index-1] > value ) { // if elements are higher, we shift them 
+			n[hole_index] = n[hole_index-1]; // move the element right
+			hole_index--; // move the hole left
+		}
+		n[hole_index] = value;
+		
+		print_array( n, 0, count, 8 );
+	}
+}
+
+
 int main( int argc, char* argv[] ) {
 
 	if( argc != 3 ) {
@@ -28,7 +48,7 @@ int main( int argc, char* argv[] ) {
 	unsigned long start, stop;
 	start = mach_absolute_time();
 
-	shellsort( numbers, 0, count-1 );
+	insertionsort( numbers, count );
 
 	stop = mach_absolute_time();
 
