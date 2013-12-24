@@ -5,9 +5,11 @@
 
 #include "utils.h"
 
+#define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
+
+// sequence by Marcin Ciura
 const int gaps[8] = {701, 301, 132, 57, 23, 10, 4, 1};
-
 
 // Sort an array a[start...end].
 // end is inclusive (seems like a bad idea)
@@ -15,14 +17,8 @@ void shellsort( int* numbers, int start, int end ) {
 
 	int i, j, g;
 
-	say("Shellsort [%d - %d] [", start, end );
-	for(int i=start; i<=end; i++) {
-		say("%3d ", numbers[i]);
-		if( i< end-1 &&  (i+1)%((end-start)+1)==0 ) {
-			say("]\n[ ");
-		}
-	}
-	say("]\n");
+	say( "Shellsort " );
+	print_array( numbers, start, end+1, end-start+1 ); // +1 silliness because end is inclusive
 	
 	// Do an insertion sort for each gap size.
 	for( g=0; g<8; g++ ) {
@@ -51,15 +47,8 @@ void shellsort( int* numbers, int start, int end ) {
 		    }
 		    numbers[j+gap] = number_to_place;
 
-			say("Shellsort [%d - %d] [", start, end );
-			for(int i=start; i<=end; i++) {
-				say("%3d ", numbers[i]);
-				if( i< end-1 &&  (i+1)%(end-start+1)==0 ) {
-					say("]\n[ ");
-				}
-			}
-			say("]\n");
-
+			say( "Shellsort " );
+			print_array( numbers, start, end+1, end-start+1 ); // +1 silliness because end is inclusive
 		}
 		
 	}
@@ -141,3 +130,15 @@ void say( const char* format, ... ) {
 #endif	
 }
 
+void print_array( int* numbers, int from, int to, int width ) {
+#ifdef VERBOSE	
+	say( "[%d - %d] [ ", from, MIN(from+width-1, to-1) );
+	for(int i=from; i<to; i++) {
+		say( "%3d ", numbers[i] );
+		if( i<to-1 && (i+1)%width==0 ) {
+			say( "]\n[%d - %d] [ ", i+1, MIN(i+width,to-1) );
+		}
+	}
+	say( "]\n" );
+#endif	
+}

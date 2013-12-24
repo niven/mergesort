@@ -26,3 +26,5 @@ int write_numbers( int* numbers, size_t count, const char* filename_out );
 
 // just printf but not doing anthing if not VERBOSE
 void say( const char* format, ... );
+
+void print_array( int* numbers, int from, int to, int width );

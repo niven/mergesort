@@ -69,23 +69,15 @@ void mergesort_pyramid( int** numbers, int count ) {
 
 		index_end = MIN(index_start + block_width, count);// temp name, too manythings called "to"
 	
-		say( "\nSorting [%d - %d]\n[ ", index_start, index_end-1 );
-		for(int i=index_start; i<index_end; i++) {
-			say("%3d ", in[i]);
-		}
-		say("]\n");
-
+		say( "\nSorting " );
+		print_array( in, index_start, index_end, block_width );
 
 		// shellsort will inplace sort a block of the in array
 		shellsort( in, index_start, index_end-1 ); // maybe not range but start and count would be better
 		blocks_done++;
 
-		say("Blocks done %d\n[ ", blocks_done);
-		for(int i=index_start; i<index_end; i++) {
-			say("%3d ", in[i]);
-		}
-		say("]\n");
-	
+		say("Blocks done %d\n", blocks_done);
+		print_array( in, index_start, index_end, block_width );
 	
 		int mergecounter = blocks_done;
 		int merge_width = block_width;
@@ -109,23 +101,10 @@ void mergesort_pyramid( int** numbers, int count ) {
 			int t = start; // where we start writing to the target array (corresponds to a)
 
 			say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", index_end-L, L, L_end, left, R, R_end, right, t, R_end, to );
-			say("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
-			for(int i=L; i<=L_end; i++) {
-				say("%3d ", left[i]);
-				if( i< L_end-1 && (i+1)%block_width==0 ) {
-					say("]\n[ ");
-				}
-			}
-			say("]\n");
-			say("Premerge [%d - %d] (%p):\n[ ", R, R_end, right);
-			for(int i=R; i<=R_end; i++) {
-				say("%3d ", right[i]);
-				if( i< R_end-1 && (i+1)%block_width==0 ) {
-					say("]\n[ ");
-				}
-			}
-			say("]\n");
-
+			say("Premerge left [%d - %d] (%p):\n", L, L_end, left);
+			print_array( left, L, L_end+1, block_width );
+			say("Premerge right [%d - %d] (%p):\n", R, R_end, right);
+			print_array( right, R, R_end+1, block_width );
 
 			while( t <= R_end ) { // until we've copied everything to the target array
 
@@ -156,22 +135,14 @@ void mergesort_pyramid( int** numbers, int count ) {
 				// maybe memcpy?
 			}
 
-
-			say("Postmerge [%d - %d] (%p):\n[ ", start, index_end-1, to);
-			for(int i=start; i<index_end; i++) {
-				say("%3d ", to[i]);
-				if( i< index_end-1 &&  (i+1)%block_width==0 ) {
-					say("]\n[ ");
-				}
-			}
-			say("]\n");
+			say("Postmerge [%d - %d] (%p):\n", start, index_end-1, to);
+			print_array( to, start, index_end, block_width );
 
 			// if we do sequential merges, we merge the result of what we just did, with an older one (of equal size)
 			// so where we read from and write to swaps
 			to = to == in ? buf : in; // target is the other one
 			left = right = ( to == in ? buf : in );	// we read from wherever we're not writing
 		
-
 			say("Pointers now: to=%p, left=right=%p=%p\n", to, left, right);
 		
 			// while we have even numbers, we merge blocks up
@@ -265,22 +236,10 @@ void mergesort_pyramid( int** numbers, int count ) {
 		// so now merge the first to last block with the second to last one
 		// YOYOYO those widths make no sense, and the right is always until end of array
 		// maybe swap meaning of first and second since we're doing this backwards?
-		say("Current in [%d - %d] (%p):\n[ 0-%2d] [ ", 0, count, in, block_width-1);
-		for(int i=0; i<count; i++) {
-			say("%3d ", in[i]);
-			if( i< count-1 &&  (i+1)%block_width==0 ) {
-				say("]\n[%2d-%2d] [ ", i+1, MIN(i+block_width, count-1));
-			}
-		}
-		say("]\n");
-		say("Current buf [%d - %d] (%p):\n[ 0-%2d] [ ", 0, count, buf, block_width-1);
-		for(int i=0; i<count; i++) {
-			say("%3d ", buf[i]);
-			if( i< count-1 &&  (i+1)%block_width==0 ) {
-				say("]\n[%2d-%2d] [ ", i+1, MIN(i+block_width, count-1));
-			}
-		}
-		say("]\n");
+		say( "Current in [%d - %d] (%p):\n", 0, count-1, in );
+		print_array( in, 0, count, block_width );
+		say("Current buf [%d - %d] (%p):\n", 0, count-1, buf);
+		print_array( buf, 0, count, block_width );
 	
 		// merge step here
 		// the start offsets are "back from the end by offsets" which we'd have to keep track of over more merges
@@ -295,23 +254,10 @@ void mergesort_pyramid( int** numbers, int count ) {
 
 		say("Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, left, first, right );
 		say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", R_end-L+1, L, L_end, left, R, R_end, right, t, R_end, to );
-		say("Premerge [%d - %d] (%p):\n[ ", L, L_end, left);
-		for(int i=L; i<=L_end; i++) {
-			say("%3d ", left[i]);
-			if( i< L_end-1 && (i+1)%block_width==0 ) {
-				say("]\n[ ");
-			}
-		}
-		say("]\n");
-		say("Premerge [%d - %d] (%p):\n[ ", R, R_end, right);
-		for(int i=R; i<=R_end; i++) {
-			say("%3d ", right[i]);
-			if( i< R_end-1 && (i+1)%block_width==0 ) {
-				say("]\n[ ");
-			}
-		}
-		say("]\n");
-
+		say("Premerge left [%d - %d] (%p):\n", L, L_end, left);
+		print_array( left, L, L_end+1, block_width );
+		say("Premerge right [%d - %d] (%p):\n", R, R_end, right);
+		print_array( right, R, R_end+1, block_width );
 
 		while( t <= R_end ) { // until we've copied everything to the target array
 
@@ -342,16 +288,8 @@ void mergesort_pyramid( int** numbers, int count ) {
 			// maybe memcpy?
 		}
 
-
-		say("Postmerge [%d - %d] (%p):\n[ ", start, t, to);
-		for(int i=start; i<t; i++) {
-			say("%3d ", to[i]);
-			if( i< t-1 &&  (i+1)%block_width==0 ) {
-				say("]\n[ ");
-			}
-		}
-		say("]\n");
-
+		say("Postmerge [%d - %d] (%p):\n", start, t, to);
+		print_array( to, start, t, block_width );
 	
 		// now swap pointers
 		right = to; // to is what we created, which is the smaller block at the end
@@ -399,27 +337,22 @@ int main(int argc, char *argv[]) {
 
 	mergesort_pyramid( &numbers, count );
 
-	say("numbers postmerge %p\n", numbers);
-
-// use builtin sort
-	//	mergesort( numbers, count, sizeof(int), compare_int);
-
 	stop = mach_absolute_time();
+
+	// use builtin sort
+	//	mergesort( numbers, count, sizeof(int), compare_int);
 
 	mach_timebase_info_data_t timebase_info;
 	mach_timebase_info( &timebase_info );
 	
 	unsigned long elapsed_nano = (stop-start) * timebase_info.numer / timebase_info.denom;
 
-	// write count,nano, micro, milli, sec
-	fprintf(stderr, "%zu,%ld\n", count,elapsed_nano);
+	// write count,nanos
+	fprintf( stderr, "%zu,%ld\n", count, elapsed_nano );
 	
+	say( "numbers postmerge %p\n", numbers );
+	print_array( numbers, 0, count, block_width );
 
-	for( size_t i=0; i<count; i++ ) {
-		say("n[%02zu] = %d\n", i, numbers[i] );
-	}
-
-	
 	is_sorted( numbers, 0, count );
 	
 	write_numbers( numbers, count, filename_out );
