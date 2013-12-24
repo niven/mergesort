@@ -231,17 +231,17 @@ void mergesort_pyramid( int** numbers, int count ) {
 			left = buf;
 			to = in;
 		}
+		// the above is terrible and ugly
+		
 		say( "second=%d = 2^%d -> left=%p\n", second, pow, left );
 		say( "to=%p\n", to );
-		// so now merge the first to last block with the second to last one
-		// YOYOYO those widths make no sense, and the right is always until end of array
-		// maybe swap meaning of first and second since we're doing this backwards?
 		say( "Current in [%d - %d] (%p):\n", 0, count-1, in );
 		print_array( in, 0, count, block_width );
-		say("Current buf [%d - %d] (%p):\n", 0, count-1, buf);
+		say( "Current buf [%d - %d] (%p):\n", 0, count-1, buf );
 		print_array( buf, 0, count, block_width );
 	
-		// merge step here
+		// Merge the first to last block with the second to last one
+		// (maybe swap meaning of first and second since we're doing this backwards?)
 		// the start offsets are "back from the end by offsets" which we'd have to keep track of over more merges
 		// but blocks_done already remove "first" every time which makes it work. think about it :)
 		int start = (blocks_done - second) * block_width;
@@ -252,16 +252,16 @@ void mergesort_pyramid( int** numbers, int count ) {
 		int R_end = count-1; // in this case it's always the end of the array 
 		int t = start; // where we start writing to the target array (corresponds to a)
 
-		say("Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, left, first, right );
+		say( "Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, left, first, right );
 		say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", R_end-L+1, L, L_end, left, R, R_end, right, t, R_end, to );
-		say("Premerge left [%d - %d] (%p):\n", L, L_end, left);
+		say( "Premerge left [%d - %d] (%p):\n", L, L_end, left );
 		print_array( left, L, L_end+1, block_width );
-		say("Premerge right [%d - %d] (%p):\n", R, R_end, right);
+		say( "Premerge right [%d - %d] (%p):\n", R, R_end, right );
 		print_array( right, R, R_end+1, block_width );
 
 		while( t <= R_end ) { // until we've copied everything to the target array
 
-			say("\t L=%d\t R=%d\t t=%d\n", L, R, t);
+			say( "\t L=%d\t R=%d\t t=%d\n", L, R, t );
 
 			// copy items from left array as long as they are lte
 			// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
@@ -288,7 +288,7 @@ void mergesort_pyramid( int** numbers, int count ) {
 			// maybe memcpy?
 		}
 
-		say("Postmerge [%d - %d] (%p):\n", start, t, to);
+		say( "Postmerge [%d - %d] (%p):\n", start, t, to );
 		print_array( to, start, t, block_width );
 	
 		// now swap pointers
