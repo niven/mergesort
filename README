@@ -18,7 +18,10 @@ Update 2:
 Compiled with -O3. Results now super close to stdlib!
 Still not seeing any kind of cache related problem.
 
-Need to run it with larger datasets I guess.
+Update 3:
+results_3.png
+Comparing merge_sort and pyramid_merge with disappointing results: pyramid is actually slower.
+Haven't seen any evidence of cache problems in either version though.
 
 Building:
 
