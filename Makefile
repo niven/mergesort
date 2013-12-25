@@ -5,7 +5,7 @@ CMD=${CC} ${CFLAGS}
 clean:
 	rm -f bin/* gen_random_ints utils.o
 
-all: mergesort gen_random_ints pyramid_merge shellsort insertionsort stdlib_qsort stdlib_heapsort stdlib_mergesort
+all: mergesort gen_random_ints pyramid_merge shellsort insertionsort_memcpy insertionsort stdlib_qsort stdlib_heapsort stdlib_mergesort
 
 verbose: mergesort.c pyramid_merge.c utils.c
 	${CMD} -DVERBOSE -c utils.c
@@ -13,6 +13,7 @@ verbose: mergesort.c pyramid_merge.c utils.c
 	${CMD} -DVERBOSE utils.o pyramid_merge.c -o bin/pyramid_merge
 	${CMD} -DVERBOSE utils.o shellsort.c -o bin/shellsort
 	${CMD} -DVERBOSE utils.o insertionsort.c -o bin/insertionsort
+	${CMD} -DVERBOSE utils.o insertionsort_memcpy.c -o bin/insertionsort_memcpy
 
 mergesort: mergesort.c utils.o
 	${CMD} utils.o mergesort.c -o bin/mergesort
@@ -25,6 +26,9 @@ shellsort: shellsort.c utils.o
 
 insertionsort: insertionsort.c utils.o
 	${CMD} utils.o insertionsort.c -o bin/insertionsort
+
+insertionsort_memcpy: insertionsort_memcpy.c utils.o
+	${CMD} utils.o insertionsort_memcpy.c -o bin/insertionsort_memcpy
 
 stdlib_qsort: stdlib_qsort.c utils.o
 	${CMD} utils.o stdlib_qsort.c -o bin/stdlib_qsort
