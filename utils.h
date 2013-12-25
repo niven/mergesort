@@ -15,6 +15,7 @@ This sorts the array numbers in ascending order from [start, end] inclusive. (en
 
 typedef void (*sorter)(int* numbers, int start, int end);
 
+typedef int (*comparator)(const void* a, const void* b);
 
 void shellsort( int* numbers, int start, int end );
 

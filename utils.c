@@ -143,7 +143,12 @@ void print_array( int* numbers, int from, int to, int width ) {
 #endif	
 }
 
-
+/*
+Compare 2 integers
+	a > b: 1
+	a == b: 0
+	a < b: -1
+*/
 int compare_int(const void* a, const void* b) {
 
 	if ( *(int*)a == *(int*)b )
