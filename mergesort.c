@@ -11,7 +11,7 @@
 
 #include "utils.h"
 
-void merge_sort(int** list, unsigned int count, unsigned int inner_sort_width, sorter inner_sorter) {
+void merge_sort(int** list, size_t count, unsigned int inner_sort_width, sorter inner_sorter) {
 	
 	int* numbers = *list;
 	// arrays of size 0 and size 1 are always sorted

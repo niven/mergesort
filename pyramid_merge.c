@@ -43,7 +43,7 @@ After sorting block:
 	So every time we merge upto what we just sorted (the endpoint is always the same),
 	but how far we look back doubles and so does the block size
 */
-void mergesort_pyramid( int** numbers, int count ) {
+void mergesort_pyramid( int** numbers, size_t count ) {
 
 	int* in = *numbers;
 	int* buf = malloc( count * sizeof(int) );

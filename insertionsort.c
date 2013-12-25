@@ -8,7 +8,7 @@
 
 #include "utils.h"
 
-void insertionsort( int* n, int count, comparator compare ) {
+void insertionsort( int* n, size_t count, comparator compare ) {
 	
 	int value, hole_index;
 	for(int i=0; i<count; i++ ) {
