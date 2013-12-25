@@ -142,3 +142,16 @@ void print_array( int* numbers, int from, int to, int width ) {
 	say( "]\n" );
 #endif	
 }
+
+
+int compare_int(const void* a, const void* b) {
+
+	if ( *(int*)a == *(int*)b )
+		return 0;
+
+	if (*(int*)a < *(int*)b)
+		return -1;
+
+	return 1;
+}
+

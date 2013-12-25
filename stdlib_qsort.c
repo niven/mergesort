@@ -8,18 +8,6 @@
 
 #include "utils.h"
 
-int compare_int(const void* a, const void* b) {
-
-	if ( *(int*)a == *(int*)b )
-		return 0;
-
-	if (*(int*)a < *(int*)b)
-		return -1;
-
-	return 1;
-}
-
-
 int main( int argc, char* argv[] ) {
 
 	if( argc != 3 ) {

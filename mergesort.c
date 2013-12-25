@@ -11,9 +11,6 @@
 
 #include "utils.h"
 
-typedef void (*sorter)(int* numbers, int start, int end);
-
-
 void merge_sort(int** list, unsigned int count, unsigned int inner_sort_width, sorter inner_sorter) {
 	
 	int* numbers = *list;
@@ -122,18 +119,6 @@ void swap2( int* numbers, int start, int end ) {
 		numbers[end] = temp;
 	}
 	printf("Done  sort [%d,%d] = (%d,%d)\n", start, end, numbers[start], numbers[end]);
-}
-
-
-int compare_int(const void* a, const void* b) {
-
-	if ( *(int*)a == *(int*)b )
-		return 0;
-
-	if (*(int*)a < *(int*)b)
-		return -1;
-
-	return 1;
 }
 
 int main(int argc, char *argv[]) {  

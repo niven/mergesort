@@ -12,6 +12,10 @@ An alternative would be to pass a pointer to the offset and a count but I like t
 
 This sorts the array numbers in ascending order from [start, end] inclusive. (end being inclusive is not very intuitive though)
 */
+
+typedef void (*sorter)(int* numbers, int start, int end);
+
+
 void shellsort( int* numbers, int start, int end );
 
 // check if a list is sorted in ascending order
@@ -28,3 +32,5 @@ int write_numbers( int* numbers, size_t count, const char* filename_out );
 void say( const char* format, ... );
 
 void print_array( int* numbers, int from, int to, int width );
+
+int compare_int(const void* a, const void* b);
