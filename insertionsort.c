@@ -8,7 +8,7 @@
 
 #include "utils.h"
 
-void insertionsort( int* n, int count ) {
+void insertionsort( int* n, int count, comparator compare ) {
 	
 	int value, hole_index;
 	for(int i=0; i<count; i++ ) {
@@ -17,7 +17,7 @@ void insertionsort( int* n, int count ) {
 		
 		say( "Moving value %d and creating a hole at %d\n", value, hole_index );
 		
-		while( hole_index > 0 && n[hole_index-1] > value ) { // if elements are higher, we shift them 
+		while( hole_index > 0 && compare( &n[hole_index-1], &value ) == 1 ) { // if elements are higher, we shift them 
 			n[hole_index] = n[hole_index-1]; // move the element right
 			hole_index--; // move the hole left
 		}
@@ -48,7 +48,7 @@ int main( int argc, char* argv[] ) {
 	unsigned long start, stop;
 	start = mach_absolute_time();
 
-	insertionsort( numbers, count );
+	insertionsort( numbers, count, compare_int );
 
 	stop = mach_absolute_time();
 
