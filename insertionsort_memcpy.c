@@ -13,6 +13,11 @@ void insertionsort( void* base, size_t nel, size_t width, comparator compare ) {
 	
 	char* list = (char*)base;
 	void* value = malloc( width );
+	if( value == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	
 	int hole_index;
 	for(int i=0; i<nel*width; i+=width ) {
 		memcpy( value, list+i, width ); // take value and keep it safe
