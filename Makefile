@@ -3,9 +3,9 @@ CFLAGS=-Wall -O3 -pedantic
 CMD=${CC} ${CFLAGS}
 
 clean:
-	rm -f bin/mergesort gen_random_ints bin/pyramid_merge bin/shellsort bin/insertionsort bin/stdlib_qsort bin/stdlib_heapsort utils.o
+	rm -f bin/* gen_random_ints utils.o
 
-all: mergesort gen_random_ints pyramid_merge shellsort insertionsort stdlib_qsort stdlib_heapsort
+all: mergesort gen_random_ints pyramid_merge shellsort insertionsort stdlib_qsort stdlib_heapsort stdlib_mergesort
 
 verbose: mergesort.c pyramid_merge.c utils.c
 	${CMD} -DVERBOSE -c utils.c
@@ -31,6 +31,9 @@ stdlib_qsort: stdlib_qsort.c utils.o
 
 stdlib_heapsort: stdlib_heapsort.c utils.o
 	${CMD} utils.o stdlib_heapsort.c -o bin/stdlib_heapsort
+
+stdlib_mergesort: stdlib_mergesort.c utils.o
+	${CMD} utils.o stdlib_mergesort.c -o bin/stdlib_mergesort
 
 
 utils.o: utils.h utils.c

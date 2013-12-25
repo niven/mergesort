@@ -6,6 +6,8 @@ I've also implemented a mergesort that merges blocks as soon as they are sorted,
 
 I've also added insertionsort so you can see O(n^2) in the graphs which is nice, and I added stdlib qsort. The latter is not the fastest, but that's probably because it's using a comparison function which I should make mine use as well.
 
+Alsostdlib mergesort, but has the strange restriction of the min width of the elements to be sizeof(void*)/2, haven't found out why yet. (I'm using 4 byte ints so that works out).
+
 Update 1:
 Ran some test to compare how different widths for inner shellsort do and made a graph comparing them to std qsort and mergesort.
 The good news: my mergesort looks like N log(N)
