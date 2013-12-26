@@ -45,5 +45,7 @@ void print_array( int* numbers, int from, int to, int width );
 
 #endif
 
+void contains_same_elements( int* a, int* b, size_t count);
+
 
 int compare_int(const void* a, const void* b);

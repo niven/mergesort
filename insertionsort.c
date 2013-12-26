@@ -55,6 +55,14 @@ int main( int argc, char* argv[] ) {
 	say("numbers premerge %p\n", numbers);
 	print_array( numbers, 0, count, 8 );
 
+	// copy for comparing later
+	int* numbers_copy = malloc( sizeof(int)*count );
+	if( numbers_copy == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	memcpy( numbers_copy, numbers, sizeof(int)*count );
+
 	unsigned long start, stop;
 	start = mach_absolute_time();
 
@@ -75,8 +83,11 @@ int main( int argc, char* argv[] ) {
 
 	is_sorted( numbers, 0, count );
 	
+	contains_same_elements( numbers_copy, numbers, count );
+
 	write_numbers( numbers, count, filename_out );
 	
 	free( numbers );
+	free( numbers_copy );
 	return 0;
 }

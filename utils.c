@@ -145,6 +145,30 @@ void print_array( int* numbers, int from, int to, int width ) {
 
 #endif	
 
+// as a check to see if the original numbers array contains the same elements
+// as the sorted one
+void contains_same_elements( int* a, int* b, size_t count) {
+
+	int xored_a = 0, xored_b = 0;
+	size_t sum_a = 0, sum_b = 0;
+	for(size_t i=0; i<count; i++) {
+		sum_a += a[i];
+		sum_b += b[i];
+
+		xored_a ^= a[i];
+		xored_b ^= b[i];
+	}
+
+	// so in theory the sort function could have a bug that results
+	// in different values that sum and xor to the same.
+
+	if( sum_a != sum_b || xored_a != xored_b ) {
+		puts( "Arrays don't contain the same numbers" );
+		print_array( a, 0, count, 8 );
+		print_array( b, 0, count, 8 );
+		exit( EXIT_FAILURE );
+	}
+}
 
 
 /*
