@@ -35,9 +35,7 @@ void say( const char* format, ... );
 
 void print_array( int* numbers, int from, int to, int width );
 
-#endif
-
-#ifndef VERBOSE
+#else
 
 #define say(...) // nop
 
