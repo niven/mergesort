@@ -33,6 +33,8 @@ void insertionsort( void* base, size_t nel, size_t width, comparator compare ) {
 		
 		print_array( (int*)base, 0, nel, 8 );
 	}
+	
+	free( value );
 }
 
 
