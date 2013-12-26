@@ -29,9 +29,21 @@ size_t read_numbers( const char* filename, int** numbers );
 
 int write_numbers( int* numbers, size_t count, const char* filename_out );
 
+#ifdef VERBOSE
 // just printf but not doing anthing if not VERBOSE
 void say( const char* format, ... );
 
 void print_array( int* numbers, int from, int to, int width );
+
+#endif
+
+#ifndef VERBOSE
+
+#define say(...) // nop
+
+#define print_array(...) // nop
+
+#endif
+
 
 int compare_int(const void* a, const void* b);

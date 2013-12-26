@@ -121,17 +121,17 @@ int write_numbers( int* numbers, size_t count, const char* filename_out ) {
 	return 0;
 }
 
-void say( const char* format, ... ) {
 #ifdef VERBOSE	
+
+void say( const char* format, ... ) {
 	va_list arglist;
 	va_start( arglist, format );
 	vprintf( format, arglist );
 	va_end( arglist );
-#endif	
 }
 
 void print_array( int* numbers, int from, int to, int width ) {
-#ifdef VERBOSE	
+
 	say( "[%d - %d] [ ", from, MIN(from+width-1, to-1) );
 	for(int i=from; i<to; i++) {
 		say( "%3d ", numbers[i] );
@@ -140,8 +140,12 @@ void print_array( int* numbers, int from, int to, int width ) {
 		}
 	}
 	say( "]\n" );
-#endif	
+
 }
+
+#endif	
+
+
 
 /*
 Compare 2 integers
