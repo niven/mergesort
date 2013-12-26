@@ -12,7 +12,7 @@
 void insertionsort( void* base, size_t nel, size_t width, comparator compare ) {
 	
 	char* list = (char*)base;
-	char* value = malloc( width );
+	void* value = malloc( width );
 	if( value == NULL ) {
 		perror("malloc()");
 		exit( EXIT_FAILURE );
@@ -20,22 +20,16 @@ void insertionsort( void* base, size_t nel, size_t width, comparator compare ) {
 	
 	int hole_index;
 	for(int i=0; i<nel*width; i+=width ) {
-		for(int m=0; m<width; m++) {
-			*(value+m) = *(list+i+m);
-		}
+		memcpy( value, list+i, width ); // take value and keep it safe
 		hole_index = i; // this is where we took the value from, it's vacant
 		
 		say( "Moving value %d and creating a hole at %d\n", *(int*)value, hole_index );
 		
 		while( hole_index > 0 && compare( list+hole_index-width, value ) == 1 ) { // if elements are higher, we shift them 
-			for(int m=0; m<width; m++) {
-				*(list+hole_index+m) = *(list+hole_index-width+m);
-			}
+			memcpy( list+hole_index, list+hole_index-width, width ); // move the element right
 			hole_index -= width; // move the hole left
 		}
-		for(int m=0; m<width; m++) {
-			*(list+hole_index+m) = *(value+m);
-		}
+		memcpy( list+hole_index, value, width );
 		
 		print_array( (int*)base, 0, nel, 8 );
 	}
