@@ -3,38 +3,30 @@ CFLAGS=-Wall -O3 -pedantic
 CMD=${CC} ${CFLAGS}
 
 clean:
-	rm -f bin/* gen_random_ints utils.o
+	rm -f bin/* gen_random_ints *.o
 
-all: mergesort gen_random_ints pyramid_merge shellsort insertionsort stdlib_qsort stdlib_heapsort stdlib_mergesort
+all: gen_random_ints utils.o insertionsort.o stdlib_qsort.o 
+	${CMD} utils.o insertionsort.o main_template.c -o bin/insertionsort
+	${CMD} utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 
-verbose: mergesort.c pyramid_merge.c utils.c
+verbose: *.c
 	${CMD} -DVERBOSE -c utils.c
-	${CMD} -DVERBOSE utils.o mergesort.c -o bin/mergesort
-	${CMD} -DVERBOSE utils.o pyramid_merge.c -o bin/pyramid_merge
-	${CMD} -DVERBOSE utils.o shellsort.c -o bin/shellsort
-	${CMD} -DVERBOSE utils.o insertionsort.c -o bin/insertionsort
+	${CMD} -DVERBOSE -c insertionsort.c
+	${CMD} -DVERBOSE utils.o insertionsort.o main_template.c -o bin/insertionsort
+	${CMD} -DVERBOSE utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 
-mergesort: mergesort.c utils.o
-	${CMD} utils.o mergesort.c -o bin/mergesort
+insertionsort: main_template.c utils.o insertionsort.o
+	${CMD} utils.o insertionsort.o main_template.c -o bin/insertionsort
 
-pyramid_merge: pyramid_merge.c utils.o
-	${CMD} utils.o pyramid_merge.c -o bin/pyramid_merge
-
-shellsort: shellsort.c utils.o
-	${CMD} utils.o shellsort.c -o bin/shellsort
-
-insertionsort: insertionsort.c utils.o
-	${CMD} utils.o insertionsort.c -o bin/insertionsort
-
-stdlib_qsort: stdlib_qsort.c utils.o
-	${CMD} utils.o stdlib_qsort.c -o bin/stdlib_qsort
-
-stdlib_heapsort: stdlib_heapsort.c utils.o
-	${CMD} utils.o stdlib_heapsort.c -o bin/stdlib_heapsort
-
-stdlib_mergesort: stdlib_mergesort.c utils.o
-	${CMD} utils.o stdlib_mergesort.c -o bin/stdlib_mergesort
-
+stdlib_qsort: main_template.c utils.o stdlib_qsort.o
+	${CMD} utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 
 utils.o: utils.h utils.c
 	${CMD} -c utils.c
+	
+insertionsort.o: insertionsort.c
+	${CMD} -c insertionsort.c
+
+stdlib_qsort.o: stdlib_qsort.c
+	${CMD} -c stdlib_qsort.c
+
