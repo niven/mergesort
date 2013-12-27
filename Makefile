@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-Wall -O3 -pedantic 
 CMD=${CC} ${CFLAGS}
 
-all: gen_random_ints utils.o insertionsort.o stdlib_qsort.o stdlib_mergesort.o stdlib_heapsort.o
+all: gen_random_ints utils.o sort_functions
 	${CMD} utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 	${CMD} utils.o stdlib_mergesort.o main_template.c -o bin/stdlib_mergesort
@@ -15,6 +15,9 @@ verbose: *.c
 	${CMD} -DVERBOSE utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DVERBOSE utils.o stdlib_mergesort.o main_template.c -o bin/stdlib_mergesort
 	${CMD} -DVERBOSE utils.o stdlib_heapsort.o main_template.c -o bin/stdlib_heapsort
+
+sort_functions: *sort.c
+	${CMD} -c *sort.c
 
 clean:
 	rm -f bin/* gen_random_ints *.o
@@ -33,16 +36,4 @@ stdlib_heapsort: main_template.c utils.o stdlib_heapsort.o
 
 utils.o: utils.h utils.c
 	${CMD} -c utils.c
-	
-insertionsort.o: insertionsort.c
-	${CMD} -c insertionsort.c
-
-stdlib_qsort.o: stdlib_qsort.c
-	${CMD} -c stdlib_qsort.c
-
-stdlib_mergesort.o: stdlib_mergesort.c
-	${CMD} -c stdlib_mergesort.c
-
-stdlib_heapsort.o: stdlib_heapsort.c
-	${CMD} -c stdlib_heapsort.c
 
