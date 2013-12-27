@@ -2,9 +2,6 @@ CC=clang
 CFLAGS=-Wall -O3 -pedantic 
 CMD=${CC} ${CFLAGS}
 
-clean:
-	rm -f bin/* gen_random_ints *.o
-
 all: gen_random_ints utils.o insertionsort.o stdlib_qsort.o stdlib_mergesort.o stdlib_heapsort.o
 	${CMD} utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
@@ -18,6 +15,9 @@ verbose: *.c
 	${CMD} -DVERBOSE utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DVERBOSE utils.o stdlib_mergesort.o main_template.c -o bin/stdlib_mergesort
 	${CMD} -DVERBOSE utils.o stdlib_heapsort.o main_template.c -o bin/stdlib_heapsort
+
+clean:
+	rm -f bin/* gen_random_ints *.o
 
 insertionsort: main_template.c utils.o insertionsort.o
 	${CMD} utils.o insertionsort.o main_template.c -o bin/insertionsort
