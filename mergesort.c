@@ -110,16 +110,6 @@ void merge_sort(int** list, size_t count, unsigned int inner_sort_width, sorter 
 
 }
 
-void swap2( int* numbers, int start, int end ) {
-	assert( start+1 == end );
-	printf("Inner sort [%d,%d] = (%d,%d)\n", start, end, numbers[start], numbers[end]);
-	if( numbers[start] > numbers[end] ) {
-		int temp = numbers[start];
-		numbers[start] = numbers[end];
-		numbers[end] = temp;
-	}
-	printf("Done  sort [%d,%d] = (%d,%d)\n", start, end, numbers[start], numbers[end]);
-}
 
 int main(int argc, char *argv[]) {  
 	
