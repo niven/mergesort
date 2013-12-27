@@ -57,6 +57,7 @@ int main( int argc, char* argv[] ) {
 	is_sorted( numbers, 0, count );
 	
 	contains_same_elements( numbers_copy, numbers, count );
+	say( "numbers postmerge contain same elements as premerge.\n" );
 
 	write_numbers( numbers, count, filename_out );
 	
