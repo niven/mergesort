@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <stdarg.h>
 
@@ -11,21 +12,26 @@
 // sequence by Marcin Ciura
 const int gaps[8] = {701, 301, 132, 57, 23, 10, 4, 1};
 
-// Sort an array a[start...end].
-// end is inclusive (seems like a bad idea)
-void shellsort( int* numbers, int start, int end ) {
+void shellsort( void* base, size_t nel, size_t width, comparator compare ) {
 
+
+	char* list = (char*)base;
+	void* value = malloc( width );
+	if( value == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
 	int i, j, g;
 
-	say( "Shellsort " );
-	print_array( numbers, start, end+1, end-start+1 ); // +1 silliness because end is inclusive
+	say( "Shellsorting " );
+	print_array( base, 0, nel, nel ); // +1 silliness because end is inclusive
 	
 	// Do an insertion sort for each gap size.
 	for( g=0; g<8; g++ ) {
 		int gap = gaps[g];
 
-		if( gap <= end-start+1 ){
-			say("Shellsort gap %d (%d,%d)\n", gap, start+gap, end );
+		if( gap <= nel ){
+			say("Shellsort gap %d - %d\n", gap, nel );
 		}
 		// i iterates over a virtual array defined by gapsize
 		// so if gap=3 then i iterates n[3], n[6], n[9] (starting at element 2)
@@ -33,26 +39,27 @@ void shellsort( int* numbers, int start, int end ) {
 		// Well, the sequence 3,6,9 + 4,7,10 + 5,8,11 is the same 
 		// as 3,4,5,6,7,8,9,10,11 just in a different order and that saves a for loop
 		// j iterates backwards from i in gapsize steps so the end result is the same 
-		for (i = start+gap; i <= end; i++ ) { 
-		    int number_to_place = numbers[i];
-
-			say("Shellsort n[%d] = %d\n", i, number_to_place );
+		for (i = gap*width; i < nel*width; i += width ) { 
+		    memcpy( value, list+i, width);
+			
+			say("Shellsort n[%d] = %d\n", i/width, *(int*)value );
 
 			// now iterate over every "gapth" element back to the left, moving items until
 			// we find one that is lower/equal than number_to_place
 			// For the first iteration, either the second number is larger and we're done, or move it to the position of the first element
 			// then we try element 3, move that left to its spot (since 1 and 2 are now sorted)
-		    for (j = i-gap; j >= start && numbers[j] > number_to_place; j -= gap) {
-		        numbers[j+gap] = numbers[j];
+		    for (j = i-(gap*width); j >= 0 && compare( list+j, value ) == 1; j -= gap*width) {
+		        memcpy( list+j+(gap*width), list+j, width );
 		    }
-		    numbers[j+gap] = number_to_place;
+	        memcpy( list+j+(gap*width), value, width );
 
 			say( "Shellsort " );
-			print_array( numbers, start, end+1, end-start+1 ); // +1 silliness because end is inclusive
+			print_array( base, 0, nel, nel ); // +1 silliness because end is inclusive
 		}
 		
-	}
+	}	
 	
+	free( value );
 }
 
 void is_sorted(int* numbers, int from, int to) {

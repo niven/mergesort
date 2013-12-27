@@ -7,14 +7,16 @@ all: gen_random_ints utils.o sort_functions
 	${CMD} utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 	${CMD} utils.o stdlib_mergesort.o main_template.c -o bin/stdlib_mergesort
 	${CMD} utils.o stdlib_heapsort.o main_template.c -o bin/stdlib_heapsort
+	${CMD} utils.o shellsort.o main_template.c -o bin/shellsort
 
 verbose: *.c
 	${CMD} -DVERBOSE -c utils.c
-	${CMD} -DVERBOSE -c insertionsort.c
+	${CMD} -DVERBOSE -c *sort.c
 	${CMD} -DVERBOSE utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} -DVERBOSE utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DVERBOSE utils.o stdlib_mergesort.o main_template.c -o bin/stdlib_mergesort
 	${CMD} -DVERBOSE utils.o stdlib_heapsort.o main_template.c -o bin/stdlib_heapsort
+	${CMD} -DVERBOSE utils.o shellsort.o main_template.c -o bin/shellsort
 
 sort_functions: *sort.c
 	${CMD} -c *sort.c
@@ -24,6 +26,9 @@ clean:
 
 insertionsort: main_template.c utils.o insertionsort.o
 	${CMD} utils.o insertionsort.o main_template.c -o bin/insertionsort
+
+shellsort: main_template.c utils.o shellsort.o
+	${CMD} utils.o shellsort.o main_template.c -o bin/shellsort
 
 stdlib_qsort: main_template.c utils.o stdlib_qsort.o
 	${CMD} utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
@@ -36,4 +41,6 @@ stdlib_heapsort: main_template.c utils.o stdlib_heapsort.o
 
 utils.o: utils.h utils.c
 	${CMD} -c utils.c
+
+
 
