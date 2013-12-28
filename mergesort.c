@@ -11,158 +11,102 @@
 
 #include "utils.h"
 
-void merge_sort(int** list, size_t count, unsigned int inner_sort_width, sorter inner_sorter) {
+#define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
+
+void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t inner_sort_width, sorter inner_sorter) {
 	
-	int* numbers = *list;
+
+	char* list = (char*) base;
 	// arrays of size 0 and size 1 are always sorted
-	if( numbers == NULL || count < 2 ) {
+	if( nel < 2 ) {
 		return;
 	}
 	
 	// first use the inner sort to sort all chunks of inner_sort_width
 	int from = 0;
-	while( from + inner_sort_width < count ) {
-//		printf("is from %d to %d\n", from, from+inner_sort_width-1);
-		inner_sorter( numbers, from, from+inner_sort_width-1);
-		from += inner_sort_width;
+	while( from + (inner_sort_width*width) < nel ) {
+		say( "inner sort from %d to %d\n", from/width, (from/width)+inner_sort_width );
+		inner_sorter( list+from, inner_sort_width, width, compare );
+		from += inner_sort_width*width;
 	}
-//	printf("is from %d to %d\n", from, count-1);
-	inner_sorter( numbers, from, count-1);
+	say("inner sort from %d to %d\n", from/width, nel );
+	inner_sorter( list+from, nel, width, compare );
 
-//	for(int i=0; i<count; i++ ) {
-//		printf( "is[%02d] = %d\n", i, numbers[i] );
-//	}
-
+	print_array( base, 0, nel, 8 );
 	
 	// now perform the merge
 
-	int* buf = malloc( sizeof(int)*count );
+	char* buf = malloc( nel*width );
 	if( buf == NULL ) {
 		perror("malloc()");
 		exit(0);
 	}
 
-//	printf("buf: %p, num: %p\n", buf, numbers);
-	int* swap;
+	say( "buf: %p, base: %p\n", buf, base );
+	char* swap;
+	int m = 0;
 	int merge_length = inner_sort_width; // start with the sublists that are sorted
 	int merges_done = 0;
-	while( merge_length < count ) {
+	while( merge_length < nel ) {
 
 		// merge k pairs of size merge_length
 		// possible optimization: if we have 24 items and merge_length is 4, we merge 4+4, 4+4, 4+4, and then 8+8, 8
 		// so that last 8 gets merged agian (but effectively only copied), 
 		// we could memcpy those instead of going through the while loops (but we'd have another branch)
-		for(int start = 0; start < count; start += 2*merge_length) {
+		for(int start = 0; start < nel; start += 2*merge_length) {
 			// use indices for the Left of the pair and the Right of the pair
-			int L = start;
-			int R = start + merge_length;
-			int L_end = R-1 < count-1 ? R-1 : count-1;
-			int R_end = R+merge_length-1 < count-1 ? R+merge_length-1 : count-1;
+			int L = start*width;
+			int R = (start + merge_length)*width;
+			int L_end = MIN(R-width, (nel-1)*width);
+			int R_end = MIN(R+(merge_length*width)-width, (nel-1)*width);
 			int to = 0;
-//			printf("Merging %d to %d\n", L, R_end);
+			say( "Merging 2x%d [%d to %d]\n", merge_length, L/width, R_end/width );
+			print_array( (int*)(buf+L), (R_end-L)/width, nel, 8 );
 			
 			while( start + to <= R_end ) { // we always know how many elements to merge
 
 				// copy as many from the left pair as we can
 				// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
-				while( L <= L_end && (R > R_end || numbers[L] <= numbers[R] ) ) {
-					buf[start + to] = numbers[L];
-					to++;
+				m = 0;
+				while( L <= L_end && (R > R_end || compare( list+L, list+R ) < 0 ) ) {
 					L++;
+					m += width;
 				}
+				memcpy( buf+to, list, m );
+				to += m;
 				
 				// then copy as many as we can from the right pair
-				while( R <= R_end && (L > L_end || numbers[R] < numbers[L] ) ) {
-					buf[start + to] = numbers[R];
-					to++;
+				m = 0;
+				while( R <= R_end && (L > L_end || compare( list+R, list+L ) < 0 ) ) {
 					R++;
+					m += width;
 				}
-
+				memcpy( buf+to, list, m );
+				to += m;
+				
 			}
 
-//			is_sorted( buf, L, R_end-1);
-
-//			printf("buf: %p, num: %p\n", buf, numbers);
-			for(int i=0; i<R_end; i++ ) {
-//				printf( "m[%02d] = %d\n", i, buf[i] );
-			}
+			say( "buf: %p, base: %p\n", buf, base );
+			print_array( (int*)buf, 0, nel, 8 ); // TODO limit to just merged
 
 
 		}
 		// reset the source array for merging
-		swap = numbers;
-		numbers = buf;
+		swap = list;
+		list = buf;
 		buf = swap;
 		
 		merge_length *= 2;
 		merges_done++;
 	}
 
-//	printf("MERGE DONE(%d) buf: %p, num: %p\n", merges_done, buf, numbers);
+	say( "merge done (%d) buf: %p, base: %p\n", merges_done, buf, base );
 
-	*list = numbers;	
 	free(buf);
-
-//	printf("numbers @ %p\n", *list);
-//	for(int i=0; i<count; i++ ) {
-//		printf( "D[%02d] = %d\n", i, (*list)[i] );
-//	}
-
 }
 
-
-int main(int argc, char *argv[]) {  
+void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 	
-	if( argc != 3 ) {
-		puts("Usage: mergesort infile outfile");
-		exit(0);
-	}
+	merge_sort( base, nel, width, compare, 4, shellsort );
 	
-	int block_width = 8;
-	const char* env_block_width = getenv( "SORTER_BLOCK_WIDTH" );
-	if( env_block_width != NULL ) {
-		block_width = atoi( env_block_width );
-	}
-	const char* filename_in = argv[1];
-	const char* filename_out = argv[2];
-	say("Sorting file %s, writing to %s\n", filename_in, filename_out);
-	
-	int* numbers = NULL;
-	size_t count = read_numbers( filename_in, &numbers );
-	say( "Read %zu numbers\n", count);
-	for(size_t i=0; i<count; i++ ) {
-		say( "N[%02zu] = %d\n", i, numbers[i] );
-	}
-	say("numbers premerge %p\n", numbers);
-
-	unsigned long start, stop;
-	start = mach_absolute_time();
-
-	merge_sort( &numbers, count, block_width, shellsort );
-
-// use builtin sort
-	//	mergesort( numbers, count, sizeof(int), compare_int);
-
-	stop = mach_absolute_time();
-
-	mach_timebase_info_data_t timebase_info;
-	mach_timebase_info( &timebase_info );
-	
-	unsigned long elapsed_nano = (stop-start) * timebase_info.numer / timebase_info.denom;
-
-//	printf("Diff %ld %ld  = %ld -> %ld nanos = %ld micros = %ld millis = %ld sec\n", start, stop, stop-start, elapsed_nano, elapsed_nano/1000, elapsed_nano/(1000*1000), elapsed_nano/(1000*1000*1000));
-
-	// write count,nano, micro, milli, sec
-	fprintf(stderr, "%ld,%ld\n", count,elapsed_nano);
-
-	say( "numbers postmerge %p\n", numbers );
-	print_array( numbers, 0, count, block_width );
-
-	is_sorted( numbers, 0, count );
-	
-	write_numbers( numbers, count, filename_out );
-	
-//	printf("Freeing %p\n", numbers);
-	free( numbers );
-	return 0;
 }
