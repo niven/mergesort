@@ -24,13 +24,13 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 	
 	// first use the inner sort to sort all chunks of inner_sort_width
 	int from = 0;
-	while( from + (inner_sort_width*width) < nel ) {
-		say( "inner sort from %d to %d\n", from/width, (from/width)+inner_sort_width );
-		inner_sorter( list+from, inner_sort_width, width, compare );
-		from += inner_sort_width*width;
+	while( from + inner_sort_width <= nel ) {
+		say( "inner sort [%d - %d]\n", from, from+inner_sort_width-1 );
+		inner_sorter( list+(from*width), inner_sort_width, width, compare );
+		from += inner_sort_width;
 	}
-	say("inner sort from %d to %d\n", from/width, nel );
-	inner_sorter( list+from, nel, width, compare );
+	say("inner sort remainder [%d - %d]\n", from, nel-1 );
+	inner_sorter( list+(from*width), nel-from, width, compare );
 
 	print_array( base, 0, nel, 8 );
 	
@@ -50,25 +50,25 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 	while( merge_length < nel ) {
 
 		// merge k pairs of size merge_length
-		// possible optimization: if we have 24 items and merge_length is 4, we merge 4+4, 4+4, 4+4, and then 8+8, 8
-		// so that last 8 gets merged agian (but effectively only copied), 
-		// we could memcpy those instead of going through the while loops (but we'd have another branch)
+		// start and merge_length are related to the number of elements
+		// L, L_end, R, R_end, to are offsets into base/buf
 		for(int start = 0; start < nel; start += 2*merge_length) {
 			// use indices for the Left of the pair and the Right of the pair
-			int L = start*width;
-			int R = (start + merge_length)*width;
-			int L_end = MIN(R-width, (nel-1)*width);
-			int R_end = MIN(R+(merge_length*width)-width, (nel-1)*width);
+			int L = start;
+			int R = start + merge_length;
+			int L_end = MIN(R-1, nel-1); // 1 element before R starts, or the end of the array
+			int R_end = MIN(R+merge_length-1, nel-1); // 
 			int to = 0;
-			say( "Merging 2x%d [%d to %d]\n", merge_length, L/width, R_end/width );
-			print_array( (int*)(buf+L), (R_end-L)/width, nel, 8 );
+			say( "Merging 2x%d [%d - %d] with [%d - %d]\n", merge_length, L, L_end, R, R_end );
+			print_array( (int*)list, L, L_end, 8 );
+			print_array( (int*)list, R, R_end, 8 );
 			
 			while( start + to <= R_end ) { // we always know how many elements to merge
 
 				// copy as many from the left pair as we can
 				// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 				m = 0;
-				while( L <= L_end && (R > R_end || compare( list+L, list+R ) < 0 ) ) {
+				while( L <= L_end && (R > R_end || compare( list+(L*width), list+(R*width) ) < 0 ) ) {
 					L++;
 					m += width;
 				}
@@ -77,7 +77,7 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 				
 				// then copy as many as we can from the right pair
 				m = 0;
-				while( R <= R_end && (L > L_end || compare( list+R, list+L ) < 0 ) ) {
+				while( R <= R_end && (L > L_end || compare( list+(R*width), list+(L*width) ) < 0 ) ) {
 					R++;
 					m += width;
 				}
@@ -87,7 +87,7 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 			}
 
 			say( "buf: %p, base: %p\n", buf, base );
-			print_array( (int*)buf, 0, nel, 8 ); // TODO limit to just merged
+			print_array( (int*)buf, L, R_end, 8 );
 
 
 		}
