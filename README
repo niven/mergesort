@@ -25,6 +25,14 @@ results_3.png
 Comparing merge_sort and pyramid_merge with disappointing results: pyramid is actually slower.
 Haven't seen any evidence of cache problems in either version though.
 
+Update 4:
+results_4.png
+Now converted everything but pyramid_merge into a generic sort (same interface as stdlib ones have)
+Now things "finally" look in favor of the stdlib functions, which is a good thing.
+Note: the mergesort with inner shellsort uses an inner_block_width of 4 which is a very bad choice I'm sure.
+The difference is large enough that it makes sense reimplementing a sort if you know your datatype beforehand and if
+you really need the performance.
+
 Building:
 
 make all
