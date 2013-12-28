@@ -53,45 +53,50 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 	while( merge_length < nel ) {
 
 		// merge k pairs of size merge_length
-		// start and merge_length are related to the number of elements
+		// start, to and merge_length are related to the number of elements
 		// L, L_end, R, R_end, to are offsets into base/buf
-		for(int start = 0; start < nel; start += 2*merge_length) {
+		for(int start_index = 0; start_index < nel; start_index += 2*merge_length) {
 			// use indices for the Left of the pair and the Right of the pair
-			int L = start;
-			int R = start + merge_length;
-			int L_end = MIN(R-1, nel-1); // 1 element before R starts, or the end of the array
-			int R_end = MIN(R+merge_length-1, nel-1); // 
-			int to = 0;
-			say( "Merging 2x%d [%d - %d] with [%d - %d]\n", merge_length, L, L_end, R, R_end );
-			print_array( (int*)list, L, L_end, 8 );
-			print_array( (int*)list, R, R_end, 8 );
+			int end_index = MIN(start_index + (2*merge_length) -1 , nel-1);
+			int L = start_index*width;
+			int R = (start_index + merge_length)*width;
+			int L_end = MIN(start_index+merge_length-1, end_index) * width; // 1 element before R starts, or the end of the array
+			int R_end = end_index * width; // 
+			int to_index = 0;
+			say( "Merging 2x%d [%d - %d] with [%d - %d] indices [%d - %d]\n", merge_length, L, L_end, R, R_end, start_index, end_index );
+			print_array( (int*)list, L/width, L_end/width +1, 8 );
+			print_array( (int*)list, R/width, R_end/width +1, 8 );
 			
-			while( start + to <= R_end ) { // we always know how many elements to merge
+			while( start_index + to_index <= end_index ) { // we always know how many elements to merge
 
-				// copy as many from the left pair as we can
-				// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
-				m = 0;
-				while( L <= L_end && (R > R_end || compare( list+(L*width), list+(R*width) ) < 0 ) ) {
-					L++;
-					m += width;
+				// copy as many from the Left as we can
+				m = L;
+				say("L=%d compare( %d, %d ) < 0\n", L, *(int*)(list+(L)), *(int*)(list+(R)) );
+				while( L <= L_end && (R > R_end || compare( list+(L), list+(R) ) <= 0 ) ) {
+					L += width;
+					say("L=%d compare( %d, %d ) < 0\n", L, *(int*)(list+(L)), *(int*)(list+(R)) );
 				}
-				memcpy( buf+to, list, m );
-				to += m;
+				say("Copying %d bytes (%d elements) to buf+%d\n", L-m, (L-m)/width );
+				memcpy( buf + (start_index+to_index)*width, list + m, L-m );
+				to_index += (L-m)/width;
+				print_array( (int*)buf, 0, end_index+1, 8 );
 				
 				// then copy as many as we can from the right pair
-				m = 0;
-				while( R <= R_end && (L > L_end || compare( list+(R*width), list+(L*width) ) < 0 ) ) {
-					R++;
-					m += width;
+				m = R;
+				say("R=%d compare( %d, %d ) < 0\n", R, *(int*)(list+(R)), *(int*)(list+(L)) );
+				while( R <= R_end && (L > L_end || compare( list+(R), list+(L) ) <= 0 ) ) {
+					R += width;
+					say("R=%d compare( %d, %d ) < 0\n", R, *(int*)(list+(R)), *(int*)(list+(L)) );
 				}
-				memcpy( buf+to, list, m );
-				to += m;
+				say("Copying %d bytes (%d elements) to buf\n", (R-m), (R-m)/width );
+				memcpy( buf + (start_index+to_index)*width, list+m, R-m );
+				to_index += (R-m)/width;
+				print_array( (int*)buf, 0, end_index+1, 8 );
 				
+				say("start_index %d, to_index %d, end_index %d\n", start_index, to_index, end_index);
 			}
 
-			say( "buf: %p, base: %p\n", buf, base );
-			print_array( (int*)buf, L, R_end, 8 );
-
+			print_array( (int*)buf, start_index, end_index+1, 8 );
 
 		}
 		// reset the source array for merging
@@ -103,9 +108,17 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 		merges_done++;
 	}
 
-	say( "merge done (%d) buf: %p, base: %p\n", merges_done, buf, base );
+	say( "merge done (%d) buf: %p, base: %p, list %p\n", merges_done, buf, base, list );
 
-	free(buf);
+	// unfortunate result of the stdlib sort interface: we might end up with the end result in buf
+	// and not in wherever base points to. In that case we copy over everything :(
+	if( list != base ) {
+		memcpy( base, list, nel*width );
+		free( list );
+	} else {
+		free( buf );
+	}
+
 }
 
 void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
