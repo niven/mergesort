@@ -21,6 +21,14 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 	if( nel < 2 ) {
 		return;
 	}
+
+	// try to allocate a buffer first, because there is no point in sorting all blocks
+	// and then failing because we have no memory to merge anyway
+	char* buf = malloc( nel*width );
+	if( buf == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
 	
 	// first use the inner sort to sort all chunks of inner_sort_width
 	int from = 0;
@@ -36,11 +44,6 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 	
 	// now perform the merge
 
-	char* buf = malloc( nel*width );
-	if( buf == NULL ) {
-		perror("malloc()");
-		exit(0);
-	}
 
 	say( "buf: %p, base: %p\n", buf, base );
 	char* swap;
@@ -107,6 +110,12 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 
 void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 	
-	merge_sort( base, nel, width, compare, 4, shellsort );
+	int block_width = 4;
+	const char* env_block_width = getenv( "SORTER_BLOCK_WIDTH" );
+	if( env_block_width != NULL ) {
+		block_width = atoi( env_block_width );
+	}
+	
+	merge_sort( base, nel, width, compare, block_width, shellsort );
 	
 }
