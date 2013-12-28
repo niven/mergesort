@@ -30,8 +30,8 @@ void shellsort( void* base, size_t nel, size_t width, comparator compare ) {
 	for( g=0; g<8; g++ ) {
 		int gap = gaps[g];
 
-		if( gap <= nel ){
-			say("Shellsort gap %d - %d\n", gap, nel );
+		if( gap < nel ){
+			say("Shellsort gap %d nel %d\n", gap, nel );
 		}
 		// i iterates over a virtual array defined by gapsize
 		// so if gap=3 then i iterates n[3], n[6], n[9] (starting at element 2)
