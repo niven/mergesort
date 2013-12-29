@@ -303,7 +303,6 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 
 	// unfortunate result of the stdlib sort interface: we might end up with the end result in buf
 	// and not in wherever base points to. In that case we copy over everything :(
-	printf("END, base %p to %p buf %p\n", base, to, buf);
 	if( to == base ) {
 		memcpy( base, buf, nel*width );
 		free( buf );
