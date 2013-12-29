@@ -7,7 +7,7 @@ use POSIX qw( ceil );
 
 local $\ = "\n";
 
-die "Usage: perl benchmark.pl start step count" if scalar @ARGV != 4;
+die "Usage: perl benchmark.pl start step count iterations" if scalar @ARGV != 4;
 
 my ($min, $max, $num, $iterations) = @ARGV;
 my $step = ceil( ($max-$min) / $num ); 
