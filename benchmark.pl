@@ -7,7 +7,7 @@ use POSIX qw( ceil );
 
 local $\ = "\n";
 
-die "Usage: perl benchmark.pl start step count iterations" if scalar @ARGV != 4;
+die "Usage: perl benchmark.pl start end steps iterations" if scalar @ARGV != 4;
 
 my ($min, $max, $num, $iterations) = @ARGV;
 my $step = ceil( ($max-$min) / $num ); 
@@ -85,7 +85,7 @@ my @all_names = sort keys %{$data->{$min}};
 print $OUT "Elements," . join(",", @all_names);
 
 for my $c ( sort { $a <=> $b } keys %$data ) {
-	print $OUT "$c," . join(",", map { $data->{$c}->{$_}->{avg} } @all_names );
+	print $OUT "$c," . join(",", map { $data->{$c}->{$_}->{avg}/$c } @all_names );
 }
 
 close($OUT);
