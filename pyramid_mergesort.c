@@ -11,8 +11,6 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
-int block_width = 8;
-
 /*
 Merge sorted blocks as soon as possible to hopefully optimize cpu cache usage (well, that's the theory)
 
@@ -45,6 +43,7 @@ After sorting block:
 */
 void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, size_t inner_sort_width, sorter inner_sorter) {
 
+	int block_width = inner_sort_width;
 	int* in = (int*)base;
 	int* buf = malloc( nel * sizeof(int) );
 	if( buf == NULL ) {
@@ -69,11 +68,8 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 
 		index_end = MIN(index_start + block_width, nel);// temp name, too manythings called "to"
 	
-		say( "\nSorting " );
-		print_array( in, index_start, index_end, block_width );
-
 		// shellsort will inplace sort a block of the in array
-		inner_sorter( in, inner_sort_width, width, compare );
+		inner_sorter( in + index_start, inner_sort_width, width, compare );
 		blocks_done++;
 
 		say("Blocks done %d\n", blocks_done);
