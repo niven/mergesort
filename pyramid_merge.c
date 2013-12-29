@@ -43,10 +43,10 @@ After sorting block:
 	So every time we merge upto what we just sorted (the endpoint is always the same),
 	but how far we look back doubles and so does the block size
 */
-void mergesort_pyramid( int** numbers, size_t count ) {
+void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, size_t inner_sort_width, sorter inner_sorter) {
 
-	int* in = *numbers;
-	int* buf = malloc( count * sizeof(int) );
+	int* in = (int*)base;
+	int* buf = malloc( nel * sizeof(int) );
 	if( buf == NULL ) {
 		perror("malloc()");
 		exit(0);
@@ -65,15 +65,15 @@ void mergesort_pyramid( int** numbers, size_t count ) {
 
 	say("in array: %p, buf %p\n", in, buf);
 
-	while( index_start < count ) {
+	while( index_start < nel ) {
 
-		index_end = MIN(index_start + block_width, count);// temp name, too manythings called "to"
+		index_end = MIN(index_start + block_width, nel);// temp name, too manythings called "to"
 	
 		say( "\nSorting " );
 		print_array( in, index_start, index_end, block_width );
 
 		// shellsort will inplace sort a block of the in array
-		shellsort( in, index_start, index_end-1 ); // maybe not range but start and count would be better
+		inner_sorter( in, inner_sort_width, width, compare );
 		blocks_done++;
 
 		say("Blocks done %d\n", blocks_done);
@@ -96,8 +96,8 @@ void mergesort_pyramid( int** numbers, size_t count ) {
 			int L = start; // start of "left" array
 			int R = start + merge_width; // start of "right" array
 
-			int L_end = MIN( R-1, count-1 );
-			int R_end = MIN( R+merge_width-1, count-1 ); 
+			int L_end = MIN( R-1, nel-1 );
+			int R_end = MIN( R+merge_width-1, nel-1 ); 
 			int t = start; // where we start writing to the target array (corresponds to a)
 
 			say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", index_end-L, L, L_end, left, R, R_end, right, t, R_end, to );
@@ -150,7 +150,6 @@ void mergesort_pyramid( int** numbers, size_t count ) {
 			merge_width *= 2; // every time we merge twice as much
 			// endpoint stays the same
 		}
-	
 	
 		// process the next block
 		index_start += block_width;
@@ -232,13 +231,13 @@ void mergesort_pyramid( int** numbers, size_t count ) {
 			to = in;
 		}
 		// the above is terrible and ugly
-		
+
 		say( "second=%d = 2^%d -> left=%p\n", second, pow, left );
 		say( "to=%p\n", to );
-		say( "Current in [%d - %d] (%p):\n", 0, count-1, in );
-		print_array( in, 0, count, block_width );
-		say( "Current buf [%d - %d] (%p):\n", 0, count-1, buf );
-		print_array( buf, 0, count, block_width );
+		say( "Current in [%d - %d] (%p):\n", 0, nel-1, in );
+		print_array( in, 0, nel, block_width );
+		say( "Current buf [%d - %d] (%p):\n", 0, nel-1, buf );
+		print_array( buf, 0, nel, block_width );
 	
 		// Merge the first to last block with the second to last one
 		// (maybe swap meaning of first and second since we're doing this backwards?)
@@ -249,7 +248,7 @@ void mergesort_pyramid( int** numbers, size_t count ) {
 		int R = blocks_done * block_width; // start of "right" array
 
 		int L_end = R-1;
-		int R_end = count-1; // in this case it's always the end of the array 
+		int R_end = nel-1; // in this case it's always the end of the array 
 		int t = start; // where we start writing to the target array (corresponds to a)
 
 		say( "Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, left, first, right );
@@ -301,7 +300,7 @@ void mergesort_pyramid( int** numbers, size_t count ) {
 	// now we're done, so pick the right thing to set numbers to
 	// which is the opposite of *to
 	if( to == in ) {
-		*numbers = buf;
+		base = buf;
 		free(to);
 	} else {
 		free(buf);
@@ -309,59 +308,14 @@ void mergesort_pyramid( int** numbers, size_t count ) {
 
 }
 
-
-
-int main(int argc, char *argv[]) {  
+void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 	
-	if( argc != 3 ) {
-		puts("Usage: pyramid_merge infile outfile");
-		printf("Set the environment variable SORTER_BLOCK_WIDTH to the desired width (default = %d)", block_width);
-		exit(0);
-	}
-		
+	int block_width = 4;
 	const char* env_block_width = getenv( "SORTER_BLOCK_WIDTH" );
 	if( env_block_width != NULL ) {
 		block_width = atoi( env_block_width );
 	}
-	const char* filename_in = argv[1];
-	const char* filename_out = argv[2];
-	say("Sorting file %s, writing to %s\n", filename_in, filename_out);
 	
-	int* numbers = NULL;
-	size_t count = read_numbers( filename_in, &numbers );
-
-	say( "Read %zu numbers\n", count);
-	for(size_t i=0; i<count; i++ ) {
-		say( "N[%02zu] = %d\n", i, numbers[i] );
-	}
-	say("numbers premerge %p\n", numbers);
-
-	unsigned long start, stop;
-	start = mach_absolute_time();
-
-	mergesort_pyramid( &numbers, count );
-
-	stop = mach_absolute_time();
-
-	// use builtin sort
-	//	mergesort( numbers, count, sizeof(int), compare_int);
-
-	mach_timebase_info_data_t timebase_info;
-	mach_timebase_info( &timebase_info );
+	pyramid_merge( base, nel, width, compare, block_width, shellsort );
 	
-	unsigned long elapsed_nano = (stop-start) * timebase_info.numer / timebase_info.denom;
-
-	// write count,nanos
-	fprintf( stderr, "%zu,%ld\n", count, elapsed_nano );
-	
-	say( "numbers postmerge %p\n", numbers );
-	print_array( numbers, 0, count, block_width );
-
-	is_sorted( numbers, 0, count );
-	
-	write_numbers( numbers, count, filename_out );
-
-	free( numbers );
-	
-	exit( EXIT_SUCCESS );
 }
