@@ -90,53 +90,55 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		
 			// how much we would have done if each block were block_width (every single one is except maybe the last one)
 			int start = (blocks_done*block_width) - 2*merge_width; 
-			int L = start; // start of "left" array
-			int R = start + merge_width; // start of "right" array
+			char* L = left + start*width; // start of "left" array
+			char* R = right + (start + merge_width)*width; // start of "right" array
 
-			int L_end = MIN( R-1, nel-1 );
-			int R_end = MIN( R+merge_width-1, nel-1 ); 
-			int t = start; // where we start writing to the target array (corresponds to a)
+			char* L_end = left + MIN( start+merge_width, nel )*width;
+			char* R_end = right + MIN( start+ 2*merge_width, nel )*width; 
 
-			say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", index_end-L, L, L_end, left, R, R_end, right, t, R_end, to );
-			say("Premerge left [%d - %d] (%p):\n", L, L_end, left);
-			print_array( (int*)left, L, L_end+1, block_width );
-			say("Premerge right [%d - %d] (%p):\n", R, R_end, right);
-			print_array( (int*)right, R, R_end+1, block_width );
+		//	say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", index_end-index_start, L, L_end, left, R, R_end, right, t, R_end, to );
+			say("Merging %d elements to %p\n", index_end-index_start, to);
+			say("Premerge left [%d - %d] (%p):\n", (L-left)/width, (L_end-left)/width-1, left);
+			print_array( (int*)left, (L-left)/width, (L_end-left)/width, block_width );
+			say("Premerge right [%d - %d] (%p):\n", (R-right)/width, (R_end-right)/width-1, right);
+			print_array( (int*)right, (R-right)/width, (R_end-right)/width, block_width );
 
-			while( t <= R_end ) { // until we've copied everything to the target array
+			say("remaining left %d, remaining right %d\n", (L_end-L)/width, (R_end-R)/width);
+			while( L<L_end || R<R_end ) { // until left and right run out
 
-				say("\t L=%d\t R=%d\t t=%d\n", L, R, t);
+				say("\t L=%d\t R=%d\t to=%d\n", (L-left)/width, (R-right)/width, (to-buf)/width);
 
 				// copy items from left array as long as they are lte
 				// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 				// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
 				m = 0;
-				while( (L+m) <= L_end && (R > R_end || compare( left + (L+m)*width, right + R*width ) <= 0 ) ) {
+				while( (L+m) < L_end && (R >= R_end || compare( L+m, R ) <= 0 ) ) {
 
-					say("\tto[%d] = L[%d] (%3d)\n", t+m, L+m, *(int*) (left + (L+m)*width) );
-					m++;
+					say("\tto[%d] = L[%d] (%3d)\n", (to-buf+m)/width, (L-left+m)/width, *(int*) (L+m) );
+					m += width;
 				}
-				say("Copying %d bytes (%d elements)\n", m*width, m);
-				memcpy( to + (t*width), left + (L*width), m*width );
-				t += m;
+				say("Copying %d bytes (%d elements)\n", m, m/width);
+				memcpy( to, L, m );
+				to += m;
 				L += m;
 				
 				// copy items from right array as long as they are lte
 				m = 0;
-				while( (R+m) <= R_end && (L > L_end || compare( right + (R+m)*width, left + L*width ) <= 0 ) ) {
+				while( (R+m) < R_end && (L >= L_end || compare( R+m, L ) <= 0 ) ) {
 
-					say("\tto[%d] = R[%d] (%3d)\n", t+m, R+m, *(int*) (right + (R+m)*width) );
-					m++;
+					say("\tto[%d] = R[%d] (%3d)\n", (to-buf+m)/width, (R-right+m)/width, *(int*) (R+m) );
+					m += width;
 				}
 				say("Copying %d bytes (%d elements)\n", m, m/width);
-				memcpy( to + (t*width), left + (R*width), m*width );
-				t += m;
+				memcpy( to, R, m );
+				to += m;
 				R += m;
-				// maybe memcpy?
+				
+				say("remaining left %d, remaining right %d\n", (L_end-L)/width, (R_end-R)/width);
 			}
 
 			say("Postmerge [%d - %d] (%p):\n", start, index_end-1, to);
-			print_array( (int*)to, start, index_end, block_width );
+			print_array( (int*)(to - 2*block_width*width), 0, 2*block_width, block_width );
 
 			// if we do sequential merges, we merge the result of what we just did, with an older one (of equal size)
 			// so where we read from and write to swaps
