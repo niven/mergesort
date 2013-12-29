@@ -8,6 +8,9 @@ I've also added insertionsort so you can see O(n^2) in the graphs which is nice,
 
 Also stdlib mergesort, but has the strange restriction of the min width of the elements to be sizeof(void*)/2, haven't found out why yet. (I'm using 4 byte ints so that works out).
 
+TODO
+- stdlib merge/heap return -1 on error and apparently qsort can't fail :) So find some way to put that in the main_template.c
+
 Update 1:
 Ran some test to compare how different widths for inner shellsort do and made a graph comparing them to std qsort and mergesort.
 The good news: my mergesort looks like N log(N)

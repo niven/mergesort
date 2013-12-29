@@ -48,7 +48,7 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 	int* buf = malloc( nel * sizeof(int) );
 	if( buf == NULL ) {
 		perror("malloc()");
-		exit(0);
+		exit( EXIT_FAILURE );
 	}
 
 	// a block is a subarray with width equal to block_width
@@ -69,10 +69,10 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		index_end = MIN(index_start + block_width, nel);// temp name, too manythings called "to"
 	
 		// shellsort will inplace sort a block of the in array
-		inner_sorter( in + index_start, inner_sort_width, width, compare );
+		inner_sorter( in + index_start, index_end-index_start, width, compare );
 		blocks_done++;
 
-		say("Blocks done %d\n", blocks_done);
+		say("Blocks done: %d ", blocks_done);
 		print_array( in, index_start, index_end, block_width );
 	
 		int mergecounter = blocks_done;
@@ -293,15 +293,15 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 	
 	}
 
-	// now we're done, so pick the right thing to set numbers to
-	// which is the opposite of *to
-	if( to == in ) {
-		base = buf;
-		free(to);
+	// unfortunate result of the stdlib sort interface: we might end up with the end result in buf
+	// and not in wherever base points to. In that case we copy over everything :(
+	printf("END, base %p to %p in %p buf %p\n", base, to, in, buf);
+	if( to == base ) {
+		memcpy( base, buf, nel*width );
+		free( buf );
 	} else {
-		free(buf);
+		free( to );
 	}
-
 }
 
 void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
