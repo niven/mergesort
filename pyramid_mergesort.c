@@ -44,8 +44,9 @@ After sorting block:
 void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, size_t inner_sort_width, sorter inner_sorter) {
 
 	int block_width = inner_sort_width;
-	int* in = (int*)base;
-	int* buf = malloc( nel * sizeof(int) );
+	
+	char* in = (char*)base;
+	char* buf = malloc( nel * width );
 	if( buf == NULL ) {
 		perror("malloc()");
 		exit( EXIT_FAILURE );
@@ -58,26 +59,26 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 	int index_start = 0, index_end = 0;
 
 	// for the first merge (blocks_done==2) we have to read from in
-	int* left = in;
-	int* right = in;
-	int* to = buf;
+	char* left = (char*)base;
+	char* right = (char*)base;
+	char* to = buf;
 
-	say("in array: %p, buf %p\n", in, buf);
+	say("in array: %p, buf %p\n", base, buf);
 
 	while( index_start < nel ) {
 
 		index_end = MIN(index_start + block_width, nel);// temp name, too manythings called "to"
 	
 		// shellsort will inplace sort a block of the in array
-		inner_sorter( in + index_start, index_end-index_start, width, compare );
+		inner_sorter( in + index_start*width, index_end-index_start, width, compare );
 		blocks_done++;
 
 		say("Blocks done: %d ", blocks_done);
-		print_array( in, index_start, index_end, block_width );
+		print_array( (int*)in, index_start, index_end, block_width );
 	
 		int mergecounter = blocks_done;
 		int merge_width = block_width;
-
+		int m = 0;
 		// now merge 2 subsections of the array, and if the number of blocks is even, it means we can do more merges
 
 		// always read from in and merge to buf for the first merge pass
@@ -98,9 +99,9 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 
 			say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", index_end-L, L, L_end, left, R, R_end, right, t, R_end, to );
 			say("Premerge left [%d - %d] (%p):\n", L, L_end, left);
-			print_array( left, L, L_end+1, block_width );
+			print_array( (int*)left, L, L_end+1, block_width );
 			say("Premerge right [%d - %d] (%p):\n", R, R_end, right);
-			print_array( right, R, R_end+1, block_width );
+			print_array( (int*)right, R, R_end+1, block_width );
 
 			while( t <= R_end ) { // until we've copied everything to the target array
 
@@ -109,30 +110,33 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 				// copy items from left array as long as they are lte
 				// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 				// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
-				while( L <= L_end && (R > R_end || left[L] <= right[R]) ) {
+				m = 0;
+				while( (L+m) <= L_end && (R > R_end || compare( left + (L+m)*width, right + R*width ) <= 0 ) ) {
 
-					say("\tto[%d] = L[%d] (%3d)\n", t, L, left[L] );
-
-					to[t] = left[L];
-					t++;
-					L++;
+					say("\tto[%d] = L[%d] (%3d)\n", t+m, L+m, *(int*) (left + (L+m)*width) );
+					m++;
 				}
-
+				say("Copying %d bytes (%d elements)\n", m*width, m);
+				memcpy( to + (t*width), left + (L*width), m*width );
+				t += m;
+				L += m;
+				
 				// copy items from right array as long as they are lte
-				while( R <= R_end && (L > L_end || right[R] <= left[L]) ) {
+				m = 0;
+				while( (R+m) <= R_end && (L > L_end || compare( right + (R+m)*width, left + L*width ) <= 0 ) ) {
 
-					say("\tto[%d] = R[%d] (%3d)\n", t, R, right[R] );
-
-					to[t] = right[R];
-					t++;
-					R++;
+					say("\tto[%d] = R[%d] (%3d)\n", t+m, R+m, *(int*) (right + (R+m)*width) );
+					m++;
 				}
-
+				say("Copying %d bytes (%d elements)\n", m, m/width);
+				memcpy( to + (t*width), left + (R*width), m*width );
+				t += m;
+				R += m;
 				// maybe memcpy?
 			}
 
 			say("Postmerge [%d - %d] (%p):\n", start, index_end-1, to);
-			print_array( to, start, index_end, block_width );
+			print_array( (int*)to, start, index_end, block_width );
 
 			// if we do sequential merges, we merge the result of what we just did, with an older one (of equal size)
 			// so where we read from and write to swaps
@@ -231,9 +235,9 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		say( "second=%d = 2^%d -> left=%p\n", second, pow, left );
 		say( "to=%p\n", to );
 		say( "Current in [%d - %d] (%p):\n", 0, nel-1, in );
-		print_array( in, 0, nel, block_width );
+		print_array( (int*)in, 0, nel, block_width );
 		say( "Current buf [%d - %d] (%p):\n", 0, nel-1, buf );
-		print_array( buf, 0, nel, block_width );
+		print_array( (int*)buf, 0, nel, block_width );
 	
 		// Merge the first to last block with the second to last one
 		// (maybe swap meaning of first and second since we're doing this backwards?)
@@ -246,13 +250,14 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		int L_end = R-1;
 		int R_end = nel-1; // in this case it's always the end of the array 
 		int t = start; // where we start writing to the target array (corresponds to a)
-
+		int m = 0;
+		
 		say( "Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, left, first, right );
 		say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", R_end-L+1, L, L_end, left, R, R_end, right, t, R_end, to );
 		say( "Premerge left [%d - %d] (%p):\n", L, L_end, left );
-		print_array( left, L, L_end+1, block_width );
+		print_array( (int*)left, L, L_end+1, block_width );
 		say( "Premerge right [%d - %d] (%p):\n", R, R_end, right );
-		print_array( right, R, R_end+1, block_width );
+		print_array( (int*)right, R, R_end+1, block_width );
 
 		while( t <= R_end ) { // until we've copied everything to the target array
 
@@ -261,41 +266,44 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 			// copy items from left array as long as they are lte
 			// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 			// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
-			while( L <= L_end && (R > R_end || left[L] <= right[R]) ) {
+			m = 0;
+			while( (L+m) <= L_end && (R > R_end || compare( left + (L+m)*width, right + R*width ) <= 0) ) {
 
-				say("\tto[%d] = L[%d] (%3d)\n", t, L, left[L] );
-
-				to[t] = left[L];
-				t++;
-				L++;
+				say("\tto[%d] = R[%d] (%3d)\n", t+m, L+m, *(int*) (left + (L+m)*width) );
+				m++;
 			}
-
+			say("Copying %d bytes (%d elements)\n", m*width, m);
+			memcpy( to + (t*width), left + (L*width), m*width );
+			t += m;
+			L += m;
+			
 			// copy items from right array as long as they are lte
-			while( R <= R_end && (L > L_end || right[R] <= left[L]) ) {
+			m = 0;
+			while( (R+m) <= R_end && (L > L_end || compare( right + (R+m)*width, left + L*width ) <= 0) ) {
 
-				say("\tto[%d] = R[%d] (%3d)\n", t, R, right[R] );
-
-				to[t] = right[R];
-				t++;
-				R++;
+				say("\tto[%d] = R[%d] (%3d)\n", t+m, R+m, *(int*) (right + (R+m)*width) );
+				m++;
 			}
+			say("Copying %d bytes (%d elements)\n", m*width, m);
+			memcpy( to + (t*width), right + (R*width), m*width );
+			t += m;
+			R += m;
 
-			// maybe memcpy?
 		}
 
 		say( "Postmerge [%d - %d] (%p):\n", start, t, to );
-		print_array( to, start, t, block_width );
+		print_array( (int*)to, start, t, block_width );
 	
 		// now swap pointers
 		right = to; // to is what we created, which is the smaller block at the end
 		left = to; // guess
-		to = right == in ? buf : in;
+		to = right == base ? buf : base;
 	
 	}
 
 	// unfortunate result of the stdlib sort interface: we might end up with the end result in buf
 	// and not in wherever base points to. In that case we copy over everything :(
-	printf("END, base %p to %p in %p buf %p\n", base, to, in, buf);
+	printf("END, base %p to %p buf %p\n", base, to, buf);
 	if( to == base ) {
 		memcpy( base, buf, nel*width );
 		free( buf );
