@@ -36,20 +36,15 @@ int main( int argc, char* argv[] ) {
 	}
 	memcpy( numbers_copy, numbers, sizeof(int)*count );
 
-	unsigned long start, stop;
-	start = mach_absolute_time();
+	unsigned long start, ticks;
+	start = mach_absolute_time(); // returns ticks since last reboot
 
 	sort_function(numbers, count, sizeof(int), compare_int );
 
-	stop = mach_absolute_time();
+	ticks = mach_absolute_time() - start;
 
-	mach_timebase_info_data_t timebase_info;
-	mach_timebase_info( &timebase_info );
-	
-	unsigned long elapsed_nano = (stop-start) * timebase_info.numer / timebase_info.denom;
-
-	// write count,nano
-	fprintf(stderr, "%ld,%ld\n", count,elapsed_nano);
+	// write count, ticks
+	fprintf( stderr, "%ld,%ld\n", count, ticks );
 
 	say( "numbers postmerge %p\n", numbers );
 	print_array( numbers, 0, count, 8 );
@@ -63,5 +58,6 @@ int main( int argc, char* argv[] ) {
 	
 	free( numbers );
 	free( numbers_copy );
-	return 0;
+	
+	exit( EXIT_SUCCESS );
 }
