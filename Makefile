@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-Wall -O3 -pedantic 
 CMD=${CC} ${CFLAGS}
 
-all: gen_random_ints utils.o sort_functions
+all: gen_random_ints gen_random_structs utils.o sort_functions
 	${CMD} utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 	${CMD} utils.o stdlib_mergesort.o main_template.c -o bin/stdlib_mergesort
@@ -13,7 +13,9 @@ all: gen_random_ints utils.o sort_functions
 
 verbose: *.c
 	${CMD} -DVERBOSE -c utils.c
+	${CMD} -DVERBOSE gen_random_structs.c
 	${CMD} -DVERBOSE -c *sort.c
+	${CMD} -DVERBOSE utils.o gen_random_structs.c -o gen_random_structs
 	${CMD} -DVERBOSE utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} -DVERBOSE utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DVERBOSE utils.o stdlib_mergesort.o main_template.c -o bin/stdlib_mergesort
@@ -24,9 +26,9 @@ verbose: *.c
 
 sort_functions: *sort.c
 	${CMD} -c *sort.c
-
+	
 clean:
-	rm -f bin/* gen_random_ints *.o
+	rm -f bin/* gen_random_ints gen_random_structs *.o
 
 insertionsort: main_template.c utils.o insertionsort.o
 	${CMD} utils.o insertionsort.o main_template.c -o bin/insertionsort

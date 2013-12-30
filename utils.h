@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 /*
 Shellsort the numbers using the Marcin Ciura sequence.
 
@@ -16,6 +18,14 @@ This sorts the array numbers in ascending order from [start, end] inclusive. (en
 typedef int (*comparator)(const void* a, const void* b);
 
 typedef void (*sorter)( void* base, size_t nel, size_t width, comparator compare );
+
+// just a thing we can set to (almost) any size so we can pick any working set
+// we're going to sort these by number, but the padding size is pickable (-DPAD_SIZE=N)
+typedef struct {
+	uint32_t number;
+	char padding[PAD_SIZE];
+} widget;
+
 
 void shellsort( void* base, size_t nel, size_t width, comparator compare );
 
@@ -47,3 +57,4 @@ void contains_same_elements( int* a, int* b, size_t count);
 
 
 int compare_int(const void* a, const void* b);
+
