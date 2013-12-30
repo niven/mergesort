@@ -7,19 +7,29 @@ use POSIX qw( ceil );
 
 local $\ = "\n";
 
-die "Usage: perl benchmark.pl start end steps iterations" if scalar @ARGV != 4;
+die "Usage: perl benchmark.pl start end steps iterations element_size_bytes" if scalar @ARGV != 5;
 
-my ($min, $max, $num, $iterations) = @ARGV;
+my ($min, $max, $num, $iterations, $element_size_bytes) = @ARGV;
 my $step = ceil( ($max-$min) / $num ); 
 
-print "Running benchmark for $min to $max elements in $num steps of size $step, $iterations iterations per sorter";
+print "Running benchmark for $min to $max elements in $num steps of size $step";
+print "Element size $element_size_bytes bytes, $iterations iterations per sorter";
+
+if( $element_size_bytes < 5 ) {
+	die "Elements can's be smaller than 5 since they are a struct of a 4 byte int and at minimum 1 char";
+}
+
+# first clean & make everything
+system "make clean";
+$element_size_bytes -= 4; # reduce by size of number member uint32_t
+system "make CFLAGS=\"-DPAD_SIZE=$element_size_bytes\"";
 
 my $testdata_dir = "testdata";
 my $sorters_dir = "bin";
 my $results_dir = "results";
 
 # check if stuff exists
-die "Can't find gen_random_ints" if !-e "gen_random_ints";
+die "Can't find gen_random_structs" if !-e "gen_random_structs";
 
 die "./$sorters_dir does not exist" if !-e $sorters_dir;
 
@@ -46,7 +56,7 @@ while( $size <= $max ) {
 	
 	# random numbers
 	my $datafile = "$testdata_dir/data_$size.dat";
-	system "./gen_random_ints $size $datafile > /dev/null";
+	system "./gen_random_structs $size $datafile > /dev/null";
 	
 	for (1..$iterations) {
 		

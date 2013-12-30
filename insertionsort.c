@@ -26,7 +26,7 @@ void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 		}
 		memcpy( list+hole_index, value, width );
 		
-		print_array( (int*)base, 0, nel, 8 );
+		print_array( (widget*)base, 0, nel, 8 );
 	}
 	
 	free( value );

@@ -3,6 +3,7 @@
 #include "time.h"
 #include <limits.h>
 
+#include "utils.h"
 
 int main(int argc, char* argv[]) {
 
@@ -33,26 +34,27 @@ int main(int argc, char* argv[]) {
 	
 	int r, w;
 	char sprocket[PAD_SIZE];
+	widget* wid = (widget*)malloc( sizeof(widget) );
+	if( wid == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
 	for( size_t i=0; i<count; i++ ) {
-		r = rand() % max;
-		w = fwrite( &r, sizeof(int), 1, out );
-		if( w != 1 ) {
-			perror("frwrite()");
-			exit( EXIT_FAILURE );
-		}
-		// now write PAD_SIZE bytes
+		wid->number = rand() % max;
 		for(int i=0; i<PAD_SIZE-1; i++) {
-			sprocket[i] = 'A' + rand() % 26;
+			wid->padding[i] = 'A' + rand() % 26;
 		}
-		sprocket[PAD_SIZE-1] = '\0';
-		printf("sprocket: %s\n", sprocket);
-		w = fwrite( sprocket, sizeof(char), PAD_SIZE, out );
-		if( w != PAD_SIZE ) {
+		wid->padding[PAD_SIZE-1] = '\0';
+		printf("widget: %d:%s (%p)\n", wid->number, wid->padding, wid);
+		w = fwrite( wid, 1, sizeof(widget), out );
+		printf("Wrote %d bytes\n", w);
+		if( w != sizeof(widget) ) {
 			perror("frwrite()");
+			free( wid );
 			exit( EXIT_FAILURE );
 		}
 	}
-	
+	free( wid );
 	
 	fclose( out );
 

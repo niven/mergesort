@@ -62,11 +62,11 @@ void shellsort( void* base, size_t nel, size_t width, comparator compare ) {
 	free( value );
 }
 
-void is_sorted(int* numbers, int from, int to) {
+void is_sorted(widget* widgets, int from, int to) {
 
 	for( int i=from; i<to-1; i++ ) {
-		if( numbers[i] > numbers[i+1] ) {
-			say("Fail at %d/%d (%d/%d)\n", i, i+1, numbers[i], numbers[i+1]);
+		if( widgets[i].number > widgets[i+1].number ) {
+			say("Fail at %d/%d (%d/%d)\n", i, i+1, widgets[i].number, widgets[i+1].number);
 			exit(0);
 		}
 	}
@@ -109,6 +109,45 @@ size_t read_numbers( const char* filename, int** numbers ) {
 	return count;
 }
 
+size_t read_widgets( const char* filename, widget** widgets ) {
+	
+	FILE* in = fopen( filename, "rb" );
+	if( in == NULL ) {
+		perror("open()");
+		exit(0);
+	}
+	
+	// find out how many 4+PAD_SIZE byte widgets
+	struct stat st;
+	int result = fstat( fileno(in), &st );
+	if( result == -1 ) {
+		perror("fstat()");
+		fclose( in );
+		exit(0);
+	}
+	// finding out the count by dividing the size by sizeof(widget) won't work as that micht be larger than the members due to struct alignment
+	int element_data_size =  sizeof(((widget *)0)->number) + sizeof(((widget *)0)->padding); // look! voodoo! ;)
+	size_t count = st.st_size / element_data_size;
+	say("Size of file: %d bytes. Number of widgets of size %ld bytes in file: %zu\n", st.st_size, element_data_size, count);
+	
+	widget* target = malloc( sizeof(widget)*count );
+	if( target ==  NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	size_t read = fread( target, sizeof(widget), count, in );
+	if( read != count ) {
+		say("Read %zu widget, expected %zu\n", read, count);
+		free( target );
+		exit( EXIT_FAILURE );
+	}
+	fclose( in );
+	*widgets = target;
+	
+	return count;
+}
+
+
 int write_numbers( int* numbers, size_t count, const char* filename_out ) {
 
 	FILE* out = fopen( filename_out, "wb" );
@@ -137,11 +176,11 @@ void say( const char* format, ... ) {
 	va_end( arglist );
 }
 
-void print_array( int* numbers, int from, int to, int width ) {
+void print_array( widget* widgets, int from, int to, int width ) {
 
 	say( "[%d - %d] [ ", from, MIN(from+width-1, to-1) );
 	for(int i=from; i<to; i++) {
-		say( "%3d ", numbers[i] );
+		say( "%3d:%s ", widgets[i].number, widgets[i].padding );
 		if( i<to-1 && (i+1)%width==0 ) {
 			say( "]\n[%d - %d] [ ", i+1, MIN(i+width,to-1) );
 		}
@@ -154,16 +193,16 @@ void print_array( int* numbers, int from, int to, int width ) {
 
 // as a check to see if the original numbers array contains the same elements
 // as the sorted one
-void contains_same_elements( int* a, int* b, size_t count) {
+void contains_same_elements( widget* a, widget* b, size_t count) {
 
 	int xored_a = 0, xored_b = 0;
 	size_t sum_a = 0, sum_b = 0;
 	for(size_t i=0; i<count; i++) {
-		sum_a += a[i];
-		sum_b += b[i];
+		sum_a += a[i].number;
+		sum_b += b[i].number;
 
-		xored_a ^= a[i];
-		xored_b ^= b[i];
+		xored_a ^= a[i].number;
+		xored_b ^= b[i].number;
 	}
 
 	// so in theory the sort function could have a bug that results
@@ -190,6 +229,26 @@ int compare_int(const void* a, const void* b) {
 		return 0;
 
 	if (*(int*)a < *(int*)b)
+		return -1;
+
+	return 1;
+}
+
+/*
+Compare 2 structs of type widget
+	a > b: 1
+	a == b: 0
+	a < b: -1
+*/
+int compare_widget(const void* a, const void* b) {
+
+	widget* wa = (widget*)a;
+	widget* wb = (widget*)b;	
+
+	if ( wa->number == wb->number )
+		return 0;
+
+	if ( wa->number < wb->number )
 		return -1;
 
 	return 1;

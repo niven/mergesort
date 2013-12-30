@@ -64,8 +64,8 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 			int R_end = end_index * width; // 
 			int to_index = 0;
 			say( "Merging 2x%d [%d - %d] with [%d - %d] indices [%d - %d]\n", merge_length, L, L_end, R, R_end, start_index, end_index );
-			print_array( (int*)list, L/width, L_end/width +1, 8 );
-			print_array( (int*)list, R/width, R_end/width +1, 8 );
+			print_array( (widget*)list, L/width, L_end/width +1, 8 );
+			print_array( (widget*)list, R/width, R_end/width +1, 8 );
 			
 			while( start_index + to_index <= end_index ) { // we always know how many elements to merge
 
@@ -79,7 +79,7 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 				say("Copying %d bytes (%d elements) to buf+%d\n", L-m, (L-m)/width );
 				memcpy( buf + (start_index+to_index)*width, list + m, L-m );
 				to_index += (L-m)/width;
-				print_array( (int*)buf, 0, end_index+1, 8 );
+				print_array( (widget*)buf, 0, end_index+1, 8 );
 				
 				// then copy as many as we can from the right pair
 				m = R;
@@ -91,12 +91,12 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 				say("Copying %d bytes (%d elements) to buf\n", (R-m), (R-m)/width );
 				memcpy( buf + (start_index+to_index)*width, list+m, R-m );
 				to_index += (R-m)/width;
-				print_array( (int*)buf, 0, end_index+1, 8 );
+				print_array( (widget*)buf, 0, end_index+1, 8 );
 				
 				say("start_index %d, to_index %d, end_index %d\n", start_index, to_index, end_index);
 			}
 
-			print_array( (int*)buf, start_index, end_index+1, 8 );
+			print_array( (widget*)buf, start_index, end_index+1, 8 );
 
 		}
 		// reset the source array for merging
