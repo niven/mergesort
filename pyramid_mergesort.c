@@ -62,6 +62,7 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 	char* left = (char*)base;
 	char* right = (char*)base;
 	char* to = buf;
+	char* swap = NULL;
 
 	say("in array: %p, buf %p\n", base, buf);
 
@@ -138,12 +139,15 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 			}
 
 			say("Postmerge [%d - %d] (%p):\n", start, index_end-1, to);
-			print_array( (int*)(to - 2*block_width*width), 0, 2*block_width, block_width );
+			print_array( (int*)(to - (index_end-start)*width), 0, (index_end-start),  block_width );
 
 			// if we do sequential merges, we merge the result of what we just did, with an older one (of equal size)
 			// so where we read from and write to swaps
-			to = to == in ? buf : in; // target is the other one
-			left = right = ( to == in ? buf : in );	// we read from wherever we're not writing
+			// TODO: so this doesn't work now that we increment 'to'
+			
+			swap = left;
+			left = right = to;
+			to = swap;
 		
 			say("Pointers now: to=%p, left=right=%p=%p\n", to, left, right);
 		
