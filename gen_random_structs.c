@@ -45,9 +45,8 @@ int main(int argc, char* argv[]) {
 			wid->padding[i] = 'A' + rand() % 26;
 		}
 		wid->padding[PAD_SIZE-1] = '\0';
-		printf("widget: %d:%s (%p)\n", wid->number, wid->padding, wid);
+		say("widget: %d:%s (%p)\n", wid->number, wid->padding, wid);
 		w = fwrite( wid, 1, sizeof(widget), out );
-		printf("Wrote %d bytes\n", w);
 		if( w != sizeof(widget) ) {
 			perror("frwrite()");
 			free( wid );
