@@ -13,7 +13,6 @@ all: gen_random_ints gen_random_structs utils.o sort_functions
 
 verbose: *.c
 	${CMD} -DVERBOSE -c utils.c
-	${CMD} -DVERBOSE gen_random_structs.c
 	${CMD} -DVERBOSE -c *sort.c
 	${CMD} -DVERBOSE utils.o gen_random_structs.c -o gen_random_structs
 	${CMD} -DVERBOSE utils.o insertionsort.o main_template.c -o bin/insertionsort
