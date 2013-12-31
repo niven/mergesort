@@ -39,7 +39,7 @@ int main( int argc, char* argv[] ) {
 	unsigned long start, ticks;
 	start = mach_absolute_time(); // returns ticks since last reboot
 
-	sort_function(widgets, count, sizeof(int), compare_widget );
+	sort_function(widgets, count, sizeof(widget), compare_widget );
 
 	ticks = mach_absolute_time() - start;
 
