@@ -126,9 +126,8 @@ size_t read_widgets( const char* filename, widget** widgets ) {
 		exit(0);
 	}
 	// finding out the count by dividing the size by sizeof(widget) won't work as that micht be larger than the members due to struct alignment
-	int element_data_size =  sizeof(((widget *)0)->number) + sizeof(((widget *)0)->padding); // look! voodoo! ;)
-	size_t count = st.st_size / element_data_size;
-	say("Size of file: %d bytes. Number of widgets of size %ld bytes in file: %zu\n", st.st_size, element_data_size, count);
+	size_t count = st.st_size / sizeof(widget);
+	say("Size of file: %d bytes. Number of widgets of size %ld bytes in file: %zu\n", st.st_size, sizeof(widget), count);
 	
 	widget* target = malloc( sizeof(widget)*count );
 	if( target ==  NULL ) {
