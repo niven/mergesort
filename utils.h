@@ -42,6 +42,8 @@ size_t read_widgets( const char* filename, widget** widgets );
 
 int write_numbers( int* numbers, size_t count, const char* filename_out );
 
+int write_widgets( widget* widgets, size_t count, const char* filename_out );
+
 #ifdef VERBOSE
 // just printf but not doing anthing if not VERBOSE
 void say( const char* format, ... );
@@ -62,3 +64,8 @@ int compare_int(const void* a, const void* b);
 
 int compare_widget(const void* a, const void* b);
 
+// reads the Time Stamp Counter
+// for getting CPU cycles
+// http://en.wikipedia.org/wiki/Time_Stamp_Counter
+// because	
+uint64_t read_TSC();

@@ -166,6 +166,27 @@ int write_numbers( int* numbers, size_t count, const char* filename_out ) {
 	return 0;
 }
 
+int write_widgets( widget* widgets, size_t count, const char* filename_out ) {
+
+	FILE* out = fopen( filename_out, "wb" );
+	if( out == NULL ) {
+		perror("fopen()");
+		return -1;
+	}
+	
+	size_t written = fwrite( widgets, sizeof(widget), count, out );
+	if( written != count ) {
+		perror("frwrite()");
+		return -1;
+	}	
+	
+	fclose( out );
+
+	return 0;
+}
+
+
+
 #ifdef VERBOSE	
 
 void say( const char* format, ... ) {
@@ -251,5 +272,16 @@ int compare_widget(const void* a, const void* b) {
 		return -1;
 
 	return 1;
+}
+
+/*
+ assembly code to read the TSC 
+ (Time Stamp Counter)
+*/
+uint64_t read_TSC() {
+  unsigned int hi, lo;
+  __asm__ ("cpuid");
+  __asm__ volatile("rdtsc" : "=a" (lo), "=d" (hi));
+  return ((uint64_t)hi << 32) | lo;
 }
 

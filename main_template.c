@@ -5,7 +5,9 @@
 #include "unistd.h"
 #include "sys/stat.h"
 
+#ifdef __APPLE__
 #include "mach/mach_time.h"
+#endif
 
 #include "utils.h"
 
@@ -36,7 +38,8 @@ int main( int argc, char* argv[] ) {
 	}
 	memcpy( widgets_copy, widgets, sizeof(widget)*count );
 
-	unsigned long start, ticks;
+#ifdef __APPLE__
+	uint64_t start, ticks;
 	start = mach_absolute_time(); // returns ticks since last reboot
 
 	sort_function(widgets, count, sizeof(widget), compare_widget );
@@ -44,7 +47,21 @@ int main( int argc, char* argv[] ) {
 	ticks = mach_absolute_time() - start;
 
 	// write count, ticks
-	fprintf( stderr, "%ld,%ld\n", count, ticks );
+	fprintf( stderr, "%ld,%llu\n", count, ticks );
+#elif
+	
+	timespec requestStart, requestEnd;
+	clock_gettime(CLOCK_REALTIME, &requestStart);
+
+	sort_function(widgets, count, sizeof(widget), compare_widget );
+
+	clock_gettime(CLOCK_REALTIME, &requestEnd);
+	uint64_t nanos = ( requestEnd.tv_sec - requestStart.tv_sec ) * 1E9 + ( requestEnd.tv_nsec - requestStart.tv_nsec );
+	// write count, nanos
+	fprintf( stderr, "%ld,%llu\n", count, nanos );
+
+#endif
+	
 
 	say( "widgets postmerge %p\n", widgets );
 	print_array( widgets, 0, count, 8 );
@@ -54,7 +71,7 @@ int main( int argc, char* argv[] ) {
 	contains_same_elements( widgets_copy, widgets, count );
 	say( "widgets postmerge contain same elements as premerge.\n" );
 
-	//write_numbers( numbers, count, filename_out );
+	write_widgets( widgets, count, filename_out );
 	
 	free( widgets );
 	free( widgets_copy );

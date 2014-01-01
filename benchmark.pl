@@ -22,7 +22,7 @@ if( $element_size_bytes < 5 ) {
 # first clean & make everything
 system "make clean";
 $element_size_bytes -= 4; # reduce by size of number member uint32_t
-system "make CFLAGS=\"-DPAD_SIZE=$element_size_bytes\"";
+system "make CFLAGS=\"-DPAD_SIZE=$element_size_bytes\" verbose";
 
 my $testdata_dir = "testdata";
 my $sorters_dir = "bin";
@@ -56,7 +56,7 @@ while( $size <= $max ) {
 	
 	# random numbers
 	my $datafile = "$testdata_dir/data_$size.dat";
-	system "./gen_random_structs $size $datafile > /dev/null";
+	system "./gen_random_structs $size $datafile 255";
 	
 	for (1..$iterations) {
 		
@@ -66,6 +66,16 @@ while( $size <= $max ) {
 			#		test 	input	  output	append stderr to results
 			my $cmd = "$sorter $datafile /dev/null 2>>$results_dir/${name}_results.csv";
 			system $cmd; # use string so system() uses the shell
+	        if ($? == -1) {
+	       		print "failed to execute: $!\n";
+			} elsif ($? & 127) {
+	        	printf "child died with signal %d, %s coredump\n", ($? & 127), ($? & 128) ? 'with' : 'without';
+	       	} elsif( $? != 0 ) {
+	       		printf "child exited with value %d\n", $? >> 8;
+	        }
+			if( $? != 0 ) {
+				exit;
+			}
 		}
 	}
 	

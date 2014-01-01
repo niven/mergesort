@@ -32,8 +32,7 @@ int main(int argc, char* argv[]) {
 		exit( EXIT_FAILURE );
 	}
 	
-	int r, w;
-	char sprocket[PAD_SIZE];
+	size_t bytes_written;
 	widget* wid = (widget*)malloc( sizeof(widget) );
 	if( wid == NULL ) {
 		perror("malloc()");
@@ -46,8 +45,8 @@ int main(int argc, char* argv[]) {
 		}
 		wid->padding[PAD_SIZE-1] = '\0';
 		say("widget: %d:%s (%p)\n", wid->number, wid->padding, wid);
-		w = fwrite( wid, 1, sizeof(widget), out );
-		if( w != sizeof(widget) ) {
+		bytes_written = fwrite( wid, 1, sizeof(widget), out );
+		if( bytes_written != sizeof(widget) ) {
 			perror("frwrite()");
 			free( wid );
 			exit( EXIT_FAILURE );

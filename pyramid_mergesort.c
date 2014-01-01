@@ -143,7 +143,6 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 
 			// if we do sequential merges, we merge the result of what we just did, with an older one (of equal size)
 			// so where we read from and write to swaps
-			// TODO: so this doesn't work now that we increment 'to'
 			
 			swap = left;
 			left = right = to;
@@ -301,20 +300,22 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		print_array( (widget*)to, start, t, block_width );
 	
 		// now swap pointers
-		right = to; // to is what we created, which is the smaller block at the end
-		left = to; // guess
-		to = right == base ? buf : base;
+		swap = left;
+		left = right = to;
+		to = swap;
 	
 	}
+	say("Finished wrapup merge\n");
 
 	// unfortunate result of the stdlib sort interface: we might end up with the end result in buf
 	// and not in wherever base points to. In that case we copy over everything :(
-	if( to == base ) {
+	if( to - (width*nel) == base ) {
+		// base points to the last thing we merged to, except it was swapped so buf contains the correct stuff
 		memcpy( base, buf, nel*width );
-		free( buf );
 	} else {
-		free( to );
+		// things are fine
 	}
+	free( buf );
 }
 
 void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
