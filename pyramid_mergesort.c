@@ -63,6 +63,9 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 	char* to = buf;
 	char* swap = NULL;
 
+	// these define the ranges we're going to merge
+	char *L, *L_end, *R, *R_end;
+
 	say("in array: %p, buf %p\n", base, buf);
 
 	while( index_start < nel ) {
@@ -90,12 +93,11 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		
 			// how much we would have done if each block were elements_per_block (every single one is except maybe the last one)
 			int start = (blocks_done*elements_per_block) - 2*merge_width; 
-			char* L = from + start*width; // start of "left" array
-			char* R = from + (start + merge_width)*width; // start of "right" array
+			L = from + start*width; // start of "left" array
+			R = from + (start + merge_width)*width; // start of "right" array
 
-			char* L_end = from + MIN( start+merge_width, nel )*width;
-			char* R_end = from + MIN( start+ 2*merge_width, nel )*width; 
-
+			L_end = from + MIN( start+merge_width, nel )*width;
+			R_end = from + MIN( start+ 2*merge_width, nel )*width; 
 
 		//	say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", index_end-index_start, L, L_end, left, R, R_end, right, t, R_end, to );
 			say("Merging %d elements to %p (%s)\n", (R_end-L)/width, to, to==in?"in":"buf");
@@ -185,9 +187,10 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 	// etc
 	// conveniently, numbers are actually made up of powers of two (unless you're running this on a decimal computer)
 
-	say( "Doing wrapup merges for %d blocks\n", blocks_done );
+	say( "\nDoing wrapup merges for %d blocks\n", blocks_done );
 
 	int first, second;
+	char *left, *right; // could be different
 	while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 		/* 
 		Getting the two lowest powers of 2 from blocks_done would be easier if we could read the shift carry-out
@@ -199,11 +202,12 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		assume blocks_done is XXX1000. then bd-1 = XXX0111
 		so XXX0111 ^ XXX1000 = 00001111
 		then add 1 to get 00010000, then shift to get 00001000 :)
+		
 		*/
 		first = ((blocks_done ^ (blocks_done-1)) +1) >> 1;
 		blocks_done ^= first; // remove this power
 		second = ((blocks_done ^ (blocks_done-1)) +1) >> 1;
-		say( "Remainder: %d first: %d second: %d\n", blocks_done, first, second );
+		say( "smallest: %d larger: %d. blocks_done remainder: %d\n", first, second, blocks_done );
 
 		/*
 		We have to figure out where left, right and to should point to. Once we do and we
@@ -216,35 +220,23 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		If we merge 4+4 blocks they go from in to buf again etc (2^3)
 		so blocks_done = 2^n and if n is odd we wrote it to buf, if n is even we wrote it to in
 		*/
-		int n = first;
-		int pow = -1;
-		while( n > 0 ) {
-			n >>= 1;
-			pow++;
-		}
-		if( pow % 2 == 0 ) {
-			from = in;
+		if( (ffs( first ) & 1) == 0 ) {
+			right = buf;
 		} else {
-			from = buf;
+			right = in;
 		}
-		say( "first=%d = 2^%d -> right=%p\n", first, pow, from );
-		n = second;
-		pow = -1;
-		while( n > 0 ) {
-			n >>= 1;
-			pow++;
-		}
-		if( pow % 2 == 0 ) {
-			from = in;
-			to = buf;
-		} else {
-			from = buf;
+		if( (ffs( second ) & 1) == 0 ) {
+			left = buf;
 			to = in;
+		} else {
+			left = in;
+			to = buf;
 		}
 		// the above is terrible and ugly
 
-		say( "second=%d = 2^%d -> left=%p\n", second, pow, from );
-		say( "to=%p\n", to );
+		say( "smaller=%d (%d blocks) right=%s (%p), ffs(first)=%d\n", first, 1<<(ffs(first)-1), right==in?"in":"buf", right, ffs(first) );
+		say( "larger=%d (%d blocks) left=%s (%p) ffs(second)=%d\n", second, 1<<(ffs(second)-1), left==in?"in":"buf", left, ffs(second) );
+		say( "to=%s (%p)\n", to==in?"in":"buf", to );
 		say( "Current in [%d - %d] (%p):\n", 0, nel-1, in );
 		print_array( (widget*)in, 0, nel, elements_per_block );
 		say( "Current buf [%d - %d] (%p):\n", 0, nel-1, buf );
@@ -255,55 +247,55 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		// the start offsets are "back from the end by offsets" which we'd have to keep track of over more merges
 		// but blocks_done already remove "first" every time which makes it work. think about it :)
 		int start = (blocks_done - second) * elements_per_block;
-		int L = start; // start of "left" array
-		int R = blocks_done * elements_per_block; // start of "right" array
+		L = left + start*width; // start of "left" array
+		R = right + (blocks_done * elements_per_block)*width; // start of "right" array (first has already been subtracted from blocks_done)
 
-		int L_end = R-1;
-		int R_end = nel-1; // in this case it's always the end of the array 
-		int t = start; // where we start writing to the target array (corresponds to a)
-		int m = 0;
+		L_end = R-width;
+		R_end = right + (nel-1) * width; // in this case it's always the end of the array 
 		
+		to = left; // where we start writing to the target array (corresponds to left)
+		int m = 0;
 		say( "Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, L, first, R );
-		say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", R_end-L+1, L, L_end, from, R, R_end, from, t, R_end, to );
-		say( "Premerge left [%d - %d] (%p):\n", L, L_end, from );
-		print_array( (widget*)from, L, L_end+1, elements_per_block );
-		say( "Premerge right [%d - %d] (%p):\n", R, R_end, from );
-		print_array( (widget*)from, R, R_end+1, elements_per_block );
+		say( "Merging %d elements: %s[%d - %d] (%p) with %s[%d - %d] (%p)\n", (R_end-L)/width + 1, left==in?"in":"buf", (L-left)/width, (L_end-left)/width, left, right==in?"in":"buf", (R-right)/width, (R_end-right)/width, right );
+		say( "Premerge left [%d - %d] (%p):\n", (L-left)/width, (L_end-left)/width, left );
+		print_array( (widget*)left, (L-left)/width, (L_end-left)/width +1, elements_per_block );
+		say( "Premerge right [%d - %d] (%p):\n", (R-right)/width, (R_end-right)/width, right );
+		print_array( (widget*)right, (R-right)/width, (R_end-right)/width +1, elements_per_block );
 
-		while( t <= R_end ) { // until we've copied everything to the target array
+		while( L <= L_end || R <= R_end ) { // until we've copied everything to the target array
 
-			say( "\t L=%d\t R=%d\t t=%d\n", L, R, t );
+			say("\t L=%d\t R=%d\t to=%d\n", (L-left)/width, (R-right)/width, (to-buf)/width);
 
 			// copy items from left array as long as they are lte
 			// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 			// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
 			m = 0;
-			while( (L+m) <= L_end && (R > R_end || compare( from + (L+m)*width, from + R*width ) <= 0) ) {
+			while( (L+m) <= L_end && (R > R_end || compare( L+m, R ) <= 0) ) {
 
-				say("\tto[%d] = R[%d] (%3d)\n", t+m, L+m, *(int*) (from + (L+m)*width) );
-				m++;
+				say("\tto[%d] = L[%d] (%3d)\n", (to-buf+m)/width, (L-left+m)/width, *(int*) (L+m) );
+				m += width;
 			}
-			say("Copying %d bytes (%d elements)\n", m*width, m);
-			memcpy( to + (t*width), from + (L*width), m*width );
-			t += m;
+			say("Copying %d bytes (%d elements)\n", m, m/width);
+			memcpy( to, L, m );
+			to += m;
 			L += m;
 			
 			// copy items from right array as long as they are lte
 			m = 0;
-			while( (R+m) <= R_end && (L > L_end || compare( from + (R+m)*width, from + L*width ) <= 0) ) {
+			while( (R+m) <= R_end && (L > L_end || compare( R+m, L ) <= 0) ) {
 
-				say("\tto[%d] = R[%d] (%3d)\n", t+m, R+m, *(int*) (from + (R+m)*width) );
-				m++;
+				say("\tto[%d] = R[%d] (%3d)\n", (to-buf+m)/width, R+m, *(int*) (R+m) );
+				m += width;
 			}
-			say("Copying %d bytes (%d elements)\n", m*width, m);
-			memcpy( to + (t*width), from + (R*width), m*width );
-			t += m;
+			say("Copying %d bytes (%d elements)\n", m, m/width);
+			memcpy( to, R, m );
+			to += m;
 			R += m;
 
 		}
 
-		say( "Postmerge [%d - %d] (%p):\n", start, t, to );
-		print_array( (widget*)to, start, t, elements_per_block );
+		say( "Postmerge [%d - %d] (%p):\n", start, (R_end-right)/width, to );
+		print_array( (widget*)to, start, (R_end-right)/width +1, elements_per_block );
 	
 		// now swap pointers
 		swap = from;
