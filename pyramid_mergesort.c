@@ -297,11 +297,6 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		say( "Postmerge [%d - %d] (%p):\n", start, (R_end-right)/width, to_start );
 		print_array( (widget*)to_start, 0, (R_end-right)/width +1, elements_per_block );
 	
-		// now swap pointers
-		swap = from;
-		from = to;
-		to = swap;
-	
 	}
 	say("Finished wrapup merge\n");
 
