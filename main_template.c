@@ -28,7 +28,7 @@ int main( int argc, char* argv[] ) {
 	size_t count = read_widgets( filename_in, &widgets );
 	say( "Read %zu things\n", count);
 	say("widgets premerge %p\n", widgets);
-	print_array( widgets, 0, count, 8 );
+	print_array( widgets, 0, count, PAD_SIZE );
 
 	// copy for comparing later
 	widget* widgets_copy = malloc( sizeof(widget)*count );
@@ -48,6 +48,7 @@ int main( int argc, char* argv[] ) {
 
 	// write count, ticks
 	fprintf( stderr, "%ld,%llu\n", count, ticks );
+
 #elif
 	
 	timespec requestStart, requestEnd;
@@ -57,14 +58,14 @@ int main( int argc, char* argv[] ) {
 
 	clock_gettime(CLOCK_REALTIME, &requestEnd);
 	uint64_t nanos = ( requestEnd.tv_sec - requestStart.tv_sec ) * 1E9 + ( requestEnd.tv_nsec - requestStart.tv_nsec );
+
 	// write count, nanos
 	fprintf( stderr, "%ld,%llu\n", count, nanos );
-
 #endif
 	
 
 	say( "widgets postmerge %p\n", widgets );
-	print_array( widgets, 0, count, 8 );
+	print_array( widgets, 0, count, PAD_SIZE );
 
 	is_sorted( widgets, 0, count );
 	
