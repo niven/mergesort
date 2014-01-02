@@ -22,7 +22,7 @@ if( $element_size_bytes < 5 ) {
 # first clean & make everything
 system "make clean";
 $element_size_bytes -= 4; # reduce by size of number member uint32_t
-system "make CFLAGS=\"-DPAD_SIZE=$element_size_bytes\" verbose";
+system "make CFLAGS=\"-DPAD_SIZE=$element_size_bytes\"";
 
 my $testdata_dir = "testdata";
 my $sorters_dir = "bin";
@@ -56,7 +56,7 @@ while( $size <= $max ) {
 	
 	# random numbers
 	my $datafile = "$testdata_dir/data_$size.dat";
-	system "./gen_random_structs $size $datafile 255";
+	system "./gen_random_structs $size $datafile > /dev/null";
 	
 	for (1..$iterations) {
 		
