@@ -191,7 +191,7 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 
 	int first, second;
 	char *left, *right; // could be different
-	char* to_start = to; // for debugging, since we walk to
+	char* to_start = in; // if we don't have any postmerging to do this will make sure we output the right array in the final if
 
 	while( blocks_done & blocks_done-1 ) { // test to see if single bit is set
 		/* 
@@ -229,10 +229,10 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		}
 		if( (ffs( second ) & 1) == 0 ) {
 			left = buf;
-			to = in;
+			to = to_start = in;
 		} else {
 			left = in;
-			to = buf;
+			to = to_start = buf;
 		}
 
 		say( "smaller=%d (%d blocks) right=%s (%p), ffs(first)=%d\n", first, 1<<(ffs(first)-1), right==in?"in":"buf", right, ffs(first) );
@@ -251,14 +251,15 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 		L = left + start*width; // start of "left" array
 		R = right + (blocks_done * elements_per_block)*width; // start of "right" array (first has already been subtracted from blocks_done)
 
-		L_end = R-width; // FAIL could be different pointers!
+		L_end = L + (blocks_done*elements_per_block-1)*width;
+		say("Le-L/w %d\n", (L_end-L)/width);
 		R_end = right + (nel-1) * width; // in this case it's always the end of the array 
 		
 		int m = 0;
 		say( "Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, L, first, R );
-		say( "Merging %d elements: %s[%d - %d] (%p) with %s[%d - %d] (%p)\n", (L_end-L + R_end-R)/width, left==in?"in":"buf", (L-left)/width, (L_end-left)/width, left, right==in?"in":"buf", (R-right)/width, (R_end-right)/width, right );
+		say( "Merging %d elements: %s[%d - %d] (%p) with %s[%d - %d] (%p)\n", (L_end-L + R_end-R)/width+2, left==in?"in":"buf", (L-left)/width, (L_end-left)/width, left, right==in?"in":"buf", (R-right)/width, (R_end-right)/width, right );
 		say( "Premerge left [%d - %d] (%p):\n", (L-left)/width, (L_end-left)/width, left );
-		print_array( (widget*)left, (L-left)/width, (L_end-left)/width +1, elements_per_block );
+		print_array( (widget*)left, (L-left)/width, (L_end-left)/width+1, elements_per_block );
 		say( "Premerge right [%d - %d] (%p):\n", (R-right)/width, (R_end-right)/width, right );
 		print_array( (widget*)right, (R-right)/width, (R_end-right)/width +1, elements_per_block );
 
@@ -284,7 +285,7 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 			m = 0;
 			while( (R+m) <= R_end && (L > L_end || compare( R+m, L ) <= 0) ) {
 
-				say("\tto[%d] = R[%d] (%3d)\n", (to-to_start+m)/width, R+m, *(int*) (R+m) );
+				say("\tto[%d] = R[%d] (%3d)\n", (to-to_start+m)/width, (R-right+m)/width, *(int*) (R+m) );
 				m += width;
 			}
 			say("Copying %d bytes (%d elements)\n", m, m/width);
