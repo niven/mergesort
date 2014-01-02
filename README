@@ -48,4 +48,8 @@ make all
 or
 make verbose
 
+Since we are sorting structs that have padding, you can also set the padding size which defaults to 4 (creating structs of size 8 bytes)
+Override this with: 
+make CFLAGS="-DPAD_SIZE=6" verbose
+
 the latter will print a ton of information on what is happening exactly when you run the sorts
