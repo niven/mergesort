@@ -61,7 +61,6 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 	// for the first merge (blocks_done==2) we have to read from in
 	char* from = (char*)base;
 	char* to = buf;
-	char* swap = NULL;
 
 	// these define the ranges we're going to merge
 	char *L, *L_end, *R, *R_end;
