@@ -22,7 +22,9 @@ if( $element_size_bytes < 5 ) {
 # first clean & make everything
 system "make clean";
 $element_size_bytes -= 4; # reduce by size of number member uint32_t
-system "make CFLAGS=\"-DPAD_SIZE=$element_size_bytes\"";
+my $make_cmd = "make all PAD_SIZE=$element_size_bytes";
+print "Compiling with: $make_cmd";
+system $make_cmd;
 
 my $testdata_dir = "testdata";
 my $sorters_dir = "bin";

@@ -1,5 +1,6 @@
 CC=clang
-CFLAGS=-Wall -O3 -pedantic -DPAD_SIZE=4 
+PAD_SIZE=4
+CFLAGS=-Wall -O3 -pedantic -DPAD_SIZE=${PAD_SIZE}
 CMD=${CC} ${CFLAGS}
 
 all: gen_random_ints gen_random_structs utils.o sort_functions
