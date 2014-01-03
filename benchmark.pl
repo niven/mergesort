@@ -15,6 +15,9 @@ my $step = ceil( ($max-$min) / $num );
 print "Running benchmark for $min to $max elements in $num steps of size $step";
 print "Element size $element_size_bytes bytes, $iterations iterations per sorter";
 
+die "SORTER_BLOCK_WIDTH not set for mergesorts" if !defined $ENV{SORTER_BLOCK_WIDTH};
+print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}";
+
 if( $element_size_bytes < 5 ) {
 	die "Elements can's be smaller than 5 since they are a struct of a 4 byte int and at minimum 1 char";
 }

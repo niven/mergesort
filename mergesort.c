@@ -123,12 +123,13 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 
 void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 	
-	int block_width = 4;
+	int elements_per_block = 4;
 	const char* env_block_width = getenv( "SORTER_BLOCK_WIDTH" );
 	if( env_block_width != NULL ) {
-		block_width = atoi( env_block_width );
+		elements_per_block = atoi( env_block_width );
 	}
+	say("Using SORTER_BLOCK_WIDTH %d\n", elements_per_block);
 	
-	merge_sort( base, nel, width, compare, block_width, shellsort );
+	merge_sort( base, nel, width, compare, elements_per_block, shellsort );
 	
 }

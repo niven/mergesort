@@ -322,10 +322,11 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 	
 	int elements_per_block = 4;
-	const char* env_elements_per_block = getenv( "SORTER_elements_per_block" );
+	const char* env_elements_per_block = getenv( "SORTER_BLOCK_WIDTH" );
 	if( env_elements_per_block != NULL ) {
 		elements_per_block = atoi( env_elements_per_block );
 	}
+	say("Using SORTER_BLOCK_WIDTH %d\n", elements_per_block);
 	
 	pyramid_merge( base, nel, width, compare, elements_per_block, shellsort );
 	
