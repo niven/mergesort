@@ -3,31 +3,52 @@ use warnings FATAL => 'all';
 
 use Data::Dumper;
 use File::Path qw( make_path remove_tree );
+use Getopt::Long;
 use POSIX qw( ceil );
 
 local $\ = "\n";
 
-die "Usage: perl benchmark.pl start end steps iterations element_size_bytes" if scalar @ARGV != 5;
+my %opt = (
+	min => 10,
+	max => 1000,
+	num => 50,
+	iterations => 1,
+	element_size => 8,
+);
 
-my ($min, $max, $num, $iterations, $element_size_bytes) = @ARGV;
-my $step = ceil( ($max-$min) / $num ); 
+GetOptions (
+	\%opt,
+	"s|start=i",
+	"e|end=i",
+	"n|steps=i",
+	"i|iterations=i",
+	"z|element_size=i",
+	)
+or die "Usage: perl benchmark.pl --start=NN --end=NN --steps=NN --iterations=NN --element_size_bytes=NN";
 
-print "Running benchmark for $min to $max elements in $num steps of size $step";
-print "Element size $element_size_bytes bytes, $iterations iterations per sorter";
+$opt{step} = ceil( ($opt{max}-$opt{min}) / $opt{num} ); 
+
+print "Running benchmark for $opt{min} to $opt{max} elements in $opt{num} steps of size $opt{step}";
+print "Element size $opt{element_size} bytes, $opt{iterations} iterations per sorter";
 
 die "SORTER_BLOCK_WIDTH not set for mergesorts" if !defined $ENV{SORTER_BLOCK_WIDTH};
 print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}";
 
-if( $element_size_bytes < 5 ) {
+if( $opt{element_size} < 5 ) {
 	die "Elements can's be smaller than 5 since they are a struct of a 4 byte int and at minimum 1 char";
 }
 
 # first clean & make everything
 system "make clean";
-$element_size_bytes -= 4; # reduce by size of number member uint32_t
-my $make_cmd = "make all PAD_SIZE=$element_size_bytes";
+$opt{element_size} -= 4; # reduce by size of number member uint32_t
+my $make_cmd = "make all PAD_SIZE=$opt{element_size}";
 print "Compiling with: $make_cmd";
 system $make_cmd;
+
+if( $opt{max} > 10_000 ) {
+	print "Removing insertionsort since you probably don't want to wait forever";
+	unlink "bin/insertionsort";
+}
 
 my $testdata_dir = "testdata";
 my $sorters_dir = "bin";
@@ -54,8 +75,8 @@ if( -e $testdata_dir ) {
 make_path( $testdata_dir );
 
 # create files and run tests
-my $size = $min;
-while( $size <= $max ) {
+my $size = $opt{min};
+while( $size <= $opt{max} ) {
 	
 	print "Benchmarking $size elements";
 	
@@ -63,7 +84,7 @@ while( $size <= $max ) {
 	my $datafile = "$testdata_dir/data_$size.dat";
 	system "./gen_random_structs $size $datafile > /dev/null";
 	
-	for (1..$iterations) {
+	for (1..$opt{iterations}) {
 		
 		# sorters write their count/nano to stderr so we have them append that to a results file
 		for my $sorter (@sorters) {
@@ -84,7 +105,7 @@ while( $size <= $max ) {
 		}
 	}
 	
-	$size += $step;
+	$size += $opt{step};
 }
 
 # now munge results for averages and combine all of them in a nice CSV so we can have a spreadsheet make graphs
@@ -96,7 +117,7 @@ for my $result_csv (@results) {
 	open(my $CSV, "<", $result_csv);
 	while( <$CSV> ) {
 		chomp;
-		my ($count, $nanos) = split /,/;
+		my ($count, $nanos, @rest) = split /,/;
 		# update the average for that count for the current name
 		$data->{ $count }->{ $name }->{num}++;
 		$data->{ $count }->{ $name }->{avg} += ($nanos-($data->{ $count }->{ $name }->{avg}||0)) / $data->{ $count }->{ $name }->{num};
@@ -106,7 +127,7 @@ for my $result_csv (@results) {
 
 # now write a nice CSV
 open(my $OUT, ">", "$results_dir/overall.csv");
-my @all_names = sort keys %{$data->{$min}};
+my @all_names = sort keys %{$data->{$opt{min}}};
 print $OUT "Elements," . join(",", @all_names);
 
 for my $c ( sort { $a <=> $b } keys %$data ) {
