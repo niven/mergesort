@@ -12,6 +12,7 @@
 #include "utils.h"
 
 void sort_function( void* base, size_t nel, size_t width, comparator compare );
+size_t working_set_size( size_t element_size, size_t nel );
 
 int main( int argc, char* argv[] ) {
 
@@ -47,7 +48,7 @@ int main( int argc, char* argv[] ) {
 	ticks = mach_absolute_time() - start;
 
 	// write count, ticks
-	fprintf( stderr, "%ld,%llu\n", count, ticks );
+	fprintf( stderr, "%zu,%llu,", count, ticks );
 
 #elif
 	
@@ -60,9 +61,11 @@ int main( int argc, char* argv[] ) {
 	uint64_t nanos = ( requestEnd.tv_sec - requestStart.tv_sec ) * 1E9 + ( requestEnd.tv_nsec - requestStart.tv_nsec );
 
 	// write count, nanos
-	fprintf( stderr, "%ld,%llu\n", count, nanos );
+	fprintf( stderr, "%zu,%llu,", count, nanos );
 #endif
 	
+	// print working set size
+	fprintf( stderr, "%zu\n", working_set_size( sizeof(widget), count ) );
 
 	say( "widgets postmerge %p\n", widgets );
 	print_array( widgets, 0, count, PAD_SIZE );

@@ -331,3 +331,7 @@ void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 	pyramid_merge( base, nel, width, compare, elements_per_block, shellsort );
 	
 }
+
+size_t working_set_size( size_t element_size, size_t nel ) {
+	return 2 * element_size * nel;
+}

@@ -12,6 +12,15 @@ TODO
 - stdlib merge/heap return -1 on error and apparently qsort can't fail :) So find some way to put that in the main_template.c
 - print_array could also be generic (maybe have a tostring somewere)
 
+More cool sorts:
+natural mergesort
+recursive mergesort
+quicksort3
+smoothsort
+timsort
+samplesort
+inplace mergesort that is somewhere on my work machine in Go
+
 Update 1:
 Ran some test to compare how different widths for inner shellsort do and made a graph comparing them to std qsort and mergesort.
 The good news: my mergesort looks like N log(N)

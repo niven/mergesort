@@ -14,22 +14,28 @@ my %opt = (
 	num => 50,
 	iterations => 1,
 	element_size => 8,
+	mem => 0,
 );
 
 GetOptions (
 	\%opt,
-	"s|start=i",
-	"e|end=i",
-	"n|steps=i",
-	"i|iterations=i",
-	"z|element_size=i",
+	"min=i",
+	"max=i",
+	"num=i",
+	"iterations=i",
+	"element_size=i",
+	"mem"
 	)
-or die "Usage: perl benchmark.pl --start=NN --end=NN --steps=NN --iterations=NN --element_size_bytes=NN";
+or die "Usage: perl benchmark.pl --min=NN --max=NN --num=NN --iterations=NN --element_size_bytes=NN --mem";
 
 $opt{step} = ceil( ($opt{max}-$opt{min}) / $opt{num} ); 
 
 print "Running benchmark for $opt{min} to $opt{max} elements in $opt{num} steps of size $opt{step}";
 print "Element size $opt{element_size} bytes, $opt{iterations} iterations per sorter";
+
+if( $opt{mem} ) {
+	print "Reporting ticks/element vs working set";
+}
 
 die "SORTER_BLOCK_WIDTH not set for mergesorts" if !defined $ENV{SORTER_BLOCK_WIDTH};
 print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}";
@@ -112,26 +118,30 @@ while( $size <= $opt{max} ) {
 # (this feels like a miniature bigdata setup :)
 my @results = glob("$results_dir/*.csv");
 my $data = {};
+my %names = (); # collect names inelegantly
 for my $result_csv (@results) {
 	my ($name) = $result_csv =~ m/$results_dir\/(.*)_results\.csv/; # more name extraction
+	$names{$name} = 1;
 	open(my $CSV, "<", $result_csv);
 	while( <$CSV> ) {
 		chomp;
-		my ($count, $nanos, @rest) = split /,/;
+		my ($num_elements, $ticks, $memory) = split /,/;
 		# update the average for that count for the current name
-		$data->{ $count }->{ $name }->{num}++;
-		$data->{ $count }->{ $name }->{avg} += ($nanos-($data->{ $count }->{ $name }->{avg}||0)) / $data->{ $count }->{ $name }->{num};
+		my $param = $opt{mem} ? $memory : $num_elements;
+		my $value = $ticks/$num_elements;
+		$data->{ $param }->{ $name }->{num}++;
+		$data->{ $param }->{ $name }->{avg} += ($value-($data->{ $param }->{ $name }->{avg}||0)) / $data->{ $param }->{ $name }->{num};
 	}
 	close($CSV);
 }
 
 # now write a nice CSV
 open(my $OUT, ">", "$results_dir/overall.csv");
-my @all_names = sort keys %{$data->{$opt{min}}};
-print $OUT "Elements," . join(",", @all_names);
+my @all_names = sort keys %names;
+print $OUT ($opt{mem} ? "Memory," : "Elements,") . join(",", @all_names);
 
-for my $c ( sort { $a <=> $b } keys %$data ) {
-	print $OUT "$c," . join(",", map { $data->{$c}->{$_}->{avg}/$c } @all_names );
+for my $param ( sort { $a <=> $b } keys %$data ) {
+	print $OUT "$param," . join(",", map { $data->{$param}->{$_} ? $data->{$param}->{$_}->{avg} : "" } @all_names );
 }
 
 close($OUT);
