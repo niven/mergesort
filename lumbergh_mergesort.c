@@ -37,6 +37,7 @@ void lumbergh_merge_sort(void* base, size_t nel, size_t width, comparator compar
 	say( "buf: %p, base: %p\n", buf, base );
 
 	size_t swaps = 1;
+	size_t swaps_up = 0;
 	char *to;
 	int sentinel = 0;
 	while( swaps != 0 && sentinel++ < 1 ) {
@@ -60,9 +61,10 @@ void lumbergh_merge_sort(void* base, size_t nel, size_t width, comparator compar
 		
 		// merge "up"
 		memcpy( copy, buf, nel*width );
-		swaps += merge_up( buf, in, nel, width, compare );
-		say("Merged down with %d swaps\n", swaps);
-		print_array( (widget*)in, 0, nel, 8 );
+		swaps_up += merge_up( buf, in, nel, width, compare );
+		say("Merged up with %d swaps\n", swaps_up);
+		swaps += swaps_up;
+		print_array( (widget*)in, 0, nel, nel );
 		contains_same_elements( (widget*)copy, (widget*)in, nel );
 
 
