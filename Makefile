@@ -11,6 +11,7 @@ all: gen_random_ints gen_random_structs utils.o sort_functions
 	${CMD} utils.o shellsort.o main_template.c -o bin/shellsort
 	${CMD} utils.o mergesort.o main_template.c -o bin/mergesort
 	${CMD} utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
+	${CMD} utils.o lumbergh_mergesort.o main_template.c -o bin/lumbergh_mergesort
 
 verbose: *.c
 	${CMD} -DVERBOSE -c utils.c
@@ -23,7 +24,6 @@ verbose: *.c
 	${CMD} -DVERBOSE utils.o shellsort.o main_template.c -o bin/shellsort
 	${CMD} -DVERBOSE utils.o mergesort.o main_template.c -o bin/mergesort
 	${CMD} -DVERBOSE utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
-	${CMD} -DVERBOSE utils.o natural_mergesort.o main_template.c -o bin/natural_mergesort
 	${CMD} -DVERBOSE utils.o lumbergh_mergesort.o main_template.c -o bin/lumbergh_mergesort
 
 sort_functions: *sort.c
@@ -44,8 +44,8 @@ mergesort: main_template.c utils.o mergesort.o
 pyramid_mergesort: main_template.c utils.o pyramid_mergesort.o
 	${CMD} utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
 
-natural_mergesort: main_template.c utils.o natural_mergesort.o
-	${CMD} utils.o natural_mergesort.o main_template.c -o bin/natural_mergesort
+lumbergh_mergesort: main_template.c utils.o lumbergh_mergesort.o
+	${CMD} utils.o lumbergh_mergesort.o main_template.c -o bin/lumbergh_mergesort
 
 stdlib_qsort: main_template.c utils.o stdlib_qsort.o
 	${CMD} utils.o stdlib_qsort.o main_template.c -o bin/stdlib_qsort
