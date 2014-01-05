@@ -11,6 +11,7 @@ my %opt = (
 	min => 10,
 	max => 1000,
 	target => undef,
+	ceil => "",
 );
 
 my $opt_ok = GetOptions (
@@ -18,9 +19,10 @@ my $opt_ok = GetOptions (
 	"min=i",
 	"max=i",
 	"target=s",
+	"ceil=s",
 	);
 	
-$opt_ok && $opt{target} or die "Usage: perl test.pl --min=NN --max=NN --target=SSS";
+$opt_ok && $opt{target} or die "Usage: perl test.pl --min=NN --max=NN --ceil=NN --target=SSS";
 
 print "Running test for $opt{min} to $opt{max} for $opt{target}";
 
@@ -68,7 +70,7 @@ while( $size <= $opt{max} ) {
 	
 	# random numbers
 	my $datafile = "$testdata_dir/data_$size.dat";
-	system "./gen_random_structs $size $datafile &> /dev/null";
+	system "./gen_random_structs $size $datafile $opt{ceil} &> /dev/null";
 
 	my $cmd = "./bin/$opt{target} $datafile /dev/null 2>/dev/null";
 	system $cmd; # use string so system() uses the shell
