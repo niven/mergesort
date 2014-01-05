@@ -81,6 +81,7 @@ size_t merge_down( char* in, char* buf, size_t nel, size_t width, comparator com
 	int merge_length = nel / 2;
 	char* temp = NULL;
 	char* original_in = in;
+	int offset_left = 0;
 	while( merge_length >= 1 ) {
 
 		char* copy = malloc( nel*width );
@@ -90,10 +91,10 @@ size_t merge_down( char* in, char* buf, size_t nel, size_t width, comparator com
 		}
 		memcpy( copy, in, nel*width );
 	
-		say("Merging length %d from source\n", merge_length);
+		say("Merging length %d from source (%d)\n", merge_length, nel);
 		print_array( (widget*)in, 0, nel, nel );
 		memset( buf, 0, nel*width ); // for debug
-		for(int offset_left=0; offset_left<nel-merge_length+1; offset_left+=2*merge_length) {
+		for(offset_left=0; offset_left<nel-merge_length+1; offset_left+=2*merge_length) {
 			say("Merging interval [%d-%d] with [%d-%d]\n", offset_left, offset_left+merge_length-1, MIN(offset_left+merge_length, nel-1), MIN(offset_left+merge_length+merge_length-1, nel-1) );
 			char* left_start = in+(offset_left*width);
 			char* right_start = in + ( MIN(offset_left+merge_length, nel-1)*width );
@@ -104,6 +105,12 @@ size_t merge_down( char* in, char* buf, size_t nel, size_t width, comparator com
 			print_array( (widget*)buf, 0, nel, nel );
 		
 			// as soon as merge_length==1 we could special case and just perform a swap if needed
+		}
+		// if source has 15 elementw we merge 7+7 and we have 1 left over, just copy those over
+		if( offset_left < nel ) {
+			say("Remainder %d to %d = %d\n", offset_left, nel, nel-offset_left);
+			memcpy( buf+(offset_left*width), in+(offset_left*width), (nel-offset_left)*width );
+			print_array( (widget*)buf, 0, nel, nel );
 		}
 
 		contains_same_elements( (widget*)copy, (widget*)buf, nel );
