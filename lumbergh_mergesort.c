@@ -172,6 +172,7 @@ size_t merge_range(char* left, char* right, char* end, char* to, size_t width, c
 
 
 	char* start = left;
+	char* start_right = right;
 	char* to_start = to;
 	int merge_length = (end-left)/(width*2)+1;
 	// clear so debug output is nicer
@@ -188,7 +189,7 @@ size_t merge_range(char* left, char* right, char* end, char* to, size_t width, c
 			left += width;
 
 			// special case: left might run out, then we bump right by 1 element
-			if( left >= start + merge_length*width ) {
+			if( left >= start_right ) {
 				left = right;
 				right += width; // this could make right point past end, but the while will terminate and then we copy only from left
 //				say("Ran out of left array, set left to %d and bumped right to %d\n", *(int*)left, *(int*)right);
