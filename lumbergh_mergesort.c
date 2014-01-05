@@ -52,7 +52,7 @@ void lumbergh_merge_sort(void* base, size_t nel, size_t width, comparator compar
 		memcpy( copy, in, nel*width );
 		swaps += merge_down( in, buf, nel, width, compare );
 		say("Merged down with %d swaps\n", swaps);
-		print_array( (widget*)buf, 0, nel, 8 );
+		print_array( (widget*)buf, 0, nel, nel );
 		contains_same_elements( (widget*)copy, (widget*)buf, nel );
 		
 		// now we don't know where the final result was in since in/buf swap
@@ -88,22 +88,21 @@ size_t merge_down( char* in, char* buf, size_t nel, size_t width, comparator com
 		}
 		memcpy( copy, in, nel*width );
 	
-		say("Merging from source\n");
-		print_array( (widget*)in, 0, nel, merge_length*2*2 );
+		say("Merging length %d from source\n", merge_length);
+		print_array( (widget*)in, 0, nel, nel );
+		memset( buf, 0, nel*width ); // for debug
 		for(int offset_left=0; offset_left<nel-merge_length+1; offset_left+=2*merge_length) {
-			say("\tmerging interval [%d-%d] with [%d-%d]\n", offset_left, offset_left+merge_length-1, MIN(offset_left+merge_length, nel-1), MIN(offset_left+merge_length+merge_length-1, nel-1) );
+			say("Merging interval [%d-%d] with [%d-%d]\n", offset_left, offset_left+merge_length-1, MIN(offset_left+merge_length, nel-1), MIN(offset_left+merge_length+merge_length-1, nel-1) );
 			char* left_start = in+(offset_left*width);
 			char* right_start = in + ( MIN(offset_left+merge_length, nel-1)*width );
 			char* end = in + (MIN(offset_left+merge_length+merge_length-1, nel-1)*width);
+			print_array( (widget*)left_start, 0, (right_start-left_start)/width, merge_length );
+			print_array( (widget*)left_start, (right_start-left_start)/width, (end-left_start)/width+1, merge_length );
 			swaps += merge_range( left_start, right_start, end, buf + (offset_left*width), width, compare );
-			say("Merge step done, buf:\n");
-			print_array( (widget*)buf, 0, nel, merge_length*2*2 );
+			print_array( (widget*)buf, 0, nel, nel );
 		
 			// as soon as merge_length==1 we could special case and just perform a swap if needed
 		}
-		say("After merging ranges in/buf\n");
-		print_array( (widget*)in, 0, nel, merge_length*2*2 );
-		print_array( (widget*)buf, 0, nel, merge_length*2*2 );
 
 		contains_same_elements( (widget*)copy, (widget*)buf, nel );
 
@@ -115,7 +114,7 @@ size_t merge_down( char* in, char* buf, size_t nel, size_t width, comparator com
 	}
 
 	say("Merge down result\n");
-	print_array( (widget*)in, 0, nel, 8 );
+	print_array( (widget*)in, 0, nel, nel );
 
 	
 	return swaps;
@@ -138,23 +137,20 @@ size_t merge_up( char* in, char* buf, size_t nel, size_t width, comparator compa
 		}
 		memcpy( copy, in, nel*width );
 	
-		say("Merging from source\n");
-		print_array( (widget*)in, 0, nel, merge_length*2*2 );
+		say("Merging length %d from source\n", merge_length);
+		print_array( (widget*)in, 0, nel, nel );
+		memset( buf, 0, nel*width ); // for debug
 		for(int offset_left=0; offset_left<nel-merge_length+1; offset_left+=2*merge_length) {
-			say("\tmerging interval [%d-%d] with [%d-%d]\n", offset_left, offset_left+merge_length-1, MIN(offset_left+merge_length, nel-1), MIN(offset_left+merge_length+merge_length-1, nel-1) );
+			say("\tMerging interval [%d-%d] with [%d-%d]\n", offset_left, offset_left+merge_length-1, MIN(offset_left+merge_length, nel-1), MIN(offset_left+merge_length+merge_length-1, nel-1) );
 			char* left_start = in+(offset_left*width);
 			char* right_start = in + ( MIN(offset_left+merge_length, nel-1)*width );
 			char* end = in + (MIN(offset_left+merge_length+merge_length-1, nel-1)*width);
+			print_array( (widget*)left_start, 0, (right_start-left_start)/width, merge_length );
+			print_array( (widget*)left_start, (right_start-left_start)/width, (end-left_start)/width+1, merge_length );
 			swaps += merge_range( left_start, right_start, end, buf + (offset_left*width), width, compare );
-			say("Merge step done, buf:\n");
-			print_array( (widget*)buf, 0, nel, merge_length*2*2 );
+			print_array( (widget*)buf, 0, nel, nel );
 		
-			// as soon as merge_length==1 we could special case and just perform a swap if needed
 		}
-		say("After merging ranges in/buf\n");
-		print_array( (widget*)in, 0, nel, merge_length*2*2 );
-		print_array( (widget*)buf, 0, nel, merge_length*2*2 );
-
 		contains_same_elements( (widget*)copy, (widget*)buf, nel );
 
 		temp = in;
@@ -164,8 +160,8 @@ size_t merge_up( char* in, char* buf, size_t nel, size_t width, comparator compa
 		merge_length *= 2;
 	}
 
-	say("Merge down result\n");
-	print_array( (widget*)in, 0, nel, 8 );
+	say("Merge up result\n");
+	print_array( (widget*)in, 0, nel, nel );
 
 	
 	return swaps;
@@ -181,12 +177,12 @@ size_t merge_range(char* left, char* right, char* end, char* to, size_t width, c
 	// clear so debug output is nicer
 	memset( to, 0, 2*merge_length*width );
 
-	say("Merging 2x%d to %p\n", merge_length, to);
-	print_array( (widget*)left, 0, merge_length, merge_length );
-	print_array( (widget*)right, 0, merge_length, merge_length );
-	print_array( (widget*)to, 0, merge_length*2, merge_length );
+		say("Merging 2x%d to %p\n", merge_length, to);
+		print_array( (widget*)left, 0, merge_length, merge_length );
+		print_array( (widget*)right, 0, merge_length, merge_length );
+		print_array( (widget*)to, 0, merge_length*2, merge_length );
 	while( right <= end ) {
-		say("comparing left %d with right %d -> %d\n", *(int*)left, *(int*)right, compare( left, right ));
+//		say("comparing left %d with right %d -> %d\n", *(int*)left, *(int*)right, compare( left, right ));
 		if( compare( left, right ) <= 0 ) {
 			memcpy( to, left, width );
 			left += width;
@@ -195,7 +191,7 @@ size_t merge_range(char* left, char* right, char* end, char* to, size_t width, c
 			if( left >= start + merge_length*width ) {
 				left = right;
 				right += width; // this could make right point past end, but the while will terminate and then we copy only from left
-				say("Ran out of left array, set left to %d and bumped right to %d\n", *(int*)left, *(int*)right);
+//				say("Ran out of left array, set left to %d and bumped right to %d\n", *(int*)left, *(int*)right);
 			}
 
 		} else {
@@ -205,7 +201,7 @@ size_t merge_range(char* left, char* right, char* end, char* to, size_t width, c
 		}
 		to += width;
 	
-		print_array( (widget*)to_start, 0, merge_length*2, merge_length );
+//		print_array( (widget*)to_start, 0, merge_length*2, merge_length );
 //		say("swaps done %d\n", swaps);
 	}
 	// now we ran out of right, copy over any left if remaining
@@ -215,7 +211,7 @@ size_t merge_range(char* left, char* right, char* end, char* to, size_t width, c
 	} else { // we bumped right, so there is only one remaining
 		memcpy( to, left, width );
 	}
-	print_array( (widget*)to_start, 0, merge_length*2, merge_length );
+//	print_array( (widget*)to_start, 0, merge_length*2, merge_length );
 	
 	return swaps;
 	
