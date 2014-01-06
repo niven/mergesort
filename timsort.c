@@ -3,6 +3,9 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
+/*
+http://bugs.python.org/file4451/timsort.txt
+*/
 void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	
 
