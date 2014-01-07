@@ -5,6 +5,11 @@ use Data::Dumper;
 use File::Path qw( make_path remove_tree );
 use Getopt::Long;
 
+my %require_SBW = (
+	mergesort => 1,
+	pyramid_mergesort => 1,
+);
+
 local $\ = "\n";
 
 my %opt = (
@@ -26,8 +31,8 @@ $opt_ok && $opt{target} or die "Usage: perl test.pl --min=NN --max=NN --ceil=NN 
 
 print "Running test for $opt{min} to $opt{max} for $opt{target}";
 
-die "SORTER_BLOCK_WIDTH not set for mergesorts" if !defined $ENV{SORTER_BLOCK_WIDTH};
-print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}";
+die "SORTER_BLOCK_WIDTH not set for mergesorts" if !defined $ENV{SORTER_BLOCK_WIDTH} && $require_SBW{ $opt{target} };
+print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}" if defined $ENV{SORTER_BLOCK_WIDTH};
 
 # first clean & make everything
 system "make clean";
