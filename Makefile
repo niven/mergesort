@@ -3,7 +3,7 @@ PAD_SIZE=4
 CFLAGS=-Wall -O3 -pedantic -DPAD_SIZE=${PAD_SIZE}
 CMD=${CC} ${CFLAGS}
 
-all: gen_random_ints gen_random_structs utils.o sort_functions
+all: clean gen_random_ints gen_random_structs utils.o sort_functions
 	${CMD} -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} -DSORT_FUNCTION=qsort utils.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DSORT_FUNCTION=mergesort utils.o main_template.c -o bin/stdlib_mergesort
@@ -13,7 +13,7 @@ all: gen_random_ints gen_random_structs utils.o sort_functions
 	${CMD} -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
 	${CMD} -DSORT_FUNCTION=timsort utils.o insertionsort.o timsort.o main_template.c -o bin/timsort
 
-verbose: *.c
+verbose: clean *.c
 	${CMD} -DVERBOSE -c utils.c
 	${CMD} -DVERBOSE -c *sort.c
 	${CMD} -DVERBOSE utils.o gen_random_structs.c -o gen_random_structs
