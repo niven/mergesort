@@ -31,7 +31,7 @@ print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}";
 
 # first clean & make everything
 system "make clean";
-my $make_cmd = "make all PAD_SIZE=4 $opt{target}";
+my $make_cmd = "make all PAD_SIZE=4";
 print "Compiling with: $make_cmd";
 system $make_cmd;
 
