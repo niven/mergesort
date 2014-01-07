@@ -4,6 +4,8 @@
 
 #include "utils.h"
 
+#include "insertionsort.h"
+
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
 int calc_minrun(size_t nel) {
@@ -45,6 +47,7 @@ ssize_t find_run( char* base, size_t nel, size_t width, comparator compare ) {
 
 /*
 http://bugs.python.org/file4451/timsort.txt
+http://infopulseukraine.com/eng/blog/Software-Development/Algorithms/Timsort-Sorting-Algorithm/
 */
 void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	
@@ -69,9 +72,10 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		say("Run length %zd\n", run_length);
 		print_array( (widget*)current, 0, abs(run_length), minrun );
 		if( run_length < 0 ) { // was descending
+			run_length = abs( run_length );
 			// reverse, though I'm sure there is a faster way.
 			char* left = current;
-			char* right = current + (abs(run_length)-1)*width;
+			char* right = current + (run_length-1)*width;
 			say("Reversing from %d to %d\n", *(int*)left, *(int*)right);
 			while( left < right ) {
 				memcpy( value, left, width );
@@ -81,13 +85,17 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 				right -= width;
 			}
 			say("Reversed descending run\n");
-			print_array( (widget*)current, 0, abs(run_length), minrun );
+			print_array( (widget*)current, 0, run_length, minrun );
 		}
-		run_length = abs(run_length);
 		
 		// extend to minrun if needed
+		run_length = run_length < minrun ? minrun : run_length;
+		say("Run length for insertionsort %zu");
 		
 		// insertion sort
+		print_array( (widget*)current, 0, run_length, minrun );
+		insertionsort( current, run_length, width, compare );
+		print_array( (widget*)current, 0, run_length, minrun );
 		
 		reached += run_length;
 		

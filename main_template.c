@@ -11,7 +11,12 @@
 
 #include "utils.h"
 
-void sort_function( void* base, size_t nel, size_t width, comparator compare );
+#include "insertionsort.h"
+#include "mergesort.h"
+#include "pyramid_mergesort.h"
+#include "timsort.h"
+
+
 size_t working_set_size( size_t element_size, size_t nel );
 
 int main( int argc, char* argv[] ) {
@@ -43,7 +48,8 @@ int main( int argc, char* argv[] ) {
 	uint64_t start, ticks;
 	start = mach_absolute_time(); // returns ticks since last reboot
 
-	sort_function(widgets, count, sizeof(widget), compare_widget );
+	SORT_FUNCTION( widgets, count, sizeof(widget), compare_widget );
+// ## (widgets, count, sizeof(widget), compare_widget );
 
 	ticks = mach_absolute_time() - start;
 
@@ -55,7 +61,7 @@ int main( int argc, char* argv[] ) {
 	timespec requestStart, requestEnd;
 	clock_gettime(CLOCK_REALTIME, &requestStart);
 
-	sort_function(widgets, count, sizeof(widget), compare_widget );
+	SORT_FUNCTION(widgets, count, sizeof(widget), compare_widget );
 
 	clock_gettime(CLOCK_REALTIME, &requestEnd);
 	uint64_t nanos = ( requestEnd.tv_sec - requestStart.tv_sec ) * 1E9 + ( requestEnd.tv_nsec - requestStart.tv_nsec );
@@ -65,7 +71,7 @@ int main( int argc, char* argv[] ) {
 #endif
 	
 	// print working set size
-	fprintf( stderr, "%zu\n", working_set_size( sizeof(widget), count ) );
+//	fprintf( stderr, "%zu\n", working_set_size( sizeof(widget), count ) );
 
 	say( "widgets postmerge %p\n", widgets );
 	print_array( widgets, 0, count, PAD_SIZE );

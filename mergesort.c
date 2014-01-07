@@ -121,7 +121,7 @@ void merge_sort(void* base, size_t nel, size_t width, comparator compare, size_t
 
 }
 
-void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
+void merge_sort_wrapper( void* base, size_t nel, size_t width, comparator compare ) {
 	
 	int elements_per_block = 4;
 	const char* env_block_width = getenv( "SORTER_BLOCK_WIDTH" );
@@ -132,9 +132,5 @@ void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 	
 	merge_sort( base, nel, width, compare, elements_per_block, shellsort );
 	
-}
-
-size_t working_set_size( size_t element_size, size_t nel ) {
-	return 2 * element_size * nel;
 }
 

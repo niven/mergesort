@@ -4,8 +4,6 @@
 
 #include "utils.h"
 
-#include "insertionsort.h"
-
 void insertionsort( void* base, size_t nel, size_t width, comparator compare ) {
 	
 	char* list = (char*)base;
@@ -32,16 +30,5 @@ void insertionsort( void* base, size_t nel, size_t width, comparator compare ) {
 	}
 	
 	free( value );
-}
-
-void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
-
-	insertionsort( base, nel, width, compare );
-
-}
-
-
-size_t working_set_size( size_t element_size, size_t nel ) {
-	return element_size * nel;
 }
 

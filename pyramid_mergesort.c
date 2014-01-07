@@ -41,7 +41,7 @@ After sorting block:
 	So every time we merge upto what we just sorted (the endpoint is always the same),
 	but how far we look back doubles and so does the block size
 */
-void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, size_t inner_sort_width, sorter inner_sorter) {
+void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare, size_t inner_sort_width, sorter inner_sorter) {
 
 	int elements_per_block = inner_sort_width;
 	
@@ -319,7 +319,7 @@ void pyramid_merge(void* base, size_t nel, size_t width, comparator compare, siz
 	free( buf );
 }
 
-void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
+void pyramid_mergesort_wrapper( void* base, size_t nel, size_t width, comparator compare ) {
 	
 	int elements_per_block = 4;
 	const char* env_elements_per_block = getenv( "SORTER_BLOCK_WIDTH" );
@@ -328,10 +328,7 @@ void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
 	}
 	say("Using SORTER_BLOCK_WIDTH %d\n", elements_per_block);
 	
-	pyramid_merge( base, nel, width, compare, elements_per_block, shellsort );
+	pyramid_mergesort( base, nel, width, compare, elements_per_block, shellsort );
 	
 }
 
-size_t working_set_size( size_t element_size, size_t nel ) {
-	return 2 * element_size * nel;
-}
