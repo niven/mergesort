@@ -285,3 +285,60 @@ uint64_t read_TSC() {
   return ((uint64_t)hi << 32) | lo;
 }
 
+// timsort needs a stack to keep the runs on
+// (potentially nel/minrun items maybe? In practice less)
+
+
+run* new_run( const void* address, const size_t nel ) {
+	run* new_run = (run*)malloc( sizeof(run) );
+	if( new_run == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	
+	new_run->address = address;
+	new_run->nel = nel;
+	
+	return new_run;
+}
+
+void push_run( run_node** stack, run* element ) {
+	run_node* new_node = (run_node*)malloc( sizeof(run_node) );
+	if( new_node == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	
+	new_node->item = element;
+	new_node->next = *stack;
+
+	*stack = new_node;
+}
+
+run* pop_run( run_node** stack ) {
+	
+	if( stack == NULL ) {
+		return NULL;
+	}
+	
+	run_node* top = *stack;
+	run* top_item = top->item;
+	printf("pop_run top_item %p / %zu\n", top_item->address, top_item->nel);
+	*stack = (*stack)->next;
+
+	free( top );
+	return top_item;
+}
+
+
+void print_stack( run_node* stack ) {
+	
+	run_node *current = stack;
+	size_t count = 0;
+	while( current != NULL ) {
+		printf("[%zu] %zu starting at %p\n", count++, current->item->nel, current->item->address );
+		current = current->next;
+	}
+	
+}
+

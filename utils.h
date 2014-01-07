@@ -69,3 +69,24 @@ int compare_widget(const void* a, const void* b);
 // http://en.wikipedia.org/wiki/Time_Stamp_Counter
 // because	
 uint64_t read_TSC();
+
+
+typedef struct {
+	const void* address;
+	size_t nel;
+} run;
+
+// our stack is a linked list
+typedef struct run_node {
+	run* item;
+	struct run_node* next;
+} run_node;
+
+
+run* new_run( const void* address, const size_t nel );
+
+void push_run( run_node** stack, run* element );
+
+run* pop_run( run_node** stack );
+
+void print_stack( run_node* stack );
