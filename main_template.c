@@ -54,7 +54,7 @@ int main( int argc, char* argv[] ) {
 	ticks = mach_absolute_time() - start;
 
 	// write count, ticks
-	fprintf( stderr, "%zu,%llu,", count, ticks );
+	fprintf( stderr, "%zu,%llu\n", count, ticks );
 
 #elif
 	
@@ -67,7 +67,7 @@ int main( int argc, char* argv[] ) {
 	uint64_t nanos = ( requestEnd.tv_sec - requestStart.tv_sec ) * 1E9 + ( requestEnd.tv_nsec - requestStart.tv_nsec );
 
 	// write count, nanos
-	fprintf( stderr, "%zu,%llu,", count, nanos );
+	fprintf( stderr, "%zu,%llu\n", count, nanos );
 #endif
 	
 	// print working set size
