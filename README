@@ -12,6 +12,8 @@ TODO
 - stdlib merge/heap return -1 on error and apparently qsort can't fail :) So find some way to put that in the main_template.c
 - print_array could also be generic (maybe have a tostring somewere)
 - gen_random_structs should be able to generate data that is random,zigzag asc/desc, organ pipes, equal numbers, sorted subranges etc.
+- extend benchmarking script to benchmark (merge)sorts with inner sorts at different block_widths and different inner ones
+- extend benchmarking script to use different input data (random, saw, subsorted, ..)
 
 More cool sorts:
 natural mergesort
