@@ -35,7 +35,7 @@ ssize_t find_run( char* base, size_t nel, size_t width, comparator compare ) {
 	
 	// too tired to figure out the elegant way to compa() >= asc or something.
 	int order = compare( base, base+width );
-	while( run_length <= nel && ( (asc && order <= 0) || (!asc && order > 0 ) ) ) {
+	while( run_length < nel && ( (asc && order <= 0) || (!asc && order > 0 ) ) ) {
 		run_length++;
 
 		base += width;
@@ -90,7 +90,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		
 		// extend to minrun if needed
 		run_length = run_length < minrun ? minrun : run_length;
-		say("Run length for insertionsort %zu");
+		say("Run length for insertionsort %zu\n", run_length);
 		
 		// insertion sort
 		print_array( (widget*)current, 0, run_length, minrun );
@@ -100,9 +100,6 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		reached += run_length;
 		
 	}
-	
-	// cheat
-	shellsort(base, nel, width, compare);
 
 	free( value );
 }
