@@ -70,7 +70,7 @@ while( $size <= $opt{max} ) {
 	
 	# random numbers
 	my $datafile = "$testdata_dir/data_$size.dat";
-	system "./gen_random_structs $size $datafile $opt{ceil} &> /dev/null";
+	system "./gen_random_structs random $size $datafile $opt{ceil} &> /dev/null";
 
 	my $cmd = "./bin/$opt{target} $datafile /dev/null 2>/dev/null";
 	system $cmd; # use string so system() uses the shell

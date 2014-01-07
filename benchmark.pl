@@ -88,7 +88,7 @@ while( $size <= $opt{max} ) {
 	
 	# random numbers
 	my $datafile = "$testdata_dir/data_$size.dat";
-	system "./gen_random_structs $size $datafile > /dev/null";
+	system "./gen_random_structs random $size $datafile > /dev/null";
 	
 	for (1..$opt{iterations}) {
 		
