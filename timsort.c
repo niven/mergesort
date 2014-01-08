@@ -1,6 +1,8 @@
+#include <fcntl.h> /* open */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h> /* dup */
 
 #include "utils.h"
 
