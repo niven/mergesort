@@ -323,7 +323,7 @@ run* pop_run( run_node** stack ) {
 	
 	run_node* top = *stack;
 	run* top_item = top->item;
-	printf("pop_run top_item %p / %zu\n", top_item->address, top_item->nel);
+	say("pop_run top_item %p / %zu\n", top_item->address, top_item->nel);
 	*stack = (*stack)->next;
 
 	free( top );
@@ -351,8 +351,9 @@ void print_stack( run_node* stack ) {
 	
 	run_node *current = stack;
 	size_t count = 0;
+	say("Run Stack:\n");
 	while( current != NULL ) {
-		printf("[%zu] %zu starting at %p\n", count++, current->item->nel, current->item->address );
+		say("[%zu] %zu starting at %p\n", count++, current->item->nel, current->item->address );
 		current = current->next;
 	}
 	

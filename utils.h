@@ -1,5 +1,19 @@
 #include <stdint.h>
 
+#define SUPPRESS_STDOUT \
+		int SUPPRESS_bak, SUPPRESS_new; \
+		fflush(stdout); \
+		SUPPRESS_bak = dup(1); \
+		SUPPRESS_new = open("/dev/null", O_WRONLY); \
+		dup2(SUPPRESS_new, 1); \
+		close(SUPPRESS_new);
+
+#define RETURN_STDOUT \
+		fflush(stdout); \
+		dup2(SUPPRESS_bak, 1); \
+		close(SUPPRESS_bak);
+
+
 /*
 Shellsort the numbers using the Marcin Ciura sequence.
 
