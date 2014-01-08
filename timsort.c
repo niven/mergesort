@@ -67,6 +67,28 @@ static inline void reverse_run( char* current, const size_t run_length, size_t w
 }
 
 /*
+From http://bugs.python.org/file4451/timsort.txt
+
+What turned out to be a good compromise maintains two invariants on the
+stack entries, where A, B and C are the lengths of the three righmost not-yet
+merged slices:
+
+1.  A > B+C
+2.  B > C
+
+*/
+void merge_collapse( run_node** stack ) {
+	
+	run *A, *B, *C;
+	A = peek_run( *stack, 0 );
+	B = peek_run( *stack, 1 );
+	C = peek_run( *stack, 2 );
+	
+	printf("A: %zu, B: %zu, C: %zu\n", A==NULL?0:A->nel, B==NULL?0:B->nel, C==NULL?0:C->nel );
+	
+}
+
+/*
 http://bugs.python.org/file4451/timsort.txt
 http://infopulseukraine.com/eng/blog/Software-Development/Algorithms/Timsort-Sorting-Algorithm/
 */
@@ -79,7 +101,10 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	}
 	
 	int minrun = calc_minrun( nel );
+	minrun /= 4; // for debugging, so we don't have to test arrays of many elements to have minrun << nel
 	say("Minrun for %zu elements: %d\n", nel, minrun);
+	
+	run_node* sorted_runs = NULL; // stack for keeping run indices
 	
 	char* current = (char*)base;
 	size_t reached = 0;
@@ -98,7 +123,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		}
 		
 		// extend to minrun if needed
-		run_length = run_length < minrun ? minrun : run_length;
+		run_length = run_length < minrun ? MIN(minrun, nel-reached) : run_length;
 		say("Run length for insertionsort %zu\n", run_length);
 		
 		// insertion sort
@@ -106,8 +131,11 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		insertionsort( current, run_length, width, compare );
 		print_array( (widget*)current, 0, run_length, minrun );
 		
-		reached += run_length;
+		push_run( &sorted_runs, new_run( current, run_length ) );
+		print_stack( sorted_runs );
+		merge_collapse( &sorted_runs );
 		
+		reached += run_length;
 	}
 
 	free( value );
