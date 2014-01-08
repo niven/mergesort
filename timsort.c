@@ -79,15 +79,47 @@ merged slices:
 2.  B > C
 
 */
-void merge_collapse( run_node** stack ) {
+int merge_collapse( run_node** stack ) {
 	
 	run *A, *B, *C;
-	A = peek_run( *stack, 0 );
+	A = peek_run( *stack, 2 );
 	B = peek_run( *stack, 1 );
-	C = peek_run( *stack, 2 );
+	C = peek_run( *stack, 0 );
 	
 	printf("A: %zu, B: %zu, C: %zu\n", A==NULL?0:A->nel, B==NULL?0:B->nel, C==NULL?0:C->nel );
 	
+	if( B == NULL ) { // only single item
+		return 0;
+	}
+	
+	// fix invariant violations (A may be empty, but B < C)
+	if( B->nel <= C->nel ) { // #2 B > C
+		say("Merging B+C\n");
+		B->nel += C->nel;
+		pop_run( stack );
+		return 1;
+	}
+	
+	// TODO: I think we're missing an invariant here
+	
+	if( A==NULL || B==NULL || C==NULL ) {
+		return 0;
+	}
+	
+	if( A->nel <= B->nel + C->nel ) {
+		if( C->nel <= A->nel ) {
+			say("Merging B+C\n");
+			// just update the B and pop C
+			B->nel += C->nel;
+			pop_run( stack );
+		} else {
+			say("Merging A+B\n");	
+			// just update A and pop B,C then push C
+		}
+		return 1;
+	}
+		
+	return 0;
 }
 
 /*
