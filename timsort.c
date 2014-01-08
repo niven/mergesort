@@ -45,6 +45,27 @@ ssize_t find_run( char* base, size_t nel, size_t width, comparator compare ) {
 	return asc ? run_length : -run_length;
 }
 
+// reverse, though I'm sure there is a faster way.
+static inline void reverse_run( char* current, const size_t run_length, size_t width, void* temp_space ) {
+
+	char* left = current;
+	char* right = current + (run_length-1)*width;
+
+	say("Reversing from %d to %d\n", *(int*)left, *(int*)right);
+
+	while( left < right ) {
+		memcpy( temp_space, left, width );
+		memcpy( left, right, width );
+		memcpy( right, temp_space, width );
+		left += width;
+		right -= width;
+	}
+
+	say("Reversed descending run\n");
+	print_array( (widget*)current, 0, run_length, run_length );
+	
+}
+
 /*
 http://bugs.python.org/file4451/timsort.txt
 http://infopulseukraine.com/eng/blog/Software-Development/Algorithms/Timsort-Sorting-Algorithm/
@@ -73,19 +94,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		print_array( (widget*)current, 0, abs(run_length), minrun );
 		if( run_length < 0 ) { // was descending
 			run_length = abs( run_length );
-			// reverse, though I'm sure there is a faster way.
-			char* left = current;
-			char* right = current + (run_length-1)*width;
-			say("Reversing from %d to %d\n", *(int*)left, *(int*)right);
-			while( left < right ) {
-				memcpy( value, left, width );
-				memcpy( left, right, width );
-				memcpy( right, value, width );
-				left += width;
-				right -= width;
-			}
-			say("Reversed descending run\n");
-			print_array( (widget*)current, 0, run_length, minrun );
+			reverse_run( current, run_length, width, value );
 		}
 		
 		// extend to minrun if needed
