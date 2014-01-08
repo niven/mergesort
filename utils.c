@@ -330,6 +330,22 @@ run* pop_run( run_node** stack ) {
 	return top_item;
 }
 
+// returns but not removes
+run* peek_run( run_node* stack, size_t index ) {
+	
+	size_t i = 0;
+	run_node* current = stack;
+	while( i < index && current != NULL ) {
+		current = current->next;
+		i++;
+	}
+	
+	if( current == NULL ) {
+		return NULL;
+	}
+	
+	return current->item;
+}
 
 void print_stack( run_node* stack ) {
 	

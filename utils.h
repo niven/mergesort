@@ -89,4 +89,6 @@ void push_run( run_node** stack, run* element );
 
 run* pop_run( run_node** stack );
 
+run* peek_run( run_node* stack, size_t index );
+
 void print_stack( run_node* stack );
