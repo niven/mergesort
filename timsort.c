@@ -157,17 +157,23 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		}
 		
 		// extend to minrun if needed
-		run_length = run_length < minrun ? MIN(minrun, nel-reached) : run_length;
-		say("Run length for insertionsort %zu\n", run_length);
-		
-		// insertion sort
-		print_array( (widget*)current, 0, run_length, minrun );
-		insertionsort( current, run_length, width, compare );
-		print_array( (widget*)current, 0, run_length, minrun );
+		if( run_length < minrun ) {
+			run_length = run_length < minrun ? MIN(minrun, nel-reached) : run_length;
+			say("Run length for insertionsort %zu\n", run_length);
+			// insertion sort
+			print_array( (widget*)current, 0, run_length, minrun );
+			SUPPRESS_STDOUT
+			insertionsort( current, run_length, width, compare );
+			RETURN_STDOUT
+			print_array( (widget*)current, 0, run_length, minrun );
+		}
+		// else: run_length already > minrun, and sorted as well
 		
 		push_run( &sorted_runs, new_run( current, run_length ) );
 		print_stack( sorted_runs );
-		merge_collapse( &sorted_runs );
+		while( merge_collapse( &sorted_runs ) ) {
+			say("Collapsed, repeating until invariants hold\n");
+		}
 		
 		reached += run_length;
 	}
