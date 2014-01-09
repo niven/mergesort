@@ -10,6 +10,7 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
+
 int calc_minrun(size_t nel) {
 
 	int r = 0;  /* becomes 1 if the least significant bits contain at least one off bit */
@@ -96,7 +97,8 @@ int merge_collapse( run_node** stack ) {
 	if( B->nel <= C->nel ) { // #2 B > C
 		say("Merging B+C\n");
 		B->nel += C->nel;
-		pop_run( stack );
+		run* top = pop_run( stack );
+		free( top );
 		return 1;
 	}
 	
@@ -111,15 +113,92 @@ int merge_collapse( run_node** stack ) {
 			say("Merging B+C\n");
 			// just update the B and pop C
 			B->nel += C->nel;
-			pop_run( stack );
+			run* top = pop_run( stack );
+			free( top );
 		} else {
 			say("Merging A+B\n");	
 			// just update A and pop B,C then push C
+			say("NOTHING ACTUALLY HAPPENING HERE YET\n");
 		}
 		return 1;
 	}
 		
 	return 0;
+}
+
+/*
+merge_lo and merge_hi both merge 2 arrays, but to minimize the memory use
+we only allocate memory for the smaller run, and then use the original space
+for the merge. This unfortunately means merging works differently depending
+on where the smaller array is.
+
+I'm actually not convinced we need to have 2 different "symmetrical" functions for this.
+
+*/
+
+// assume a is smaller
+void merge_lo( run* a, run* b, size_t width, comparator compare ) {
+	
+	if( a->nel > b->nel ) {
+		printf("a has more elements than b\n");
+		exit( EXIT_FAILURE );
+	}
+	
+	size_t first_b_in_a = find_index( a->address, *(b->address), width, compare );
+	size_t last_a_in_b = find_index( b->address, *(a->address + a->nelwidth), width, compare );
+	
+	// allocate space for the smaller (a) array
+	char* temp = malloc( a->nel * width );
+	if( temp == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	memcpy( temp, a->address, a->nel * width );
+	
+	
+	
+	free( temp );
+}
+
+void merge_hi( run* a, run* b, size_t width, comparator compare ) {
+	
+}
+
+size_t find_index( void* in, size_t nel, void* value, size_t width, comparator compare ) {
+	
+	say("Find index starting from %d\n", *(int*)in);
+	
+	if( nel <= 1 ) {
+		say("Only 1 element left (%d)\n", *(int*)in);
+		return compare( in, value ) < 0 ? 0 : 1; // equal values come after to ensure a stable sort 
+	}
+	
+	static int recurse_depth = 0;
+	
+	char* list = (char*)in;
+	// check where value belongs in "steps" of 2^i-1 (the -1 is to ensure we start at 0, the sequence is 0, 1, 3, 7, ...)
+	int pow = 0;
+	size_t index = (1 << pow) - 1;
+	say("Find index - going to compare values[%d] = %d with %d\n", index, *(int*) (list + index*width), *(int*)value );
+	int sentinel = 0;
+	while( sentinel++ < 5 && index < nel && compare( list + index*width, value ) <= 0 ) {
+		index = (1 << ++pow) -1;
+		say("Find index - going to compare values[%d] = %d with %d\n", index, *(int*) (list + index*width), *(int*)value ); 
+	}
+	
+	//now we overshot the target, so recurse :)
+	size_t previous = (1 << --pow)-1; // we know value is larger
+	say("Overshot at %d, but target is gte than %d at index %d\n", index,  *(int*)(list + previous*width), previous);
+	
+	if( recurse_depth++ > 5 ) {
+		say("Recurse max hit: %d\n", recurse_depth);
+		return 0;
+	}
+	
+	// now find another index starting at previous, add that to previous and that's our index
+	size_t elements_left = nel - (previous) - (nel- MIN(index, nel)) - 1;// all - smaller stuff - larger stuff - for starting at previous+1
+	return index == nel ? index : 	previous + find_index( list + (previous+1)*width, elements_left, value, width, compare ); 
+	
 }
 
 /*
@@ -135,7 +214,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	}
 	
 	int minrun = calc_minrun( nel );
-	minrun /= 4; // for debugging, so we don't have to test arrays of many elements to have minrun << nel
+	minrun = 1; // for debugging, so we don't have to test arrays of many elements to have minrun << nel
 	say("Minrun for %zu elements: %d\n", nel, minrun);
 	
 	run_node* sorted_runs = NULL; // stack for keeping run indices
@@ -177,6 +256,28 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		
 		reached += run_length;
 	}
+
+	// now we're almost done, except that we might have some unmerged things on the stack
+	say("Wrapup merges\n");
+
+	while( peek_run( sorted_runs, 1 ) != NULL ) {
+		print_stack( sorted_runs );
+		// want to do the same strategy I guess?
+		// for now just merge everthing
+		run* B = pop_run( &sorted_runs );
+		run* C = pop_run( &sorted_runs );
+		size_t total = B->nel + C->nel;
+		if( B->nel <= C->nel ) {
+			merge_lo( B, C, width, compare ); // don't like this name but it's what the jargon is
+		} else {
+			merge_hi( B, C, width, compare ); // idem
+		}
+		push_run( &sorted_runs, new_run( B->address, total) );
+		free( B );
+		free( C );
+	}
+
+
 
 	free( value );
 }
