@@ -166,7 +166,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
 size_t find_index( void* in, size_t nel, void* value, size_t width, comparator compare ) {
 	
-	say("Find index starting from %d\n", *(int*)in);
+	say("Find index starting from value %d, %d elements\n", *(int*)in, nel);
 	
 	if( nel <= 1 ) {
 		say("Only 1 element left (%d)\n", *(int*)in);
@@ -179,16 +179,34 @@ size_t find_index( void* in, size_t nel, void* value, size_t width, comparator c
 	// check where value belongs in "steps" of 2^i-1 (the -1 is to ensure we start at 0, the sequence is 0, 1, 3, 7, ...)
 	int pow = 0;
 	size_t index = (1 << pow) - 1;
-	say("Find index - going to compare values[%d] = %d with %d\n", index, *(int*) (list + index*width), *(int*)value );
+	say("About to compare values[%d] = %d with %d\n", index, *(int*) (list + index*width), *(int*)value );
 	int sentinel = 0;
 	while( sentinel++ < 5 && index < nel && compare( list + index*width, value ) <= 0 ) {
 		index = (1 << ++pow) -1;
-		say("Find index - going to compare values[%d] = %d with %d\n", index, *(int*) (list + index*width), *(int*)value ); 
+		say("Going to compare values[%d] = %d with %d\n", index, *(int*) (list + index*width), *(int*)value ); 
 	}
-	
-	//now we overshot the target, so recurse :)
-	size_t previous = (1 << --pow)-1; // we know value is larger
-	say("Overshot at %d, but target is gte than %d at index %d\n", index,  *(int*)(list + previous*width), previous);
+
+	// at this point we can have 3 possible situations:
+	// 1. Every element in list is > value
+	// 2. value falls somewhere in list
+	// 3. value > last index checked, but the next index > nel
+
+	// if we overshot we recurse on the sublist defined by the (previous, index) exclusive range
+	// if index == 0 we are smaller than the first element so just return
+	// this is #1
+	if( index == 0 ) {
+		say("Smaller than the first element, returning 0\n");
+		return 0;
+	}
+
+	pow--;
+	int min_placement_index = 0;
+	if( index >= nel ) { // case #3
+		min_placement_index = 1 << pow; // the previous value of index+1 (since we already compared that one)
+	} else { // case #2. list[index] > value
+		min_placement_index = 1 << pow; // ehr, same result? Did not expect that :)
+	}
+	say("Done at %d, recursing from %d\n", index, min_placement_index);
 	
 	if( recurse_depth++ > 5 ) {
 		say("Recurse max hit: %d\n", recurse_depth);
@@ -196,8 +214,8 @@ size_t find_index( void* in, size_t nel, void* value, size_t width, comparator c
 	}
 	
 	// now find another index starting at previous, add that to previous and that's our index
-	size_t elements_left = nel - (previous) - (nel- MIN(index, nel)) - 1;// all - smaller stuff - larger stuff - for starting at previous+1
-	return index == nel ? index : 	previous + find_index( list + (previous+1)*width, elements_left, value, width, compare ); 
+	size_t elements_left = nel - (min_placement_index) - (nel - MIN(index, nel)) - 1;// all - smaller stuff - larger stuff - for starting at previous+1
+	return min_placement_index + find_index( list + min_placement_index*width, elements_left, value, width, compare ); 
 	
 }
 
