@@ -126,43 +126,7 @@ int merge_collapse( run_node** stack ) {
 	return 0;
 }
 
-/*
-merge_lo and merge_hi both merge 2 arrays, but to minimize the memory use
-we only allocate memory for the smaller run, and then use the original space
-for the merge. This unfortunately means merging works differently depending
-on where the smaller array is.
 
-I'm actually not convinced we need to have 2 different "symmetrical" functions for this.
-
-*/
-
-// assume a is smaller
-void merge_lo( run* a, run* b, size_t width, comparator compare ) {
-	
-	if( a->nel > b->nel ) {
-		printf("a has more elements than b\n");
-		exit( EXIT_FAILURE );
-	}
-	
-	size_t first_b_in_a = find_index( a->address, *(b->address), width, compare );
-	size_t last_a_in_b = find_index( b->address, *(a->address + a->nelwidth), width, compare );
-	
-	// allocate space for the smaller (a) array
-	char* temp = malloc( a->nel * width );
-	if( temp == NULL ) {
-		perror("malloc()");
-		exit( EXIT_FAILURE );
-	}
-	memcpy( temp, a->address, a->nel * width );
-	
-	
-	
-	free( temp );
-}
-
-void merge_hi( run* a, run* b, size_t width, comparator compare ) {
-	
-}
 
 /*
 	Finds the greatest index N in list so that for all elements list[ < N ] <= value
@@ -178,7 +142,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	Bug: if list approaches size_t max val then the index variable may overflow it
 	In practice I hope to never have lists that large.
 */
-size_t find_index( void* in, size_t nel, void* value, size_t width, comparator compare ) {
+size_t find_index( const void* in, size_t nel, const void* value, size_t width, comparator compare ) {
 	
 	say("Find index starting from value %d, %d elements\n", *(int*)in, nel);
 	
@@ -232,6 +196,52 @@ size_t find_index( void* in, size_t nel, void* value, size_t width, comparator c
 	
 	// now find another index starting at previous, add that to previous and that's our index
 	return min_placement_index + find_index( list + min_placement_index*width, elements_remaining, value, width, compare ); 
+	
+}
+
+/*
+merge_lo and merge_hi both merge 2 arrays, but to minimize the memory use
+we only allocate memory for the smaller run, and then use the original space
+for the merge. This unfortunately means merging works differently depending
+on where the smaller array is.
+
+I'm actually not convinced we need to have 2 different "symmetrical" functions for this.
+
+*/
+
+// assume a is smaller
+void merge_lo( run* a, run* b, size_t width, comparator compare ) {
+	
+	if( a->nel > b->nel ) {
+		printf("a has more elements than b\n");
+		exit( EXIT_FAILURE );
+	}
+	
+	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
+	print_array( (widget*)a->address, 0, a->nel, a->nel);
+	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
+	say("B[0] (%d) should be placed at index %d in A (A[%d] = %d)\n", *(int*)b->address, first_b_in_a, first_b_in_a, *(int*) ( (char*)a->address + first_b_in_a*width) );
+
+	say("Finding index of A[%d]=%d in B:\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width) );
+	print_array( (widget*)b->address, 0, b->nel, b->nel);
+	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + a->nel*width, width, compare );
+	say("A[%d] (%d) should be placed at index %d in B (B[%d] = %d)\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width), last_a_in_b, last_a_in_b, *(int*) ( (char*)b->address + last_a_in_b*width) );
+	
+	
+	// allocate space for the smaller (a) array
+	char* temp = malloc( a->nel * width );
+	if( temp == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	memcpy( temp, a->address, a->nel * width );
+	
+	
+	
+	free( temp );
+}
+
+void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	
 }
 
@@ -292,7 +302,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	}
 
 	// now we're almost done, except that we might have some unmerged things on the stack
-	say("Wrapup merges\n");
+	say("\nWrapup merges\n");
 
 	while( peek_run( sorted_runs, 1 ) != NULL ) {
 		print_stack( sorted_runs );
