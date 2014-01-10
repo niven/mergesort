@@ -164,13 +164,27 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	
 }
 
+/*
+	Finds the greatest index N in list so that for all elements list[ < N ] <= value
+
+	Algorithm: don't binary search but compare every element with index (2^n)-1
+	Whenever we overshoot we recurse with the previous value etc. This is mathmatically
+	the same number of operations (I think but haven't done any math yet). But biases
+	towards the beginning of the array. This is good if you are merging random runs
+	in timsort where this comes from. the idea is: first find the placement of A[0] in B
+	and copy everything in B before that point to save on comparing. This is great when
+	you have disjoint ranges of numbers, but awful when they are random. Hence this method.
+
+	Bug: if list approaches size_t max val then the index variable may overflow it
+	In practice I hope to never have lists that large.
+*/
 size_t find_index( void* in, size_t nel, void* value, size_t width, comparator compare ) {
 	
 	say("Find index starting from value %d, %d elements\n", *(int*)in, nel);
 	
 	if( nel <= 1 ) {
 		say("Only 1 element left (%d)\n", *(int*)in);
-		return compare( in, value ) < 0 ? 0 : 1; // equal values come after to ensure a stable sort 
+		return compare( in, value ) <= 0 ? 1 : 0; // equal values come after
 	}
 	
 	static int recurse_depth = 0;
@@ -200,13 +214,16 @@ size_t find_index( void* in, size_t nel, void* value, size_t width, comparator c
 	}
 
 	pow--;
-	int min_placement_index = 0;
+	int min_placement_index = MIN(1 << pow, nel-1); // the previous value of index+1 (since we already compared that one) unless index happened to be the last index of list;
+	size_t elements_remaining = nel - min_placement_index; // if we have 10 elements and min=4 we place at list[4] meaning list[5-9] remains = 5
 	if( index >= nel ) { // case #3
-		min_placement_index = 1 << pow; // the previous value of index+1 (since we already compared that one)
+		// whatever remains is "the rest"
+		say("Recursing until end of list (%d elements)\n", elements_remaining);
 	} else { // case #2. list[index] > value
-		min_placement_index = 1 << pow; // ehr, same result? Did not expect that :)
+		// we can exclude everything gte index. If we have 10 elements list[4] = 8 and value = 5 everthing in list[4-9] can be left out = 6 = 10-index
+		elements_remaining -= nel - index;
 	}
-	say("Done at %d, recursing from %d\n", index, min_placement_index);
+	say("Recursing from index %d, elements left: %d\n", min_placement_index, elements_remaining);
 	
 	if( recurse_depth++ > 5 ) {
 		say("Recurse max hit: %d\n", recurse_depth);
@@ -214,8 +231,7 @@ size_t find_index( void* in, size_t nel, void* value, size_t width, comparator c
 	}
 	
 	// now find another index starting at previous, add that to previous and that's our index
-	size_t elements_left = nel - (min_placement_index) - (nel - MIN(index, nel)) - 1;// all - smaller stuff - larger stuff - for starting at previous+1
-	return min_placement_index + find_index( list + min_placement_index*width, elements_left, value, width, compare ); 
+	return min_placement_index + find_index( list + min_placement_index*width, elements_remaining, value, width, compare ); 
 	
 }
 
