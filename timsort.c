@@ -10,6 +10,9 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
+void merge_lo( run* a, run* b, size_t width, comparator compare );
+void merge_hi( run* a, run* b, size_t width, comparator compare );
+
 
 int calc_minrun(size_t nel) {
 
@@ -80,22 +83,23 @@ merged slices:
 2.  B > C
 
 */
-int merge_collapse( run_node** stack ) {
+int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 	
 	run *A, *B, *C;
 	A = peek_run( *stack, 2 );
 	B = peek_run( *stack, 1 );
 	C = peek_run( *stack, 0 );
 	
-	printf("A: %zu, B: %zu, C: %zu\n", A==NULL?0:A->nel, B==NULL?0:B->nel, C==NULL?0:C->nel );
+	printf("Merge collapse: A: %zu, B: %zu, C: %zu\n", A==NULL?0:A->nel, B==NULL?0:B->nel, C==NULL?0:C->nel );
 	
-	if( B == NULL ) { // only single item
+	if( A == NULL && B == NULL ) { // only single item
 		return 0;
 	}
 	
 	// fix invariant violations (A may be empty, but B < C)
 	if( B->nel <= C->nel ) { // #2 B > C
 		say("Merging B+C\n");
+		merge_lo( B, C, width, compare );
 		B->nel += C->nel;
 		run* top = pop_run( stack );
 		free( top );
@@ -103,22 +107,21 @@ int merge_collapse( run_node** stack ) {
 	}
 	
 	// TODO: I think we're missing an invariant here
+	// and it's probably A=NULL?
 	
-	if( A==NULL || B==NULL || C==NULL ) {
-		return 0;
-	}
-	
+		
 	if( A->nel <= B->nel + C->nel ) {
 		if( C->nel <= A->nel ) {
 			say("Merging B+C\n");
 			// just update the B and pop C
+			merge_hi( C, B, width, compare ); // B must be larger than C otherwise we'd have merge_lo()'d above
 			B->nel += C->nel;
 			run* top = pop_run( stack );
 			free( top );
 		} else {
 			say("Merging A+B\n");	
 			// just update A and pop B,C then push C
-			say("NOTHING ACTUALLY HAPPENING HERE YET\n");
+			say("NOTHING ACTUALLY HAPPENING HERE YET. MERGE LO/HI, DUNNO\n");
 		}
 		return 1;
 	}
@@ -224,15 +227,18 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	// this basically means A[0]-A[first_b_in_a] are already sorted, so we adjust a
 	a->nel -= first_b_in_a;
 	a->address = (char*)a->address + first_b_in_a*width;
-	say("A now starts at %d with %d elements\n", *(int*)a->address, a->nel);
+	say("A now starts at %d with %d elements:\n", *(int*)a->address, a->nel);
+	print_array( (widget*)a->address, 0, a->nel, a->nel);
 
 	say("Finding index of A[%d]=%d in B:\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width) );
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
-	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + a->nel*width, width, compare );
+	// maybe search backwards here?
+	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + (a->nel-1)*width, width, compare );
 	say("A[%d] (%d) should be placed at index %d in B (B[%d] = %d)\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width), last_a_in_b, last_a_in_b, *(int*) ( (char*)b->address + last_a_in_b*width) );
 	// this basically means B[last_a_in_b]-B[-1] are already sorted so we adjust B
-	b->nel -= last_a_in_b;
-	say("B still starts at %d with %d elements\n", *(int*)b->address, b->nel);
+	b->nel -= last_a_in_b-1; // -1 since we displace 1 item
+	say("B still starts at %d with %d elements:\n", *(int*)b->address, b->nel);
+	print_array( (widget*)b->address, 0, b->nel, b->nel);
 	
 	
 	// allocate space for the smaller (a) array
@@ -285,6 +291,9 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		memcpy( to, right, right_end-right );
 	}
 	
+	say("Merge result:\n");
+	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+	
 	// TODO: return another run I guess?
 	
 	free( temp );
@@ -317,11 +326,11 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	
 	while( reached < nel ) {
 		
-		say("Current index %zu\n", reached);
+		say("Current index %zu, finding next run\n", reached);
 		
 		current = (char*)base + reached*width;
 		ssize_t run_length = find_run( current, nel-reached, width, compare );
-		say("Run length %zd\n", run_length);
+		say("Found a run with length %zd\n", run_length);
 		print_array( (widget*)current, 0, abs(run_length), minrun );
 		if( run_length < 0 ) { // was descending
 			run_length = abs( run_length );
@@ -343,7 +352,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		
 		push_run( &sorted_runs, new_run( current, run_length ) );
 		print_stack( sorted_runs );
-		while( merge_collapse( &sorted_runs ) ) {
+		while( merge_collapse( &sorted_runs, width, compare ) ) {
 			say("Collapsed, repeating until invariants hold\n");
 		}
 		
