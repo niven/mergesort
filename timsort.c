@@ -221,22 +221,71 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)a->address, 0, a->nel, a->nel);
 	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
 	say("B[0] (%d) should be placed at index %d in A (A[%d] = %d)\n", *(int*)b->address, first_b_in_a, first_b_in_a, *(int*) ( (char*)a->address + first_b_in_a*width) );
+	// this basically means A[0]-A[first_b_in_a] are already sorted, so we adjust a
+	a->nel -= first_b_in_a;
+	a->address = (char*)a->address + first_b_in_a*width;
+	say("A now starts at %d with %d elements\n", *(int*)a->address, a->nel);
 
 	say("Finding index of A[%d]=%d in B:\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width) );
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + a->nel*width, width, compare );
 	say("A[%d] (%d) should be placed at index %d in B (B[%d] = %d)\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width), last_a_in_b, last_a_in_b, *(int*) ( (char*)b->address + last_a_in_b*width) );
+	// this basically means B[last_a_in_b]-B[-1] are already sorted so we adjust B
+	b->nel -= last_a_in_b;
+	say("B still starts at %d with %d elements\n", *(int*)b->address, b->nel);
 	
 	
 	// allocate space for the smaller (a) array
-	char* temp = malloc( a->nel * width );
-	if( temp == NULL ) {
+	// Hmm, B might now be smaller
+	char* to = (char*)a->address;
+	char* left = malloc( a->nel * width );
+	char* temp = left;
+	if( left == NULL ) {
 		perror("malloc()");
 		exit( EXIT_FAILURE );
 	}
-	memcpy( temp, a->address, a->nel * width );
+	memcpy( left, a->address, a->nel * width );
+		
+	char* left_end = left + a->nel*width;
+	char* right = (char*)b->address;
+	char* right_end = right + b->nel*width;
 	
+	size_t same_run_counter = 0;
+	int current_run = 1; // 0 is a 1 is b
+	while( left < left_end && right < left_end ) {
+		
+		// too many damn branches (shakes fist)
+		if( compare( left, right ) <= 0 ) {
+			memcpy( to, left, width );
+			left += width;
+			if( current_run == 0 ) {
+				same_run_counter++;
+			} else {
+				same_run_counter = 0;
+			}
+			current_run = 0;
+		} else {
+			memcpy( to, right, width );
+			right += width;
+			if( current_run == 1 ) {
+				same_run_counter++;
+			} else {
+				same_run_counter = 0;
+			}
+			current_run = 1;
+		}
+		
+	}
 	
+	// copy remainders
+	if( left < left_end ) {
+		memcpy( to, left, left_end-left );
+	}
+	if( right < right_end ) {
+		memcpy( to, right, right_end-right );
+	}
+	
+	// TODO: return another run I guess?
 	
 	free( temp );
 }
