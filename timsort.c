@@ -234,9 +234,9 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 	// maybe search backwards here?
 	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + (a->nel-1)*width, width, compare );
-	say("A[%d] (%d) should be placed at index %d in B (B[%d] = %d)\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width), last_a_in_b, last_a_in_b, *(int*) ( (char*)b->address + last_a_in_b*width) );
+	say("A[%d] (%d) should be placed at index %d in B (B[%d] = %d (could be out of bounds))\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width), last_a_in_b, last_a_in_b, *(int*) ( (char*)b->address + last_a_in_b*width) );
 	// this basically means B[last_a_in_b]-B[-1] are already sorted so we adjust B
-	b->nel -= last_a_in_b-1; // -1 since we displace 1 item
+	b->nel -= b->nel - last_a_in_b;
 	say("B still starts at %d with %d elements:\n", *(int*)b->address, b->nel);
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 	
