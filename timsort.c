@@ -260,8 +260,10 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	
 	size_t same_run_counter = 0;
 	int current_run = 1; // 0 is a 1 is b
-	while( left < left_end && right < left_end ) {
-		
+	while( left < left_end && right < right_end ) {
+
+		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
+	
 		// too many damn branches (shakes fist)
 		if( compare( left, right ) <= 0 ) {
 			memcpy( to, left, width );
@@ -282,7 +284,11 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 			}
 			current_run = 1;
 		}
-		
+		to += width;
+
+		say("Merged so far:\n");
+		print_array( (widget*)a->address, 0, (right_end-(char*)a->address)/width, (right_end-(char*)a->address)/width);
+
 	}
 
 	// copy remainders
