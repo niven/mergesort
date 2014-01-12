@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <fcntl.h> /* open */
 #include <stdlib.h>
 #include <stdio.h>
@@ -82,6 +83,9 @@ merged slices:
 1.  A > B+C
 2.  B > C
 
+Returns 1 if something was done, 0 otherwise.
+This allows one to do while( merge_collapse() ) which I think is nice because we
+can't tell how many times we have to do a merge due to having to maintain the invariants.
 */
 int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 	
@@ -100,15 +104,21 @@ int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 	if( B->nel <= C->nel ) { // #2 B > C
 		say("Merging B+C\n");
 		merge_lo( B, C, width, compare );
-		B->nel += C->nel;
+		B->nel += C->nel; // obviously the sum of the number of elements of both
 		run* top = pop_run( stack );
 		free( top );
+		say("Post merge B:\n");
+		print_array( (widget*)B->address, 0, B->nel, B->nel );
 		return 1;
 	}
 	
 	// TODO: I think we're missing an invariant here
 	// and it's probably A=NULL?
+	// yes, it is indeed A=NULL :)
 	
+	if( A == NULL ) {
+		return 0;
+	}
 		
 	if( A->nel <= B->nel + C->nel ) {
 		if( C->nel <= A->nel ) {
@@ -370,7 +380,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	// now we're almost done, except that we might have some unmerged things on the stack
 	say("\nWrapup merges\n");
 
-	while( peek_run( sorted_runs, 1 ) != NULL ) {
+	while( peek_run( sorted_runs, 1 ) != NULL ) { // keep popping things until there is only 1 remaining
 		print_stack( sorted_runs );
 		// want to do the same strategy I guess?
 		// for now just merge everthing
@@ -387,9 +397,16 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		free( C );
 	}
 
+	// now we have only 1 item on the stack
+	run* top = pop_run( &sorted_runs );
+	say("Finished with sorted at %p and base at %p\n", top->address, base);
+	free( top );
+	assert( sorted_runs == NULL );
 
+	say("All done, sorted:\n");
+	print_array( (widget*)base, 0, nel, nel );
 
-	free( value );
+	free( value ); // maybe merge functions should use their own value? OTOH this saves a ton of mallocs
 }
 
 
