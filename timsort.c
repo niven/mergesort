@@ -210,16 +210,15 @@ on where the smaller array is.
 
 I'm actually not convinced we need to have 2 different "symmetrical" functions for this.
 
-*/
-
 // assume a is smaller
+*/
 void merge_lo( run* a, run* b, size_t width, comparator compare ) {
-	
+
 	if( a->nel > b->nel ) {
 		printf("a has more elements than b\n");
 		exit( EXIT_FAILURE );
 	}
-	
+
 	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
 	print_array( (widget*)a->address, 0, a->nel, a->nel);
 	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
@@ -239,8 +238,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	b->nel -= b->nel - last_a_in_b;
 	say("B still starts at %d with %d elements:\n", *(int*)b->address, b->nel);
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
-	
-	
+
 	// allocate space for the smaller (a) array
 	// Hmm, B might now be smaller
 	char* to = (char*)a->address;
@@ -251,7 +249,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		exit( EXIT_FAILURE );
 	}
 	memcpy( left, a->address, a->nel * width );
-		
+	
 	char* left_end = left + a->nel*width;
 	char* right = (char*)b->address;
 	char* right_end = right + b->nel*width;
@@ -282,7 +280,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		}
 		
 	}
-	
+
 	// copy remainders
 	if( left < left_end ) {
 		memcpy( to, left, left_end-left );
@@ -290,12 +288,12 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	if( right < right_end ) {
 		memcpy( to, right, right_end-right );
 	}
-	
+
 	say("Merge result:\n");
 	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
-	
+
 	// TODO: return another run I guess?
-	
+
 	free( temp );
 }
 
