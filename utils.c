@@ -353,7 +353,7 @@ void print_stack( run_node* stack ) {
 	size_t count = 0;
 	say("Run Stack:\n");
 	while( current != NULL ) {
-		say("[%zu] %zu starting at %p\n", count++, current->item->nel, current->item->address );
+		say("[%zu] %zu elements starting at %p\n", count++, current->item->nel, current->item->address );
 		current = current->next;
 	}
 	
