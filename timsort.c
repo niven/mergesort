@@ -253,6 +253,10 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	char* left_end = left + a->nel*width;
 	char* right = (char*)b->address;
 	char* right_end = right + b->nel*width;
+
+	say("Merging:\n");
+	print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width);
+	print_array( (widget*)right, 0, (right_end-right)/width, (right_end-right)/width);
 	
 	size_t same_run_counter = 0;
 	int current_run = 1; // 0 is a 1 is b
