@@ -125,7 +125,7 @@ int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 		if( C->nel <= A->nel ) {
 			say("Merging B+C\n");
 			// just update the B and pop C
-			merge_hi( C, B, width, compare ); // B must be larger than C otherwise we'd have merge_lo()'d above
+			merge_hi( B, C, width, compare ); // B must be larger than C otherwise we'd have merge_lo()'d above
 			B->nel += C->nel;
 			run* top = pop_run( stack );
 			free( top );
@@ -167,8 +167,6 @@ size_t find_index( const void* in, size_t nel, const void* value, size_t width, 
 		return compare( in, value ) <= 0 ? 1 : 0; // equal values come after
 	}
 	
-	static int recurse_depth = 0;
-	
 	char* list = (char*)in;
 	// check where value belongs in "steps" of 2^i-1 (the -1 is to ensure we start at 0, the sequence is 0, 1, 3, 7, ...)
 	int pow = 0;
@@ -204,15 +202,10 @@ size_t find_index( const void* in, size_t nel, const void* value, size_t width, 
 		elements_remaining -= nel - index;
 	}
 	say("Recursing from index %d, elements left: %d\n", min_placement_index, elements_remaining);
-	
-	if( recurse_depth++ > 5 ) {
-		say("Recurse max hit: %d\n", recurse_depth);
-		return 0;
-	}
-	
+		
 	// now find another index starting at previous, add that to previous and that's our index
 	return min_placement_index + find_index( list + min_placement_index*width, elements_remaining, value, width, compare ); 
-	
+
 }
 
 /*
@@ -228,7 +221,7 @@ so the cases are actually:
 
 and we've decided to merge A+B.
 merge_lo: A <= B (create temp space size of A)
-merge_hi: A > B (temp space size of B)
+merge_hi: A > B (temp space size of B, meaning we have to merge from the end because that is where the free space is)
 
 Important to note A is always "left" in the enclosing array and B is alway "right", so we can't just call
 	merge_lo(B,A) instead of merge_lo(A,B)
@@ -237,6 +230,7 @@ Important to note A is always "left" in the enclosing array and B is alway "righ
 */
 void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
+	say("Merge lo");
 	assert( a->nel <= b->nel );
 
 	// Can we share this between hi/lo? Think so
@@ -287,8 +281,8 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	char* right_end = right + b->nel*width;
 
 	say("Merging:\n");
-	print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width);
-	print_array( (widget*)right, 0, (right_end-right)/width, (right_end-right)/width);
+	print_array( (widget*)left, 0, a->nel, a->nel );
+	print_array( (widget*)right, 0, b->nel, b->nel);
 	
 	size_t same_run_counter = 0;
 	int current_run = 1; // 0 is a 1 is b
@@ -319,7 +313,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		to += width;
 
 		say("Merged so far:\n");
-		print_array( (widget*)a->address, 0, (right_end-(char*)a->address)/width, (right_end-(char*)a->address)/width);
+		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
 
 	}
 
@@ -341,11 +335,96 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
-	assert( b->nel > a->nel );
+	say("Merge hi");
+	assert( a->nel > b->nel );
 
-	say("STUB! merge_hi()");
-	exit( EXIT_FAILURE );
+	// yeah, this is essentially copied from merge_lo, but when compiled non-verbose reduces to 5 lines
+	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
+	print_array( (widget*)a->address, 0, a->nel, a->nel);
+	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
+	say("B[0] (%d) should be placed at index %d in A (A[%d] = %d)\n", *(int*)b->address, first_b_in_a, first_b_in_a, *(int*) ( (char*)a->address + first_b_in_a*width) );
+	// this basically means A[0]-A[first_b_in_a] are already sorted, so we adjust a
+	a->nel -= first_b_in_a;
+	a->address = (char*)a->address + first_b_in_a*width;
+	say("A now starts at %d with %d elements:\n", *(int*)a->address, a->nel);
+	print_array( (widget*)a->address, 0, a->nel, a->nel);
+
+	say("Finding index of A[%d]=%d in B:\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width) );
+	print_array( (widget*)b->address, 0, b->nel, b->nel);
+	// maybe search backwards here?
+	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + (a->nel-1)*width, width, compare );
+	say("A[%d] (%d) should be placed at index %d in B (B[%d] = %d (could be out of bounds))\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width), last_a_in_b, last_a_in_b, *(int*) ( (char*)b->address + last_a_in_b*width) );
+	// this basically means B[last_a_in_b]-B[-1] are already sorted so we adjust B
+	b->nel -= b->nel - last_a_in_b;
+	say("B still starts at %d with %d elements:\n", *(int*)b->address, b->nel);
+	print_array( (widget*)b->address, 0, b->nel, b->nel);
+
+	// allocate space for the smaller (b) array
+	char* to = (char*)b->address + (b->nel-1)*width; // we merge from the end
+	char* right_start = malloc( b->nel * width );
+	char* temp = right_start;
+	if( right_start == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	memcpy( right_start, b->address, b->nel * width );
+
+	char* left_start = (char*)a->address;
+	char* left = (char*)a->address + (a->nel-1)*width;
+	char* right = right_start + (b->nel-1)*width;
+
+	say("Merging:\n");
+	print_array( (widget*)left_start, 0, a->nel, a->nel );
+	print_array( (widget*)right_start, 0, b->nel, b->nel );
+
+	size_t same_run_counter = 0;
+	int current_run = 1; // 0 is a 1 is b
+	while( left >= left_start && right >= right_start ) {
+
+		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
 	
+		// too many damn branches (shakes fist)
+		if( compare( left, right ) > 0 ) {
+			memcpy( to, left, width );
+			left -= width;
+			if( current_run == 0 ) {
+				same_run_counter++;
+			} else {
+				same_run_counter = 0;
+			}
+			current_run = 0;
+		} else {
+			memcpy( to, right, width );
+			right -= width;
+			if( current_run == 1 ) {
+				same_run_counter++;
+			} else {
+				same_run_counter = 0;
+			}
+			current_run = 1;
+		}
+		to -= width;
+
+		say("Merged so far:\n");
+		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+
+	}
+
+	// copy remainders, >= because we go RTL
+	if( left >= left_start ) {
+		to -= left-left_start;
+		memcpy( to, left_start, (left-left_start)+width ); // +1 width since RTL
+	}
+	if( right >= right_start ) {
+		to -= right-right_start;
+		memcpy( to, right_start, (right-right_start)+width );
+	}
+
+	say("Merge result:\n");
+	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+
+	free( temp );
+
 }
 
 /*
