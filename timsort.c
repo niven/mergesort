@@ -230,12 +230,27 @@ and we've decided to merge A+B.
 merge_lo: A <= B (create temp space size of A)
 merge_hi: A > B (temp space size of B)
 
+Important to note A is always "left" in the enclosing array and B is alway "right", so we can't just call
+	merge_lo(B,A) instead of merge_lo(A,B)
+
 // assume a is smaller
 */
 void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 	assert( a->nel <= b->nel );
 
+	// Can we share this between hi/lo? Think so
+
+	/*
+	Imagine merging an array [A,B] where A = [1,3,5,7] and B = [4,6,8,10]
+	Finding the first element of B in A means that you can skip 1,3 in the merge.
+	Same goes for the last element of A in B, you can skip 8,10
+
+	[1,3,| 4,5,6,7 | ,8,10]
+
+	The actual merge only needs to happen for the elements between the vertical bars
+
+	*/
 	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
 	print_array( (widget*)a->address, 0, a->nel, a->nel);
 	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
