@@ -390,8 +390,8 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		print_stack( sorted_runs );
 		// want to do the same strategy I guess?
 		// for now just merge everthing
-		run* B = pop_run( &sorted_runs );
 		run* C = pop_run( &sorted_runs );
+		run* B = pop_run( &sorted_runs );
 		size_t total = B->nel + C->nel;
 		say("Merging 2 runs (B+C):\n");
 		print_array( (widget*)B->address, 0, B->nel, B->nel );
