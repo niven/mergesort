@@ -227,10 +227,7 @@ I'm actually not convinced we need to have 2 different "symmetrical" functions f
 */
 void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
-	if( a->nel > b->nel ) {
-		printf("a has more elements than b\n");
-		exit( EXIT_FAILURE );
-	}
+	assert( a->nel <= b->nel );
 
 	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
 	print_array( (widget*)a->address, 0, a->nel, a->nel);
@@ -321,6 +318,8 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 }
 
 void merge_hi( run* a, run* b, size_t width, comparator compare ) {
+
+	assert( b->nel > a->nel );
 
 	say("STUB! merge_hi()");
 	exit( EXIT_FAILURE );
