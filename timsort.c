@@ -94,7 +94,7 @@ int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 	B = peek_run( *stack, 1 );
 	C = peek_run( *stack, 0 );
 	
-	printf("Merge collapse: A: %zu, B: %zu, C: %zu\n", A==NULL?0:A->nel, B==NULL?0:B->nel, C==NULL?0:C->nel );
+	say("Merge collapse: A: %zu, B: %zu, C: %zu\n", A==NULL?0:A->nel, B==NULL?0:B->nel, C==NULL?0:C->nel );
 	
 	if( A == NULL && B == NULL ) { // only single item
 		return 0;
@@ -109,6 +109,7 @@ int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 		free( top );
 		say("Post merge B:\n");
 		print_array( (widget*)B->address, 0, B->nel, B->nel );
+		is_sorted( (widget*)B->address, 0, B->nel );
 		return 1;
 	}
 	
@@ -128,10 +129,12 @@ int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 			B->nel += C->nel;
 			run* top = pop_run( stack );
 			free( top );
+			is_sorted( (widget*)B->address, 0, B->nel );
 		} else {
 			say("Merging A+B\n");	
 			// just update A and pop B,C then push C
 			say("NOTHING ACTUALLY HAPPENING HERE YET. MERGE LO/HI, DUNNO\n");
+			exit( EXIT_FAILURE );
 		}
 		return 1;
 	}
@@ -318,6 +321,9 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 }
 
 void merge_hi( run* a, run* b, size_t width, comparator compare ) {
+
+	say("STUB! merge_hi()");
+	exit( EXIT_FAILURE );
 	
 }
 
@@ -387,6 +393,10 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		run* B = pop_run( &sorted_runs );
 		run* C = pop_run( &sorted_runs );
 		size_t total = B->nel + C->nel;
+		say("Merging 2 runs (B+C):\n");
+		print_array( (widget*)B->address, 0, B->nel, B->nel );
+		print_array( (widget*)C->address, 0, C->nel, C->nel );
+
 		if( B->nel <= C->nel ) {
 			merge_lo( B, C, width, compare ); // don't like this name but it's what the jargon is
 		} else {
@@ -395,6 +405,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		push_run( &sorted_runs, new_run( B->address, total) );
 		free( B );
 		free( C );
+		is_sorted( (widget*)B->address, 0, B->nel );
 	}
 
 	// now we have only 1 item on the stack

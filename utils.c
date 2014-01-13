@@ -350,7 +350,9 @@ run* peek_run( run_node* stack, size_t index ) {
 void print_stack( run_node* stack ) {
 	
 	run_node *current = stack;
+#ifdef VERBOSE	
 	size_t count = 0;
+#endif
 	say("Run Stack:\n");
 	while( current != NULL ) {
 		say("[%zu] %zu elements starting at %p\n", count++, current->item->nel, current->item->address );
