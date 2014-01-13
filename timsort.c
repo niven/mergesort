@@ -223,6 +223,13 @@ on where the smaller array is.
 
 I'm actually not convinced we need to have 2 different "symmetrical" functions for this.
 
+so the cases are actually:
+[stuff, sub array A, sub array B, maybe more stuff]
+
+and we've decided to merge A+B.
+merge_lo: A <= B (create temp space size of A)
+merge_hi: A > B (temp space size of B)
+
 // assume a is smaller
 */
 void merge_lo( run* a, run* b, size_t width, comparator compare ) {
