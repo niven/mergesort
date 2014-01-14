@@ -285,7 +285,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	char* right = (char*)b->address;
 	char* right_end = right + b->nel*width;
 
-	memset( to, 0, (a->nel) * width );
+	memset( to, 0, (a->nel) * width ); // erase left for debug
 
 	say("Merging bounded arrays:\n");
 	print_array( (widget*)left, 0, a->nel, a->nel );
@@ -388,7 +388,9 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	char* left = (char*)a->address + (a->nel-1)*width;
 	char* right = right_start + (b->nel-1)*width;
 
-	say("Merging:\n");
+	memset( (char*)to - (b->nel-1) * width, 0, b->nel*width ); // erase right for debug (to already points at the end of left_right)
+
+	say("Merging bounded arrays:\n");
 	print_array( (widget*)left_start, 0, a->nel, a->nel );
 	print_array( (widget*)right_start, 0, b->nel, b->nel );
 	say("To target range:\n");
