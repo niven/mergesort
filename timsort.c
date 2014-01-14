@@ -325,6 +325,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	}
 
 	// copy remainders
+	// TODO: I don't think both could have remainders
 	if( left < left_end ) {
 		say("Copying %d remaining elements from left:\n", (left_end-left)/width );
 		print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width );
@@ -439,6 +440,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
 
 	// copy remainders, >= because we go RTL
+	// TODO: I don't think both could have remainders
 	if( left >= left_start ) {
 		say("Copying %d elements from left:\n", (left-left_start)/width);
 		print_array( (widget*)left_start, 0, (left-left_start)/width, (left-left_start)/width );
@@ -562,15 +564,3 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 
 	free( value ); // maybe merge functions should use their own value? OTOH this saves a ton of mallocs
 }
-
-
-void sort_function( void* base, size_t nel, size_t width, comparator compare ) {
-	
-	timsort( base, nel, width, compare );
-	
-}
-
-size_t working_set_size( size_t element_size, size_t nel ) {
-	return 2 * element_size * nel;
-}
-
