@@ -326,9 +326,13 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 	// copy remainders
 	if( left < left_end ) {
+		say("Copying %d remaining elements from left:\n", (left_end-left)/width );
+		print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width );
 		memcpy( to, left, left_end-left );
 	}
 	if( right < right_end ) {
+		say("Copying %d remaining elements from right:\n", (right_end-right)/width );
+		print_array( (widget*)left, 0, (right_end-right)/width, (right_end-right)/width );
 		memcpy( to, right, right_end-right );
 	}
 
@@ -434,11 +438,15 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
 	// copy remainders, >= because we go RTL
 	if( left >= left_start ) {
+		say("Copying %d elements from left:\n", (left-left_start)/width);
+		print_array( (widget*)left_start, 0, (left-left_start)/width, (left-left_start)/width );
 		to -= left-left_start;
 		memcpy( to, left_start, (left-left_start)+width ); // +1 width since RTL
 	}
 	if( right >= right_start ) {
-		to -= right-right_start;
+		say("Copying %d elements from right:\n", (right-right_start)/width+1);
+		print_array( (widget*)right_start, 0, (right-right_start)/width+1, (right-right_start)/width+1 );
+		to -= (right - right_start) ;
 		memcpy( to, right_start, (right-right_start)+width );
 	}
 
