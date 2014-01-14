@@ -87,8 +87,7 @@ while( $size <= $opt{max} ) {
    		printf "child exited with value %d\n", $? >> 8;
     }
 	if( $? != 0 ) {
-		printf("Failed at $size elements ($datafile)\n");
-		exit;
+		die("Failed at $size elements ($datafile)\n");
 	}
 	
 	$size++;
