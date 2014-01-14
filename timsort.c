@@ -230,10 +230,16 @@ Important to note A is always "left" in the enclosing array and B is alway "righ
 */
 void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
-	say("Merge lo");
+	say("Merge lo\n");
 	assert( a->nel <= b->nel );
 
+	say("Merging L+R:\n");
+	print_array( (widget*)a->address, 0, a->nel, a->nel );
+	print_array( (widget*)b->address, 0, b->nel, b->nel);
+
 	// Can we share this between hi/lo? Think so
+
+	const void* merged_array = a->address; // after doung this first_b_in_a business, we might start at an offset from A
 
 	/*
 	Imagine merging an array [A,B] where A = [1,3,5,7] and B = [4,6,8,10]
@@ -280,7 +286,9 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	char* right = (char*)b->address;
 	char* right_end = right + b->nel*width;
 
-	say("Merging:\n");
+	memset( to, 0, (a->nel) * width );
+
+	say("Merging bounded arrays:\n");
 	print_array( (widget*)left, 0, a->nel, a->nel );
 	print_array( (widget*)right, 0, b->nel, b->nel);
 	
@@ -326,7 +334,10 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	}
 
 	say("Merge result:\n");
-	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+	a->address = merged_array;
+	print_array( (widget*)a->address, 0, a->nel+b->nel-1, a->nel+b->nel-1 );
+
+	is_sorted( (widget*)a->address, 0, a->nel+b->nel );
 
 	// TODO: return another run I guess?
 
@@ -335,8 +346,10 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
-	say("Merge hi");
+	say("Merge hi\n");
 	assert( a->nel > b->nel );
+
+	const void* merged_array = a->address; // after doing this first_b_in_a business, we might start at an offset from A
 
 	// yeah, this is essentially copied from merge_lo, but when compiled non-verbose reduces to 5 lines
 	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
@@ -360,7 +373,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 
 	// allocate space for the smaller (b) array
-	char* to = (char*)b->address + (b->nel-1)*width; // we merge from the end
+	char* to = (char*)a->address + (b->nel-1)*width + (a->nel-1)*width + width; // we merge from the end, a+b elements
 	char* right_start = malloc( b->nel * width );
 	char* temp = right_start;
 	if( right_start == NULL ) {
@@ -376,6 +389,8 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	say("Merging:\n");
 	print_array( (widget*)left_start, 0, a->nel, a->nel );
 	print_array( (widget*)right_start, 0, b->nel, b->nel );
+	say("To target range:\n");
+	print_array( (widget*)to, 0, a->nel + b->nel, a->nel + b->nel );
 
 	size_t same_run_counter = 0;
 	int current_run = 1; // 0 is a 1 is b
@@ -410,6 +425,9 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
 	}
 
+	say("Merged runs, may have remainders:\n");
+	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+
 	// copy remainders, >= because we go RTL
 	if( left >= left_start ) {
 		to -= left-left_start;
@@ -421,8 +439,8 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	}
 
 	say("Merge result:\n");
-	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
-
+	a->address = merged_array;
+	print_array( (widget*)a->address, 0, a->nel+b->nel + first_b_in_a + last_a_in_b, a->nel+b->nel + first_b_in_a + last_a_in_b );
 	free( temp );
 
 }
