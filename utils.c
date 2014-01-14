@@ -66,8 +66,8 @@ void is_sorted(widget* widgets, int from, int to) {
 
 	for( int i=from; i<to-1; i++ ) {
 		if( widgets[i].number > widgets[i+1].number ) {
-			say("Fail at %d/%d (%d/%d)\n", i, i+1, widgets[i].number, widgets[i+1].number);
-			exit(0);
+			say("Not sorted at %d/%d (%d/%d)\n", i, i+1, widgets[i].number, widgets[i+1].number);
+			exit( EXIT_FAILURE );
 		}
 	}
 
