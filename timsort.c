@@ -104,7 +104,6 @@ int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 	if( B->nel <= C->nel ) { // #2 B > C
 		say("Merging B+C\n");
 		merge_lo( B, C, width, compare );
-		B->nel += C->nel; // obviously the sum of the number of elements of both
 		run* top = pop_run( stack );
 		free( top );
 		say("Post merge B:\n");
@@ -126,7 +125,6 @@ int merge_collapse( run_node** stack, size_t width, comparator compare ) {
 			say("Merging B+C\n");
 			// just update the B and pop C
 			merge_hi( B, C, width, compare ); // B must be larger than C otherwise we'd have merge_lo()'d above
-			B->nel += C->nel;
 			run* top = pop_run( stack );
 			free( top );
 			is_sorted( (widget*)B->address, 0, B->nel );
@@ -230,7 +228,8 @@ Important to note A is always "left" in the enclosing array and B is alway "righ
 */
 void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
-	say("Merge lo\n");
+	size_t total_elements = a->nel + b->nel;
+	say("Merge lo (%zu elements)\n", total_elements);
 	assert( a->nel <= b->nel );
 
 	say("Merging L+R:\n");
@@ -335,18 +334,21 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 	say("Merge result:\n");
 	a->address = merged_array;
-	print_array( (widget*)a->address, 0, a->nel+b->nel-1, a->nel+b->nel-1 );
+	print_array( (widget*)a->address, 0, total_elements, total_elements );
 
 	is_sorted( (widget*)a->address, 0, a->nel+b->nel );
 
 	// TODO: return another run I guess?
 
 	free( temp );
+	
+	a->nel = total_elements; // update the run info
 }
 
 void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
-	say("Merge hi\n");
+	size_t total_elements = a->nel + b->nel;
+	say("Merge hi (%zu elements)\n", total_elements);
 	assert( a->nel > b->nel );
 
 	const void* merged_array = a->address; // after doing this first_b_in_a business, we might start at an offset from A
@@ -440,9 +442,14 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
 	say("Merge result:\n");
 	a->address = merged_array;
-	print_array( (widget*)a->address, 0, a->nel+b->nel + first_b_in_a + last_a_in_b, a->nel+b->nel + first_b_in_a + last_a_in_b );
+
+	print_array( (widget*)a->address, 0, total_elements, total_elements );
+
+	is_sorted( (widget*)a->address, 0, total_elements );
+
 	free( temp );
 
+	a->nel = total_elements; // update the run info
 }
 
 /*
