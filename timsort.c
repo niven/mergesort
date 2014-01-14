@@ -336,7 +336,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		memcpy( to, right, right_end-right );
 	}
 
-	say("Merge result:\n");
+	say("Merge lo result:\n");
 	a->address = merged_array;
 	print_array( (widget*)a->address, 0, total_elements, total_elements );
 
@@ -354,6 +354,10 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	size_t total_elements = a->nel + b->nel;
 	say("Merge hi (%zu elements)\n", total_elements);
 	assert( a->nel > b->nel );
+
+	say("Merging L+R:\n");
+	print_array( (widget*)a->address, 0, a->nel, a->nel );
+	print_array( (widget*)b->address, 0, b->nel, b->nel);
 
 	const void* merged_array = a->address; // after doing this first_b_in_a business, we might start at an offset from A
 
@@ -449,8 +453,11 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 		to -= (right - right_start) ;
 		memcpy( to, right_start, (right-right_start)+width );
 	}
+	say("Remainders copied:\n");
+	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+	
 
-	say("Merge result:\n");
+	say("Merge hi result:\n");
 	a->address = merged_array;
 
 	print_array( (widget*)a->address, 0, total_elements, total_elements );
