@@ -340,9 +340,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	a->address = merged_array;
 	print_array( (widget*)a->address, 0, total_elements, total_elements );
 
-	is_sorted( (widget*)a->address, 0, a->nel+b->nel );
-
-	// TODO: return another run I guess?
+	is_sorted( (widget*)a->address, 0, total_elements );
 
 	free( temp );
 	
@@ -383,7 +381,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 
 	// allocate space for the smaller (b) array
-	char* to = (char*)a->address + (b->nel-1)*width + (a->nel-1)*width + width; // we merge from the end, a+b elements
+	char* to = (char*)a->address + (a->nel+b->nel-1) * width; // we merge from the end, a+b elements
 	char* right_start = malloc( b->nel * width );
 	char* temp = right_start;
 	if( right_start == NULL ) {
@@ -402,7 +400,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)left_start, 0, a->nel, a->nel );
 	print_array( (widget*)right_start, 0, b->nel, b->nel );
 	say("To target range:\n");
-	print_array( (widget*)to, 0, a->nel + b->nel, a->nel + b->nel );
+	print_array( (widget*)(to - (a->nel+b->nel-1)*width), 0, a->nel+b->nel, a->nel+b->nel );
 
 	size_t same_run_counter = 0;
 	int current_run = 1; // 0 is a 1 is b
