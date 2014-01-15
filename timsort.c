@@ -170,8 +170,7 @@ size_t find_index( const void* in, size_t nel, const void* value, size_t width, 
 	int pow = 0;
 	size_t index = (1 << pow) - 1;
 	say("About to compare values[%d] = %d with %d\n", index, *(int*) (list + index*width), *(int*)value );
-	int sentinel = 0;
-	while( sentinel++ < 5 && index < nel && compare( list + index*width, value ) <= 0 ) {
+	while( index < nel && compare( list + index*width, value ) <= 0 ) {
 		index = (1 << ++pow) -1;
 		say("Going to compare values[%d] = %d with %d\n", index, *(int*) (list + index*width), *(int*)value ); 
 	}
