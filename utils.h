@@ -1,3 +1,6 @@
+#ifndef UTILS
+#define UTILS
+
 #include <stdint.h>
 
 // TODO: make sure suppress macros are empty when VERBOSE is not defined
@@ -118,3 +121,5 @@ run* pop_run( run_node** stack );
 run* peek_run( run_node* stack, size_t index );
 
 void print_stack( run_node* stack );
+
+#endif
