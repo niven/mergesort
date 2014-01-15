@@ -11,6 +11,8 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
+#define MIN_GALLOP 8
+
 void merge_lo( run* a, run* b, size_t width, comparator compare );
 void merge_hi( run* a, run* b, size_t width, comparator compare );
 
@@ -188,6 +190,9 @@ size_t find_index( const void* in, size_t nel, const void* value, size_t width, 
 		return 0;
 	}
 
+
+	// BUG is here somewhere, if the element we're looking for should be placed after the last element I think
+	
 	pow--;
 	int min_placement_index = MIN(1 << pow, nel-1); // the previous value of index+1 (since we already compared that one) unless index happened to be the last index of list;
 	size_t elements_remaining = nel - min_placement_index; // if we have 10 elements and min=4 we place at list[4] meaning list[5-9] remains = 5
@@ -251,7 +256,9 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	*/
 	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
 	print_array( (widget*)a->address, 0, a->nel, a->nel);
+	SUPPRESS_STDOUT
 	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
+	RETURN_STDOUT
 	say("B[0] (%d) should be placed at index %d in A (A[%d] = %d)\n", *(int*)b->address, first_b_in_a, first_b_in_a, *(int*) ( (char*)a->address + first_b_in_a*width) );
 	// this basically means A[0]-A[first_b_in_a] are already sorted, so we adjust a
 	a->nel -= first_b_in_a;
@@ -296,9 +303,10 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	int current_run = 1; // 0 is a 1 is b
 	while( left < left_end && right < right_end ) {
 
-		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
+//		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
 	
 		// too many damn branches (shakes fist)
+		// also copying elements 1 by one instead of while ( a<= b ){ count++}; memcpy( to, a, count ); a+=count
 		if( compare( left, right ) <= 0 ) {
 			memcpy( to, left, width );
 			left += width;
@@ -320,8 +328,8 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		}
 		to += width;
 
-		say("Merged so far:\n");
-		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+//		say("Merged so far:\n");
+//		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
 
 	}
 
@@ -412,7 +420,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	int current_run = 1; // 0 is a 1 is b
 	while( left >= left_start && right >= right_start ) {
 
-		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
+//		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
 	
 		// too many damn branches (shakes fist)
 		if( compare( left, right ) > 0 ) {
@@ -436,8 +444,8 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 		}
 		to -= width;
 
-		say("Merged so far:\n");
-		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+//		say("Merged so far:\n");
+//		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
 
 	}
 
@@ -477,6 +485,10 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 /*
 http://bugs.python.org/file4451/timsort.txt
 http://infopulseukraine.com/eng/blog/Software-Development/Algorithms/Timsort-Sorting-Algorithm/
+
+Note: keeping track of runs with number of elements might be inelegant. I'm starting to think last_index would
+be better
+
 */
 void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	
@@ -487,7 +499,7 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 	}
 	
 	int minrun = calc_minrun( nel );
-	minrun = 1; // for debugging, so we don't have to test arrays of many elements to have minrun << nel
+//	minrun = 1; // for debugging, so we don't have to test arrays of many elements to have minrun << nel
 	say("Minrun for %zu elements: %d\n", nel, minrun);
 	
 	run_node* sorted_runs = NULL; // stack for keeping run indices
