@@ -363,7 +363,9 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	// yeah, this is essentially copied from merge_lo, but when compiled non-verbose reduces to 5 lines
 	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
 	print_array( (widget*)a->address, 0, a->nel, a->nel);
+	SUPPRESS_STDOUT
 	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
+	RETURN_STDOUT
 	say("B[0] (%d) should be placed at index %d in A (A[%d] = %d)\n", *(int*)b->address, first_b_in_a, first_b_in_a, *(int*) ( (char*)a->address + first_b_in_a*width) );
 	// this basically means A[0]-A[first_b_in_a] are already sorted, so we adjust a
 	a->nel -= first_b_in_a;
@@ -374,7 +376,9 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	say("Finding index of A[%d]=%d in B:\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width) );
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 	// maybe search backwards here?
+	SUPPRESS_STDOUT
 	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + (a->nel-1)*width, width, compare );
+	RETURN_STDOUT
 	say("A[%d] (%d) should be placed at index %d in B (B[%d] = %d (could be out of bounds))\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width), last_a_in_b, last_a_in_b, *(int*) ( (char*)b->address + last_a_in_b*width) );
 	// this basically means B[last_a_in_b]-B[-1] are already sorted so we adjust B
 	b->nel -= b->nel - last_a_in_b;

@@ -2,8 +2,12 @@
 
 // TODO: make sure suppress macros are empty when VERBOSE is not defined
 
+#ifdef VERBOSE
+
+int SUPPRESS_bak, SUPPRESS_new;
+
 #define SUPPRESS_STDOUT \
-		int SUPPRESS_bak, SUPPRESS_new; \
+		extern int SUPPRESS_bak, SUPPRESS_new; \
 		fflush(stdout); \
 		SUPPRESS_bak = dup(1); \
 		SUPPRESS_new = open("/dev/null", O_WRONLY); \
@@ -15,6 +19,12 @@
 		dup2(SUPPRESS_bak, 1); \
 		close(SUPPRESS_bak);
 
+#else
+
+#define SUPPRESS_STDOUT // nop
+#define RETURN_STDOUT // nop
+
+#endif
 
 /*
 Shellsort the numbers using the Marcin Ciura sequence.
