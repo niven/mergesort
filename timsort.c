@@ -190,12 +190,20 @@ size_t find_index( const void* in, size_t nel, const void* value, size_t width, 
 		return 0;
 	}
 
-
 	// BUG is here somewhere, if the element we're looking for should be placed after the last element I think
 	
 	pow--;
-	int min_placement_index = MIN(1 << pow, nel-1); // the previous value of index+1 (since we already compared that one) unless index happened to be the last index of list;
-	size_t elements_remaining = nel - min_placement_index; // if we have 10 elements and min=4 we place at list[4] meaning list[5-9] remains = 5
+	size_t min_placement_index = MIN(1 << pow, nel-1); // the previous value of index+1 (since we already compared that one) unless index happened to be the last index of list;
+	
+	// if we have 10 elements and min=4 we continue searching at list[4], meaning list[4-9] = 6 elements remaining
+	size_t elements_remaining = nel - min_placement_index; 
+	
+	say("Elements remaining %zu, min_placement_index %zu\n", elements_remaining, min_placement_index);
+	
+	if( elements_remaining == 0 ) {
+		return min_placement_index;
+	}
+	
 	if( index >= nel ) { // case #3
 		// whatever remains is "the rest"
 		say("Recursing until end of list (%d elements)\n", elements_remaining);
@@ -203,7 +211,7 @@ size_t find_index( const void* in, size_t nel, const void* value, size_t width, 
 		// we can exclude everything gte index. If we have 10 elements list[4] = 8 and value = 5 everthing in list[4-9] can be left out = 6 = 10-index
 		elements_remaining -= nel - index;
 	}
-	say("Recursing from index %d, elements left: %d\n", min_placement_index, elements_remaining);
+	say("Recursing from index %d, elements remaining after removing tail: %d\n", min_placement_index, elements_remaining);
 		
 	// now find another index starting at previous, add that to previous and that's our index
 	return min_placement_index + find_index( list + min_placement_index*width, elements_remaining, value, width, compare ); 
