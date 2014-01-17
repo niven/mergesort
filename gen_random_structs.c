@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -5,15 +6,6 @@
 #include <limits.h>
 
 #include "utils.h"
-
-enum distribution { 
-	rnd,
-	saw_up, 
-	saw_down, 
-	plateau, 
-	organ_pipes, 
-	partial_sorted, 
-};
 
 // to produce these sequences we have a common signature
 typedef uint32_t (*generator)(int);
@@ -23,13 +15,9 @@ Produce sequence like /|/|/|/|
 */
 uint32_t generator_saw_up(int max) {
 	
-	static uint32_t generator_last = 0;
+	static uint32_t generator_last = 1;
 
-	if( (rand() % 100) < 10 ) {
-		generator_last = 0;
-	} else {
-		generator_last += rand() % max/4; // might wraparound, but that is cool
-	}
+	generator_last += (rand() % max)/ sqrt(max); // might wraparound, but that is cool
 	
 	return generator_last % max;
 }
@@ -39,13 +27,9 @@ Produce sequence like |\|\|\|\
 */
 uint32_t generator_saw_down(int max) {
 	
-	static uint32_t generator_last = 255;
-
-	if( (rand() % 100) < 10 ) {
-		generator_last = max;
-	} else {
-		generator_last -= rand() % max/4; // might wraparound, but that is cool
-	}
+	static uint32_t generator_last = INT_MAX;
+	
+	generator_last -= (rand() % max) / sqrt(max); // might wraparound, but that is cool
 	
 	return generator_last % max;
 }
