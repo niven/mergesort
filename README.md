@@ -1,13 +1,13 @@
 # So What's All This Then?
 	
-I wanted to do some C for fun, and also finally implement a sort that uses another sort in it's inner loop. This was something that I've always was a thing sorting algorithms do for performance. Then it got a bit out of hand. Now I'm implementing interesting sort algorithms and doing benchmarking. So yes, the internet is filled with benchmarks, sorting algorithms and the like, but I find that reading a high level description and looking at some graphs doesn't do it for me.
+I wanted to do some C for fun, and also finally implement a sort that uses another sort in it's inner loop. This was something that I've always read was a thing sorting algorithms do for performance. Then it got a bit out of hand. Now I'm implementing interesting sort algorithms and doing benchmarking. So yes, the internet is filled with benchmarks, sorting algorithms and the like, but I find that reading a high level description and looking at some graphs doesn't do it for me.
 
 # TODO
-- [ ] stdlib merge/heap return -1 on error and apparently qsort can't fail :) So find some way to put that in the main_template.c
-- [ ] print_array could also be generic (maybe have a tostring somewere)
-- [ ] gen_random_structs should be able to generate data that is random,zigzag asc/desc, organ pipes, equal numbers, sorted subranges etc.
-- [ ] extend benchmarking script to benchmark (merge)sorts with inner sorts at different block_widths and different inner ones
-- [ ] extend benchmarking script to use different input data (random, saw, subsorted, ..)
+- stdlib merge/heap return -1 on error and apparently qsort can't fail :) So find some way to put that in the main_template.c
+- print_array could also be generic (maybe have a tostring somewere)
+- gen_random_structs should be able to generate data that is random,zigzag asc/desc, organ pipes, equal numbers, sorted subranges etc.
+- extend benchmarking script to benchmark (merge)sorts with inner sorts at different block_widths and different inner ones
+- extend benchmarking script to use different input data (random, saw, subsorted, ..)
 
 # Sorting algorithms
 
@@ -61,9 +61,17 @@ To run the benchmark:
 
     perl benchmark.pl --min=100 --max=20000 --num=100 --element_size=8 --iterations=3
 
-It will compile everything and generate files with randomly generated "Widgets". These are structs with a uint32_t number used for comparisons and a variable padding. You can set this with *element_size. In practice Widgets may have different sizes due to struct alignment.
+It will compile everything and generate files with randomly generated "Widgets". These are structs with a uint32_t number used for comparisons and a variable padding. You can set this with *element_size*. In practice Widgets may have different sizes due to struct alignment.
 
 Other options are *min/max* which specify the size of the datasets, and *num* specifies the number of steps to take. *iterations* specifies how many time each sort is run to avoid random spikes.
+
+## Generating "Real World Data"
+
+This actually means generating data with specific patterns in it, like ranges that are already sorted, high number of equal items etc.
+
+Currently I'm figuring out how to create a "sawtooth" pattern that is made up of increasing sets of variable lengths around a mean.
+
+Code is in gen_random_structs.c, which I'm going to add some final output/report to that summarizes the data that it has generated.
 
 # Updates
 
@@ -81,11 +89,13 @@ Still not seeing any kind of cache related problem.
 
 # Update 3: Added Pyramid Mergesort
 results_3.png
+
 Comparing merge_sort and pyramid_merge with disappointing results: pyramid is actually slower.
 Haven't seen any evidence of cache problems in either version though.
 
 # Update 4: Using a callback for comparisons in Mergesort
 results_4.png
+
 Now converted everything but pyramid_merge into a generic sort (same interface as stdlib ones have)
 Now things "finally" look in favor of the stdlib functions, which is a good thing.
 Note: the mergesort with inner shellsort uses an inner_block_width of 4 which is a very bad choice I'm sure.
@@ -93,6 +103,7 @@ The difference is large enough that it makes sense reimplementing a sort if you 
 
 # Update 5: Pyramid Mergesort now also with comparison callback
 results_5.png
+
 Pyramid_mergesort now also generic and ran a benchmark with inner_sort_width=100.
 The mergesorts still have a lot of innefficient code though.
 Next step is to see if I can actually find any effect from L1/2/3 caches.
@@ -100,16 +111,22 @@ Next step is to see if I can actually find any effect from L1/2/3 caches.
 # Building
 
     make all
+
 or
+
     make verbose
 
 Since we are sorting structs that have padding, you can also set the padding size which defaults to 4 (creating structs of size 8 bytes)
-Override this with: 
+Override this with:
+ 
     make verbose PAD_SIZE=6
 
 Using *verbose* will print a ton of information on what is happening exactly when you run the sorts.
 
 The mergesorts use shellsort as an inner sort, with a default block width of 4, which is convenient for debugging.
 You can override this with
-set -x SORTER_BLOCK_WIDTH (for the excellent fish shell) or the equivalent export if you use bash or something.
+
+    set -x SORTER_BLOCK_WIDTH (for the excellent fish shell) 
+	
+or the equivalent export if you use bash or something.
 The perl benchmark script will abort if you haven't set this.
