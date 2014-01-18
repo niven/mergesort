@@ -70,6 +70,8 @@ Other options are *min/max* which specify the size of the datasets, and *num* sp
 This actually means generating data with specific patterns in it, like ranges that are already sorted, high number of equal items etc.
 
 Currently I'm figuring out how to create a "sawtooth" pattern that is made up of increasing sets of variable lengths around a mean.
+I came up with a simple but in retrospect awful rejection method.
+Instead, I'm going to go with the ZIggurat Algorithm as unclearly described on Wikipedia (http://en.wikipedia.org/wiki/Ziggurat_algorithm) and very comprehensibly here: http://heliosphan.org/zigguratalgorithm/zigguratalgorithm.html
 
 Code is in gen_random_structs.c, which I'm going to add some final output/report to that summarizes the data that it has generated.
 
