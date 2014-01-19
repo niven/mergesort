@@ -24,4 +24,4 @@
 
 void ziggurat_init( const long rand_seed );
 
-uint32_t ziggurat_next();
+int32_t ziggurat_next();

@@ -21,6 +21,7 @@
   *
   */
 
+#include <assert.h>
 #include <limits.h>
 #include <math.h> /* exp ln sqrt */
 #include <stdint.h>
@@ -39,6 +40,8 @@
 
 static const double uint_to_u = 1.0 / (double)INT_MAX;
 
+static double AREA_Div_Y0;
+
 static double x[BLOCK_COUNT+1];
 static double y[BLOCK_COUNT];
 
@@ -52,9 +55,13 @@ double gaussian_PDF_denormalized_inverse( double y ) {
 	return sqrt( -2.0 * log(y) );
 }
 
+double ziggurat_sample_tail() {
+	return 0;
+}
+
 void ziggurat_init( const long rand_seed ) {
 	
-	srand( rand_seed );
+	srandom( rand_seed );
 	
 	x[0] = R;
 	y[0] = gaussian_PDF_denormalized( R );
@@ -69,13 +76,58 @@ void ziggurat_init( const long rand_seed ) {
 	
 	x[BLOCK_COUNT] = 0.0;
 	
+    // Useful precomputed values.
+    AREA_Div_Y0 = AREA / y[0];
+	
     x_comp[0] = (( R * y[0]) / AREA) * INT_MAX;
 
     for(int i=1; i<BLOCK_COUNT-1; i++) {
         x_comp[i] = (x[i+1] / x[i]) * (double)INT_MAX;
     }
     x_comp[BLOCK_COUNT-1] = 0;  // Shown for completeness.
-	
-	
+
 }
 
+int32_t ziggurat_next() {
+
+	uint8_t random_box;
+	int8_t sign;
+	uint32_t u;
+	double x_coord;
+
+	// There is a small chance e don't find a number
+	// instead of a while(1) or for(;;) a goto makes more sense
+generate_sample:	
+	random_box = (uint8_t)random();
+
+	sign = (random_box & 0x80) == 0 ? -1 : 1; // high bit determines sign
+
+	random_box &= 0x7f; // keep lower 7 bits
+
+	printf("Random box %d, sign %d\n", random_box, sign);
+	
+    // Generate uniform random value with range [0,0xffffffff]
+	// ehr, so essentially a 32 bit unsigned int ;)
+	// turns out RAND_MAX == 0x7fffffff, which is not enough
+    u = random(); // so use random()
+	
+	if( random_box == 0 ) {
+		if( u < x_comp[0] ) {
+			return sign * (int32_t) (u * uint_to_u * AREA_Div_Y0);
+		}
+		
+		return sign * ziggurat_sample_tail();
+	}
+	
+	if( u < x_comp[random_box] ) {
+		return sign * (int32_t) (u * uint_to_u * x[random_box]);
+	}
+	
+	x_coord = u * uint_to_u * x[random_box];
+    if( y[random_box-1] + ((y[random_box] - y[random_box-1]) * (double)random()) < gaussian_PDF_denormalized(x_coord) ) {
+        return sign * x_coord;
+    }	
+
+	goto generate_sample; // try again
+
+}
