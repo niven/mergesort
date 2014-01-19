@@ -74,12 +74,11 @@ int main( int argc, char* argv[] ) {
 			say("Check %d < %d\n", target, array[index] );
 			assert( target < array[index] );
 		}
-		
+
 		assert( correct_index == index );
-		
+	
 		free( array );
 	}
-	
 
 	exit( 0 );
 }
