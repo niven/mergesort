@@ -3,7 +3,7 @@ PAD_SIZE=4
 CFLAGS=-Wall -O3 -pedantic -DPAD_SIZE=${PAD_SIZE}
 CMD=${CC} ${CFLAGS}
 
-all: clean gen_random_ints gen_random_structs utils.o sort_functions
+all: clean tools sort_functions
 	${CMD} -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} -DSORT_FUNCTION=qsort utils.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DSORT_FUNCTION=mergesort utils.o main_template.c -o bin/stdlib_mergesort
@@ -32,6 +32,12 @@ sort_functions: *sort.c
 clean:
 	rm -f bin/* gen_random_ints gen_random_structs *.o
 
+tools: utils.* gen_random_ints.c gen_random_structs.c ziggurat.*
+	${CMD} -c utils.c
+	${CMD} -c ziggurat.c
+	${CMD} gen_random_ints.c
+	${CMD} gen_random_structs.c
+
 insertionsort: main_template.c utils.o insertionsort.o
 	${CMD} -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
 
@@ -55,9 +61,3 @@ stdlib_mergesort: main_template.c utils.o stdlib_mergesort.o
 
 stdlib_heapsort: main_template.c utils.o stdlib_heapsort.o
 	${CMD} -DSORT_FUNCTION=heapsort utils.o stdlib_heapsort.o main_template.c -o bin/stdlib_heapsort
-
-utils.o: utils.h utils.c
-	${CMD} -c utils.c
-
-
-
