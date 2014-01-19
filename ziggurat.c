@@ -21,9 +21,11 @@
   *
   */
 
-#include <stdlib.h>
 #include <limits.h>
+#include <math.h> /* exp ln sqrt */
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "ziggurat.h"
 
@@ -42,12 +44,12 @@ static double y[BLOCK_COUNT];
 
 static uint32_t x_comp[BLOCK_COUNT];
 
-uint32_t gaussian_PDF_denormalized( double x_coord ) {
-	return 1;
+double gaussian_PDF_denormalized( double x ) {
+	return exp( -(x*x / 2.0) );
 }
 
-double gaussian_PDF_denormalized_inverse( double y_coord ) {
-	return 1.0;
+double gaussian_PDF_denormalized_inverse( double y ) {
+	return sqrt( -2.0 * log(y) );
 }
 
 void ziggurat_init( const long rand_seed ) {
