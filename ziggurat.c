@@ -57,7 +57,15 @@ double gaussian_PDF_denormalized_inverse( double y ) {
 }
 
 double ziggurat_sample_tail() {
-	return 0;
+
+    double x, y;
+
+    do {
+        x = -log( (double)rand()/(double)RAND_MAX ) / R;
+        y = -log( (double)rand()/(double)RAND_MAX );
+    } while( y+y < x*x );
+
+    return R + x;
 }
 
 void ziggurat_init( const long rand_seed ) {
@@ -83,32 +91,29 @@ void ziggurat_init( const long rand_seed ) {
     x_comp[0] = (( R * y[0]) / AREA) * INT_MAX;
 
     for(int i=1; i<BLOCK_COUNT-1; i++) {
-        x_comp[i] = (x[i+1] / x[i]) * (double)INT_MAX;
+        x_comp[i] = (uint32_t) ((x[i+1] / x[i]) * (double)UINT32_MAX);
     }
     x_comp[BLOCK_COUNT-1] = 0;  // Shown for completeness.
 
 }
 
 // returns a randomly generated, normal distributed number
-// in the whole range of an int32_t
-int32_t ziggurat_next() {
+double ziggurat_next() {
 
 	uint8_t random_box;
-	int8_t sign;
 	uint32_t u;
-	double x_coord;
+	double x_coord, sign;
 
 	// There is a small chance e don't find a number
 	// instead of a while(1) or for(;;) a goto makes more sense
 generate_sample:	
+
 	random_box = (uint8_t)random();
 
-	sign = (random_box & 0x80) == 0 ? -1 : 1; // high bit determines sign
+	sign = (random_box & 0x80) == 0 ? -1.0 : 1.0; // high bit determines sign
 
 	random_box &= 0x7f; // keep lower 7 bits
 
-	printf("Random box %d, sign %d\n", random_box, sign);
-	
     // Generate uniform random value with range [0,0xffffffff]
 	// ehr, so essentially a 32 bit unsigned int ;)
 	// turns out RAND_MAX == 0x7fffffff, which is not enough
@@ -116,18 +121,19 @@ generate_sample:
 	
 	if( random_box == 0 ) {
 		if( u < x_comp[0] ) {
-			return sign * (int32_t) (u * uint_to_u * AREA_Div_Y0);
+			return sign * (double)u * uint_to_u * AREA_Div_Y0;
 		}
 		
 		return sign * ziggurat_sample_tail();
 	}
 	
 	if( u < x_comp[random_box] ) {
-		return sign * (int32_t) (u * uint_to_u * x[random_box]);
+		return sign * (double)u * uint_to_u * x[random_box];
 	}
 	
 	x_coord = u * uint_to_u * x[random_box];
-    if( y[random_box-1] + ((y[random_box] - y[random_box-1]) * (double)random()) < gaussian_PDF_denormalized(x_coord) ) {
+
+    if( y[random_box-1] + ((y[random_box] - y[random_box-1]) * ((double)rand()/(double)RAND_MAX)) < gaussian_PDF_denormalized(x_coord) ) {
         return sign * x_coord;
     }	
 
@@ -154,12 +160,12 @@ int main( int argc, char* argv[] ) {
 	
 	// Welford's method for a running sd
 	double M = 0.0, S = 0.0, temp;
-	int32_t value;
+	double value;
 	size_t k = 1;
 	for(size_t i=0; i<count; i++) {
 		temp = M;
 		value = mean + (ziggurat_next() * sd);
-		
+
 		M += (double)(value - temp) / (double)k;
 		S += (double)(value - temp) * (double)( value - M );
 		k++;
@@ -168,7 +174,7 @@ int main( int argc, char* argv[] ) {
 	double actual_sd = sqrt( S / (double)(k-1) );
 	double actual_mean = M;
 	
-	printf("Actual sd: %f, actual mean %f\n", actual_sd, actual_mean);
+	printf("\nActual sd: %f, actual mean %f\n", actual_sd, actual_mean);
 	
 	exit( EXIT_SUCCESS );
 }
