@@ -35,8 +35,9 @@ clean:
 tools: utils.* gen_random_ints.c gen_random_structs.c ziggurat.*
 	${CMD} -c utils.c
 	${CMD} -c ziggurat.c
-	${CMD} gen_random_ints.c
-	${CMD} gen_random_structs.c
+	${CMD} ziggurat_test.c ziggurat.o -o ziggurat_test
+	${CMD} gen_random_ints.c -o gen_random_ints
+	${CMD} gen_random_structs.c -o gen_random_structs
 
 insertionsort: main_template.c utils.o insertionsort.o
 	${CMD} -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
