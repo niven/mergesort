@@ -48,14 +48,6 @@ static double y[BLOCK_COUNT];
 
 static uint32_t x_comp[BLOCK_COUNT];
 
-double gaussian_PDF_denormalized( double x ) {
-	return exp( -(x*x / 2.0) );
-}
-
-double gaussian_PDF_denormalized_inverse( double y ) {
-	return sqrt( -2.0 * log(y) );
-}
-
 double ziggurat_sample_tail() {
 
     double x, y;
@@ -73,13 +65,13 @@ void ziggurat_init( const long rand_seed ) {
 	srandom( rand_seed );
 	
 	x[0] = R;
-	y[0] = gaussian_PDF_denormalized( R );
+	y[0] = exp( -( R*R / 2.0 ) );
 
 	x[1] = R;
 	y[1] = y[0] + AREA/x[1];
 	
 	for(int i=2; i<BLOCK_COUNT; i++) {
-		x[i] = gaussian_PDF_denormalized_inverse( y[i-1] );
+		x[i] = sqrt( -2.0 * log( y[i-1] ) );
 		y[i] = y[i-1] + AREA/x[i];
 	}
 	
@@ -104,7 +96,7 @@ double ziggurat_next() {
 	uint32_t u;
 	double x_coord, sign;
 
-	// There is a small chance e don't find a number
+	// There is a small chance we don't find a number
 	// instead of a while(1) or for(;;) a goto makes more sense
 generate_sample:	
 
@@ -133,7 +125,7 @@ generate_sample:
 	
 	x_coord = u * uint_to_u * x[random_box];
 
-    if( y[random_box-1] + ((y[random_box] - y[random_box-1]) * ((double)rand()/(double)RAND_MAX)) < gaussian_PDF_denormalized(x_coord) ) {
+    if( y[random_box-1] + ((y[random_box] - y[random_box-1]) * ((double)rand()/(double)RAND_MAX)) < exp( -( x_coord*x_coord / 2.0) ) ) {
         return sign * x_coord;
     }	
 
