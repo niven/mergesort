@@ -6,26 +6,63 @@
 #include <limits.h>
 
 #include "utils.h"
+#include "ziggurat.h"
 
 // to produce these sequences we have a common signature
-typedef uint32_t (*generator)(int);
+typedef uint32_t (*generator)(uint32_t);
 
 /*
 Produce sequence like /|/|/|/|
+What we actually need is a series of monotonically increasing values
+What we do is set a mean and standard deviation for the length of a series
+and then set a min/max increase to get to the end of the series.
+What I don't want to do is partition an int into 10 pieces or something:
+the mean will probably not be that high which means we would have many
+similar numbers.
 */
-uint32_t generator_saw_up(int max) {
-	
-	static uint32_t generator_last = 1;
 
-	generator_last += (rand() % max)/ sqrt(max); // might wraparound, but that is cool
+// shared by saw_up and saw_down
+static uint32_t mean = 20;
+static uint32_t sd = 10;
+
+// max defines the maximum value which is helpful for debugging
+// since the values will just be smaller
+uint32_t generator_saw_up(uint32_t max) {
 	
-	return generator_last % max;
+	static uint32_t generator_last = 0;
+	static size_t series_length = 0;
+	static size_t series_length_target = 0;
+	static uint32_t max_increase = 0;
+	
+	// this will also happen the first time this is called
+	if( series_length >= series_length_target ) {
+		// set a new length
+		generator_last = 0;
+		series_length = 0;
+		series_length_target = mean + (uint32_t)( ziggurat_next() * (double)sd );
+		say("Starting new series for saw_up with length %zu\n", series_length_target);
+	}
+
+	// this evenly partitions the remainder. but since we pick a number within that range
+	// the next time this will be different
+	max_increase = (max - generator_last) / (series_length_target-series_length);
+	uint32_t increase =  (random() % max_increase) + 1;
+
+	say("%d left over %d values max now %d, increase %d\n", max - generator_last,series_length_target-series_length, max_increase, increase );
+
+	generator_last += increase; // make sure we never increase by 0
+	
+	series_length++;
+	
+	say("Returning %d\n", generator_last);
+	
+	return generator_last;
 }
 
 /*
 Produce sequence like |\|\|\|\
 */
-uint32_t generator_saw_down(int max) {
+uint32_t generator_saw_down(uint32_t max) {
 	
 	static uint32_t generator_last = INT_MAX;
 	
@@ -37,9 +74,9 @@ uint32_t generator_saw_down(int max) {
 /*
 Produce random sequence
 */
-uint32_t generator_random(int max) {
+uint32_t generator_random(uint32_t max) {
 	
-	return rand() % max;
+	return random() % max;
 }
 
 
@@ -49,6 +86,8 @@ int main(int argc, char* argv[]) {
 		printf("Usage: gen_random_structs distribution count file [optional max INT_MAX=%d]\n", INT_MAX);
 		exit( EXIT_SUCCESS );
 	}
+	
+	ziggurat_init( time(NULL) );
 	
 	const char* distribution_str = argv[1];
 	say("Distribution %s\n", distribution_str);

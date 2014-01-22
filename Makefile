@@ -15,8 +15,9 @@ all: clean tools sort_functions
 
 verbose: clean *.c
 	${CMD} -DVERBOSE -c utils.c
+	${CMD} -DVERBOSE -c ziggurat.c
 	${CMD} -DVERBOSE -c *sort.c
-	${CMD} -DVERBOSE utils.o gen_random_structs.c -o gen_random_structs
+	${CMD} -DVERBOSE utils.o ziggurat.o gen_random_structs.c -o gen_random_structs
 	${CMD} -DVERBOSE -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=qsort utils.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=mergesort utils.o main_template.c -o bin/stdlib_mergesort
@@ -37,7 +38,7 @@ tools: utils.* gen_random_ints.c gen_random_structs.c ziggurat.*
 	${CMD} -c ziggurat.c
 	${CMD} ziggurat_test.c ziggurat.o -o ziggurat_test
 	${CMD} gen_random_ints.c -o gen_random_ints
-	${CMD} gen_random_structs.c -o gen_random_structs
+	${CMD} gen_random_structs.c ziggurat.o -o gen_random_structs
 
 insertionsort: main_template.c utils.o insertionsort.o
 	${CMD} -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
