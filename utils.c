@@ -361,3 +361,34 @@ void print_stack( run_node* stack ) {
 	
 }
 
+
+/*
+      +inf [ x^k ]           x^2    x^3      x^4        x^5
+e^x = SUM  [ --- ] = 1 + x + --- + ----- + ------- + --------- + ....
+      k=0  [  k! ]           2*1   3*2*1   4*3*2*1   5*4*3*2*1
+
+Which reduces to
+		 x     x                     x
+1 + x + --- * --- + (last result) * ---  
+         1     2                     3 
+
+*/
+double taylor_exp( double x ) {
+	
+	if( x == 0.0 ) {
+		return 1;
+	}
+	
+	double factor = x / 1.0;
+	double result = 1.0 + x;
+	double k = 2.0;
+	while( factor >= x ) {
+		factor /= k++;
+		factor *= x;
+		result += factor;
+//		printf("k=%f factor: %f result = %f\n", k, factor, result);
+    }
+	
+	return result;
+}
+

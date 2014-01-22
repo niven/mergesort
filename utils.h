@@ -122,4 +122,6 @@ run* peek_run( run_node* stack, size_t index );
 
 void print_stack( run_node* stack );
 
+double taylor_exp( double x );
+
 #endif
