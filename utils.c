@@ -372,6 +372,18 @@ Which reduces to
 1 + x + --- * --- + (last result) * ---  
          1     2                     3 
 
+The output of this compared to exp() often has a difference
+of 32, 128, 65536, 1024... which are suspicious numbers.
+
+The most likely culprit it floating point rounding errors,
+mostly because the smallest contributions come last
+(so we effectively only get the large numbers from the beginning)
+
+The solution would be to start from the "small end", but that would
+mean starting with large x^n and n! which limits the max exp we can do
+without going to bignums. The other alternative is to store all the numbers,
+and than add in reverse, costing a lot of space and being ugly.
+
 */
 double taylor_exp( double x ) {
 	
