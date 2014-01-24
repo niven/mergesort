@@ -404,3 +404,38 @@ double taylor_exp( double x ) {
 	return result;
 }
 
+double taylor_exp2( double x ) {
+	
+	if( x == 0.0 ) {
+		return 1;
+	}
+	
+//	printf("\nexp(%f)\n", x);
+	
+	double x_pow = x*x;
+	double factorial = 2; // we start result at 1, and add the last term x^/1! at the end. So the factorials start at 2! = 2
+	double k = 2; // same story
+	while( x_pow/factorial > 0.001 ) {
+		x_pow *= x;
+		factorial *= ++k;
+//		printf("%.0f! = %f\n", k, factorial);
+    }
+	
+//	printf("x_pow = %f, fac = %f k=%f\n", x_pow, factorial, k);
+
+	double result = 1.0; // x^0 / 1
+	// now go backwards
+	while( k > 1 ) {
+//		printf("Adding %.0f^%.0f/%.0f! = %f/%f = %f (k=%f)\n", x, k, k, x_pow, factorial, x_pow/factorial, k);
+		result += x_pow/factorial;
+		x_pow /= x;
+		factorial /= k--;
+	}
+
+//	printf("Adding %.0f^1/1! = %f\n", x, x);
+	result += x;
+	
+	return result;
+}
+
+
