@@ -418,6 +418,7 @@ double taylor_exp2( double x ) {
 	while( x_pow/factorial > 0.001 ) {
 		x_pow *= x;
 		factorial *= ++k;
+		assert( factorial > 0 );
 //		printf("%.0f! = %f\n", k, factorial);
     }
 	
