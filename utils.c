@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -253,6 +254,23 @@ int compare_int(const void* a, const void* b) {
 
 	return 1;
 }
+/*
+Compare 2 integers
+	a > b: 1
+	a == b: 0
+	a < b: -1
+*/
+
+int compare_double(const void* a, const void* b) {
+
+	if ( *(double*)a == *(double*)b )
+		return 0;
+
+	if (*(double*)a > *(double*)b)
+		return -1;
+
+	return 1;
+}
 
 /*
 Compare 2 structs of type widget
@@ -405,19 +423,67 @@ double taylor_exp( double x ) {
 		factor /= k++;
 		factor *= x;
 		result += factor;
-//		printf("k=%f factor: %f result = %f\n", k, factor, result);
+		say("k=%f factor: %f result = %f\n", k, factor, result);
     }
 	
 	return result;
 }
+
+double taylor_exp3( double x ) {
+	
+	if( x == 0.0 ) {
+		return 1;
+	}
+	size_t count = 8;
+	size_t index = 2;
+	double* factors = (double*)malloc( count*sizeof(double) );
+	if( factors == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+
+	factors[0] = 1;
+	factors[1] = x;
+	
+	double factor = x / 1.0;
+	double k = 2.0;
+	while( factor > 0.001 ) {
+		factor /= k++;
+		factor *= x;
+		say("Factor %.0f = %f\n", k, factor);
+		factors[index++] = factor;
+		if( index == count ) {
+			count *= 2;
+			say("Realloc factors to %zu\n", count);
+			double* temp = realloc( factors, count*sizeof(double) );
+			if( temp == NULL ) {
+				perror("realloc()");
+				free( factors );
+				exit( EXIT_FAILURE );
+			}
+			factors = temp;
+		}
+    }
+
+	qsort( factors, index, sizeof(double), compare_double);
+
+	double result = 0.0;
+	for(size_t i=0; i<index; i++){
+		result += factors[i];
+		say("Factor %zu = %f, result = %f\n", i, factors[i], result);
+	}
+
+	free( factors );
+	
+	return result;
+}
+
 
 double taylor_exp2( double x ) {
 	
 	if( x == 0.0 ) {
 		return 1;
 	}
-	
-//	printf("\nexp(%f)\n", x);
 	
 	double x_pow = x*x;
 	double factorial = 2; // we start result at 1, and add the last term x^/1! at the end. So the factorials start at 2! = 2
@@ -426,21 +492,23 @@ double taylor_exp2( double x ) {
 		x_pow *= x;
 		factorial *= ++k;
 		assert( factorial > 0 );
-//		printf("%.0f! = %f\n", k, factorial);
+		assert( x_pow > 0 );
+		say("%.0f! = %f\n", k, factorial);
     }
 	
-//	printf("x_pow = %f, fac = %f k=%f\n", x_pow, factorial, k);
+	say("x_pow = %f, fac = %f k=%f\n", x_pow, factorial, k);
 
 	double result = 1.0; // x^0 / 1
 	// now go backwards
 	while( k > 1 ) {
-//		printf("Adding %.0f^%.0f/%.0f! = %f/%f = %f (k=%f)\n", x, k, k, x_pow, factorial, x_pow/factorial, k);
+		say("Adding %.0f^%.0f/%.0f! = %f/%f = %f (k=%f)\n", x, k, k, x_pow, factorial, x_pow/factorial, k);
 		result += x_pow/factorial;
 		x_pow /= x;
 		factorial /= k--;
+		say("Result now %f\n", result);
 	}
 
-//	printf("Adding %.0f^1/1! = %f\n", x, x);
+	say("Adding %.0f^1/1! = %f\n", x, x);
 	result += x;
 	
 	return result;
