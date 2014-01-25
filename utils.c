@@ -384,6 +384,13 @@ mean starting with large x^n and n! which limits the max exp we can do
 without going to bignums. The other alternative is to store all the numbers,
 and than add in reverse, costing a lot of space and being ugly.
 
+After the 4th taylot_exp() I found that the rounding error are basically caused
+by the largest term. I think it makes more sense to check how my versions compare
+to something not C, so I can see if I'm implementing someting that makes sense
+instead of comparing it to builtin exp() which may also have rounding errors.
+
+Alos, reading the source should be educational.
+
 */
 double taylor_exp( double x ) {
 	
