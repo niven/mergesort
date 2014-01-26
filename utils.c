@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -410,6 +411,9 @@ instead of comparing it to builtin exp() which may also have rounding errors.
 Alos, reading the source should be educational.
 
 */
+
+const double ETA = 0.00001;
+
 double taylor_exp( double x ) {
 	
 	if( x == 0.0 ) {
@@ -419,7 +423,7 @@ double taylor_exp( double x ) {
 	double factor = x / 1.0;
 	double result = 1.0 + x;
 	double k = 2.0;
-	while( factor >= x ) {
+	while( factor > ETA ) {
 		factor /= k++;
 		factor *= x;
 		result += factor;
@@ -447,7 +451,7 @@ double taylor_exp3( double x ) {
 	
 	double factor = x / 1.0;
 	double k = 2.0;
-	while( factor > 0.001 ) {
+	while( factor > ETA ) {
 		factor /= k++;
 		factor *= x;
 		say("Factor %.0f = %f\n", k, factor);
@@ -488,7 +492,7 @@ double taylor_exp2( double x ) {
 	double x_pow = x*x;
 	double factorial = 2; // we start result at 1, and add the last term x^/1! at the end. So the factorials start at 2! = 2
 	double k = 2; // same story
-	while( x_pow/factorial > 0.001 ) {
+	while( x_pow/factorial > ETA ) {
 		x_pow *= x;
 		factorial *= ++k;
 		assert( factorial > 0 );
