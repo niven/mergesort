@@ -518,4 +518,67 @@ double taylor_exp2( double x ) {
 	return result;
 }
 
+double taylor_exp_scaled( double x ) {
+	
+	if( x == 0.0 ) {
+		return 1;
+	}
+	
+
+	double rest = 0.0;
+	double factor = floor(x / 1.0);
+	double factor_rest = x - floor(x/1.0);
+	double sum_factors = 0.0;
+	double k = 2.0;
+	double intermediate;
+
+	while( factor+factor_rest > ETA ) {
+	
+		intermediate = (factor + factor_rest) / k++;
+		intermediate *= x;
+
+		factor = floor(intermediate);
+		factor_rest = intermediate - floor(intermediate);
+		
+		factor += floor(factor_rest);
+		factor_rest = factor_rest - floor(factor_rest); 
+		
+		sum_factors += factor;
+		rest += factor_rest;
+		say("k=%f factor: %f + %f result = %f rest = %f\n", k, factor, factor_rest, sum_factors, rest);
+    }
+	
+	return 1 + x + sum_factors + rest;
+}
+
+double taylor_kahan_exp( double x ) {
+	
+	if( x == 0.0 ) {
+		return 1;
+	}
+	
+	double factor = x / 1.0;
+	double result = 1.0 + x;
+	double k = 2.0;
+	
+	double compensation = 0.0;
+	double temp;
+	
+	while( factor > ETA ) {
+		factor /= k++;
+		factor *= x;
+		
+		factor -= compensation;
+		temp = result + factor;
+		compensation = (temp-result) - factor;
+		
+		result += factor;
+		say("k=%f factor: %f result = %f\n", k, factor, result);
+    }
+	
+	return result;
+}
+
+
+
 
