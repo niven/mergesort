@@ -8,6 +8,8 @@ use POSIX qw( ceil );
 
 local $\ = "\n";
 
+my @distributions = qw( random saw_up );
+
 my %opt = (
 	min => 10,
 	max => 1000,
@@ -15,6 +17,7 @@ my %opt = (
 	iterations => 1,
 	element_size => 8,
 	mem => 0,
+	distribution => $distributions[0],
 );
 
 GetOptions (
@@ -24,20 +27,18 @@ GetOptions (
 	"num=i",
 	"iterations=i",
 	"element_size=i",
-	"mem"
+	"distribution=s"
 	)
-or die "Usage: perl benchmark.pl --min=NN --max=NN --num=NN --iterations=NN --element_size_bytes=NN --mem";
+or die "Usage: perl benchmark.pl --min=NN --max=NN --num=NN --iterations=NN --element_size_bytes=NN --distribution=" . join("|", @distributions);
+
+die "Not a valid distribution '$opt{distribution}'. Choose one of " . join(", ", @distributions) if grep { $_ eq $opt{distribution} } @distributions == 0;
 
 $opt{step} = ceil( ($opt{max}-$opt{min}) / $opt{num} ); 
 
-print "Running benchmark for $opt{min} to $opt{max} elements in $opt{num} steps of size $opt{step}";
+print "Running benchmark for $opt{min} to $opt{max} elements in $opt{num} steps of size $opt{step} with distribution $opt{distribution}";
 print "Element size $opt{element_size} bytes, $opt{iterations} iterations per sorter";
 
-if( $opt{mem} ) {
-	print "Reporting ticks/element vs working set";
-}
-
-die "SORTER_BLOCK_WIDTH not set for mergesorts" if !defined $ENV{SORTER_BLOCK_WIDTH};
+die "SORTER_BLOCK_WIDTH not set for mergesorts (set it in the environment with set -x SORTER_BLOCK_WIDTH 32)" if !defined $ENV{SORTER_BLOCK_WIDTH};
 print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}";
 
 if( $opt{element_size} < 5 ) {
@@ -88,7 +89,7 @@ while( $size <= $opt{max} ) {
 	
 	# random numbers
 	my $datafile = "$testdata_dir/data_$size.dat";
-	system "./gen_random_structs random $size $datafile > /dev/null";
+	system "./gen_random_structs $opt{distribution} $size $datafile > /dev/null";
 	
 	for (1..$opt{iterations}) {
 		
@@ -99,11 +100,11 @@ while( $size <= $opt{max} ) {
 			my $cmd = "$sorter $datafile /dev/null 2>>$results_dir/${name}_results.csv";
 			system $cmd; # use string so system() uses the shell
 	        if ($? == -1) {
-	       		print "failed to execute: $!\n";
+	       		print "failed to execute: $!\n$sorter $datafile\n";
 			} elsif ($? & 127) {
-	        	printf "child died with signal %d, %s coredump\n", ($? & 127), ($? & 128) ? 'with' : 'without';
+	        	printf "$name died with signal %d, %s coredump\n$sorter $datafile\n", ($? & 127), ($? & 128) ? 'with' : 'without';
 	       	} elsif( $? != 0 ) {
-	       		printf "child exited with value %d\n", $? >> 8;
+	       		printf "$name exited with value %d\n$sorter $datafile\n", $? >> 8;
 	        }
 			if( $? != 0 ) {
 				exit;
