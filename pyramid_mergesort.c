@@ -44,7 +44,7 @@ After sorting block:
 */
 void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare, size_t inner_sort_width, sorter inner_sorter) {
 
-	int elements_per_block = inner_sort_width;
+	uint32_t elements_per_block = inner_sort_width;
 	
 	char* in = (char*)base;
 	char* buf = malloc( nel * width );
@@ -55,9 +55,9 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 
 	// a block is a subarray with width equal to elements_per_block
 	// so if count=100 and elements_per_block = 20 our array consists of 5 blocks
-	int blocks_done = 0;
+	uint32_t blocks_done = 0;
 
-	int index_start = 0, index_end = 0;
+	uint32_t index_start = 0, index_end = 0;
 
 	// for the first merge (blocks_done==2) we have to read from in
 	char* from = (char*)base;
@@ -81,9 +81,9 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 		say("Blocks done: %d ", blocks_done);
 		print_array( (widget*)in, index_start, index_end, elements_per_block );
 	
-		int mergecounter = blocks_done;
-		int merge_width = elements_per_block;
-		int m = 0;
+		uint32_t mergecounter = blocks_done;
+		uint32_t merge_width = elements_per_block;
+		uint32_t m = 0;
 		// now merge 2 subsections of the array, and if the number of blocks is even, it means we can do more merges
 
 		// always read from in and merge to buf for the first merge pass
@@ -94,7 +94,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 			say("Mergecounter at %d\n", mergecounter );
 		
 			// how much we would have done if each block were elements_per_block (every single one is except maybe the last one)
-			int start = (blocks_done*elements_per_block) - 2*merge_width; 
+			uint32_t start = (blocks_done*elements_per_block) - 2*merge_width; 
 			L = from + start*width; // start of "left" array
 			R = from + (start + merge_width)*width; // start of "right" array
 
@@ -194,7 +194,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 
 	say( "\nDoing wrapup merges for %d blocks\n", blocks_done );
 
-	int first, second;
+	uint32_t first, second;
 	char *left, *right; // could be different
 	
 	say("in %p buf %p from %p to %p ttt %d\n", in, buf, from, to);
@@ -261,7 +261,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 		// (maybe swap meaning of first and second since we're doing this backwards?)
 		// the start offsets are "back from the end by offsets" which we'd have to keep track of over more merges
 		// but blocks_done already remove "first" every time which makes it work. think about it :)
-		int start = (blocks_done - second) * elements_per_block;
+		uint32_t start = (blocks_done - second) * elements_per_block;
 		L = left + start*width; // start of "left"/bigger array
 		to += start*width; // to points to the opposite of left, but has the same offset
 		R = right + (blocks_done * elements_per_block)*width; // start of "right" array (first has already been subtracted from blocks_done)
@@ -269,7 +269,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 		L_end = left + (blocks_done*elements_per_block-1)*width;
 		R_end = right + (nel-1) * width; // in this case it's always the end of the array (but we don't know if it's in or buf)
 		
-		int m = 0;
+		uint32_t m = 0;
 		say( "Merging %d blocks from left (%p) with %d blocks from right (%p)\n", second, L, first, R );
 		say( "Merging %d+%d=%d elements: %s[%d - %d] (%p) with %s[%d - %d] (%p)\n", (L_end-L)/width+1,(R_end-R)/width+1, (L_end-L + R_end-R)/width+2, left==in?"in":"buf", (L-left)/width, (L_end-left)/width, left, right==in?"in":"buf", (R-right)/width, (R_end-right)/width, right );
 		say( "Premerge left [%d - %d] (%p):\n", (L-left)/width, (L_end-left)/width, left );
@@ -333,7 +333,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 
 void pyramid_mergesort_wrapper( void* base, size_t nel, size_t width, comparator compare ) {
 	
-	int elements_per_block = 4;
+	uint32_t elements_per_block = 4;
 	const char* env_elements_per_block = getenv( "SORTER_BLOCK_WIDTH" );
 	if( env_elements_per_block != NULL ) {
 		elements_per_block = atoi( env_elements_per_block );
