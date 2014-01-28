@@ -160,12 +160,11 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 			merge_width *= 2; // every time we merge twice as much
 			// endpoint stays the same
 		}
-		
+	
 		// now reset
 		from = in;
 		to = buf;
-	
-	
+
 		// process the next block
 		index_start += elements_per_block;
 	}
