@@ -73,7 +73,9 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 		index_end = MIN(index_start + elements_per_block, nel);// temp name, too manythings called "to"
 	
 		// shellsort will inplace sort a block of the in array
+		SUPPRESS_STDOUT
 		inner_sorter( in + index_start*width, index_end-index_start, width, compare );
+		RETURN_STDOUT
 		blocks_done++;
 
 		say("Blocks done: %d ", blocks_done);
@@ -99,7 +101,6 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 			L_end = from + MIN( start+merge_width, nel )*width;
 			R_end = from + MIN( start+ 2*merge_width, nel )*width; 
 
-		//	say( "Merging %d elements: [%d - %d] (%p) with [%d - %d] (%p) to [%d - %d] %p\n", index_end-index_start, L, L_end, left, R, R_end, right, t, R_end, to );
 			say("Merging %d elements to %p (%s)\n", (R_end-L)/width, to, to==in?"in":"buf");
 			say("Premerge left [%d - %d] (%p):\n", (L-from)/width, (L_end-from)/width-1, from);
 			print_array( (widget*)from, (L-from)/width, (L_end-from)/width, elements_per_block );
@@ -144,6 +145,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 
 			say("Postmerge [%d - %d] (%p):\n", start, index_end-1, to);
 			print_array( (widget*)(to - (index_end-start)*width), 0, (index_end-start),  elements_per_block );
+			is_sorted( (widget*)(to - (index_end-start)*width), 0, (index_end-start) );
 
 			// if we do sequential merges, we merge the result of what we just did, with an older one (of equal size)
 			// so where we read from and write to swaps
@@ -168,7 +170,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 		index_start += elements_per_block;
 	}
 
-	say("Every block sorted (index_start=%d), now doing remaining merges\n", index_start);
+	say("\nEvery block sorted (index_start=%d), now doing remaining merges\n", index_start);
 	say( "Current in [%d - %d] (%p):\n", 0, nel-1, in );
 	print_array( (widget*)in, 0, nel, elements_per_block );
 	say( "Current buf [%d - %d] (%p):\n", 0, nel-1, buf );
@@ -303,6 +305,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 
 		say( "Postmerge [%d - %d] (%p):\n", start, (R_end-right)/width, to_start );
 		print_array( (widget*)to_start, start, (R_end-right)/width +1, elements_per_block );
+		is_sorted( (widget*)to_start, start, (R_end-right)/width +1 );
 	
 		right = to_start;
 	}
