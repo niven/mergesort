@@ -110,6 +110,13 @@ Pyramid_mergesort now also generic and ran a benchmark with inner_sort_width=100
 The mergesorts still have a lot of innefficient code though.
 Next step is to see if I can actually find any effect from L1/2/3 caches.
 
+# Update 6: Timsort
+results_6.png
+
+Timsort (http://bugs.python.org/file4451/timsort.txt) is the sort used by Python. This sort purports to be fast on "Real World Data", on of which is a dataset that has internal order (subsets of it are already sorted). Performance is pretty good and beating out mergesort which is nice. It doesn't get better that qsort though. Maybe it'll get better with saw_down (which qsort should be bad at).
+
+
+
 # Building
 
     make all
