@@ -64,17 +64,6 @@ void shellsort( void* base, size_t nel, size_t width, comparator compare ) {
 	free( value );
 }
 
-void is_sorted(widget* widgets, int from, int to) {
-
-	for( int i=from; i<to-1; i++ ) {
-		if( widgets[i].number > widgets[i+1].number ) {
-			say("Not sorted at %d/%d (%d/%d)\n", i, i+1, widgets[i].number, widgets[i+1].number);
-			exit( EXIT_FAILURE );
-		}
-	}
-
-}
-
 size_t read_numbers( const char* filename, int** numbers ) {
 	
 	FILE* in = fopen( filename, "rb" );
@@ -208,6 +197,17 @@ void print_array( widget* widgets, int from, int to, int width ) {
 		}
 	}
 	say( "]\n" );
+
+}
+
+void is_sorted(widget* widgets, int from, int to) {
+
+	for( int i=from; i<to-1; i++ ) {
+		if( widgets[i].number > widgets[i+1].number ) {
+			say("Not sorted at %d/%d (%d/%d)\n", i, i+1, widgets[i].number, widgets[i+1].number);
+			exit( EXIT_FAILURE );
+		}
+	}
 
 }
 
