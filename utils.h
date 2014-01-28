@@ -59,8 +59,6 @@ typedef struct {
 
 void shellsort( void* base, size_t nel, size_t width, comparator compare );
 
-// check if a list is sorted in ascending order
-void is_sorted( widget* widgets, int from, int to );
 
 // read a bunch of integers from a file and returns the count
 // exits on failure to malloc, open the file etc.
@@ -79,11 +77,16 @@ void say( const char* format, ... );
 
 void print_array( widget* widgets, int from, int to, int width );
 
+// check if a list is sorted in ascending order
+void is_sorted( widget* widgets, int from, int to );
+
 #else
 
 #define say(...) // nop
 
 #define print_array(...) // nop
+
+#define is_sorted(...) // nop
 
 #endif
 
