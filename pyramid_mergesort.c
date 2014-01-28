@@ -196,7 +196,14 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 
 	int first, second;
 	char *left, *right; // could be different
-	char* to_start = in; // if we don't have any postmerging to do this will make sure we output the right array in the final if
+	
+	say("in %p buf %p from %p to %p ttt %d\n", in, buf, from, to);
+	// if we don't have any postmerging to do this will make sure we output the right array in the final if
+	char* to_start = in;
+	uint32_t b = blocks_done;
+	while( (b = b >> 1) ) {
+		to_start = to_start == in ? buf : in;
+	} 
 
 	// see explanation below
 	if( (ffs( blocks_done ) & 1) == 0 ) {
@@ -313,7 +320,9 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 	// unfortunate result of the stdlib sort interface: we might end up with the end result in buf
 	// and not in wherever base points to. In that case we copy over everything :(
 	say("in %p buf %p to_s %p\n", in, buf, to_start);
+
 	if( base != to_start ) {
+		say("Final result is in buf, copying over to base\n");
 		// base points to the last thing we merged to, except it was swapped so buf contains the correct stuff
 		memcpy( base, buf, nel*width );
 	} else {
