@@ -1,11 +1,12 @@
-#include "errno.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
-#include "time.h"
-#include "unistd.h"
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "mach/mach_time.h"
+/* for SUPPRESS_STDOUT macros*/
+#include <unistd.h>
+#include <fcntl.h> 
+
 
 #include "utils.h"
 
