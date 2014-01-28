@@ -572,11 +572,11 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		}
 		
 		push_run( &sorted_runs, new_run( B->address, total) );
-		run* current_top = peek_run( sorted_runs, 0 );
+
 		free( B );
 		free( C );
 
-		is_sorted( (widget*)current_top->address, 0, current_top->nel );
+		is_sorted( (widget*)peek_run( sorted_runs, 0 )->address, 0, peek_run( sorted_runs, 0 )->nel );
 	}
 
 	// now we have only 1 item on the stack
