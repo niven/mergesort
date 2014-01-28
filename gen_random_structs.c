@@ -39,13 +39,14 @@ uint32_t generator_saw_up(uint32_t max) {
 		// set a new length
 		generator_last = 0;
 		series_length = 0;
-		series_length_target = mean + (uint32_t)( ziggurat_next() * (double)sd );
+		series_length_target = mean + (uint32_t)( abs(ziggurat_next()) * (double)sd );
 		say("Starting new series for saw_up with length %zu\n", series_length_target);
 	}
 
 	// this evenly partitions the remainder. but since we pick a number within that range
 	// the next time this will be different
 	max_increase = (max - generator_last) / (series_length_target-series_length);
+
 	uint32_t increase =  (random() % max_increase) + 1;
 
 	say("%d left over %d values max now %d, increase %d\n", max - generator_last,series_length_target-series_length, max_increase, increase );
