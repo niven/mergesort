@@ -65,11 +65,8 @@ Produce sequence like |\|\|\|\
 */
 uint32_t generator_saw_down(uint32_t max) {
 	
-	static uint32_t generator_last = INT_MAX;
-	
-	generator_last -= (rand() % max) / sqrt(max); // might wraparound, but that is cool
-	
-	return generator_last % max;
+	return max - generator_saw_up( max );
+
 }
 
 /*
