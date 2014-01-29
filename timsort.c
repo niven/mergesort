@@ -336,6 +336,33 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		}
 		to += width;
 
+		// find where current left belongs in right and then copy
+		// in a chunk. Then the same for the opposite case.
+		// Do this until both have copied less than MIN_GALLOP elements
+		if( same_run_counter >= MIN_GALLOP ) {
+
+			say("Switching to Gallop Mode after copying %zu elements from %s\n", same_run_counter, (current_run==0?"left":"right"));
+			size_t chunk_size_left = 0, chunk_size_right = 0;
+			do {
+				if( current_run == 0 ) {
+					say("Finding where right[0] (%d) belongs in left\n", *(int*)right);
+					// find where the first element of right should go in left
+					// that gives the number of items we can copy from left in 1 chunk
+					chunk_size_left = find_index( left, (left_end-left)/width, right, width, compare );
+
+					say("We can copy %zu elements from left in one chunk\n", chunk_size_left);
+					memcpy( to, left, chunk_size_left*width );
+					to += chunk_size_left * width;
+					left += chunk_size_left * width;
+				} else {
+					say("There are too many damn branches here.");
+					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
+					chunk_size_right = find_index( right, (right_end-right)/width, left, width, compare );
+					say("We can copy %zu elements from right in one chunk\n", chunk_size_right);
+				}
+			} while( chunk_size_left >= MIN_GALLOP && chunk_size_right >= MIN_GALLOP );
+			
+		}
 //		say("Merged so far:\n");
 //		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
 
@@ -452,6 +479,31 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 			current_run = 1;
 		}
 		to -= width;
+
+		// see merge_lo, but we go in reverse
+		if( same_run_counter >= MIN_GALLOP ) {
+
+			say("Switching to Backwards Gallop Mode after copying %zu elements from %s\n", same_run_counter, (current_run==0?"left":"right"));
+			size_t chunk_size_left = 0, chunk_size_right = 0;
+			do {
+				if( current_run == 0 ) {
+					say("Finding where right[0] (%d) belongs in left\n", *(int*)right);
+					// find where the first element of right should go in left
+					// that gives the number of items we can copy from left in 1 chunk
+					chunk_size_left = find_index( left, (left_end-left)/width, right, width, compare );
+
+					say("We can copy %zu elements from left in one chunk\n", chunk_size_left);
+					memcpy( to, left, chunk_size_left*width );
+					to += chunk_size_left * width;
+					left += chunk_size_left * width;
+				} else {
+					say("There are too many damn branches here.");
+					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
+					chunk_size_right = find_index( right, (right_end-right)/width, left, width, compare );
+					say("We can copy %zu elements from right in one chunk\n", chunk_size_right);
+				}
+			} while( chunk_size_left >= MIN_GALLOP && chunk_size_right >= MIN_GALLOP );
+
 
 //		say("Merged so far:\n");
 //		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
