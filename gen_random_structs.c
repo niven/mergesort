@@ -77,6 +77,26 @@ uint32_t generator_random(uint32_t max) {
 	return random() % max;
 }
 
+/*
+Produce a sequence that is random, but has many similar values.
+
+This is actually no different than randomly generating numbers
+which is uniform but due to the range has many duplicates.
+
+The desired result is numbers with 'mean' different numbers in the
+range.
+*/
+uint32_t generator_duplicates(uint32_t max) {
+	
+	
+	// random % mean produces 1 number out of mean possibilites
+	// then the ratio max/mean maps that to the actual range.
+	// max/min are both ints, so we reorder them to not have int rounding fail
+	// and since max could be UINT32_MAX we could overflow so we widen
+	return ( (uint64_t)(random() % mean) * (uint64_t)max ) / mean;
+}
+
+
 
 int main(int argc, char* argv[]) {
 
@@ -96,6 +116,8 @@ int main(int argc, char* argv[]) {
 		numbers_gen = generator_saw_down;
 	} else if( strcmp( distribution_str, "random" ) == 0 ) {
 		numbers_gen = generator_random;
+	} else if( strcmp( distribution_str, "duplicates" ) == 0 ) {
+		numbers_gen = generator_duplicates;
 	} else {
 		printf("Don't know distribution type %s\n", distribution_str );
 		exit( EXIT_FAILURE );
