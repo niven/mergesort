@@ -3,11 +3,12 @@
 I wanted to do some C for fun, and also finally implement a sort that uses another sort in it's inner loop. This was something that I've always read was a thing sorting algorithms do for performance. Then it got a bit out of hand. Now I'm implementing interesting sort algorithms and doing benchmarking. So yes, the internet is filled with benchmarks, sorting algorithms and the like, but I find that reading a high level description and looking at some graphs doesn't do it for me.
 
 # TODO
+- timsort doesn't have "Gallop Mode" for merge_hi() yet
 - stdlib merge/heap return -1 on error and apparently qsort can't fail :) So find some way to put that in the main_template.c
 - print_array could also be generic (maybe have a tostring somewere)
-- gen_random_structs should be able to generate data that is random,zigzag asc/desc, organ pipes, equal numbers, sorted subranges etc.
-- extend benchmarking script to benchmark (merge)sorts with inner sorts at different block_widths and different inner ones
-- extend benchmarking script to use different input data (random, saw, subsorted, ..)
+- gen_random_structs should be able to generate data that is random (check),zigzag asc/desc(check), organ pipes, equal numbers(check), etc.
+- create a benchmark.conf file that specifies a series of benchmarks to run, and the parameters for each one
+
 
 # Sorting algorithms
 
@@ -69,11 +70,19 @@ Other options are *min/max* which specify the size of the datasets, and *num* sp
 
 This actually means generating data with specific patterns in it, like ranges that are already sorted, high number of equal items etc.
 
+### Update 1
 Currently I'm figuring out how to create a "sawtooth" pattern that is made up of increasing sets of variable lengths around a mean.
 I came up with a simple but in retrospect awful rejection method.
-Instead, I'm going to go with the ZIggurat Algorithm as unclearly described on Wikipedia (http://en.wikipedia.org/wiki/Ziggurat_algorithm) and very comprehensibly here: http://heliosphan.org/zigguratalgorithm/zigguratalgorithm.html
+Instead, I'm going to go with the Ziggurat Algorithm as unclearly described on Wikipedia (http://en.wikipedia.org/wiki/Ziggurat_algorithm) and very comprehensibly here: http://heliosphan.org/zigguratalgorithm/zigguratalgorithm.html
 
-Code is in gen_random_structs.c, which I'm going to add some final output/report to that summarizes the data that it has generated.
+### Update 2
+saw_up and saw_down are done. Organ pipes are next up. This is an interesting case I learned about through John Bentley's video/talk about 3 quicksorts as a pattern that some qsort version was very bad at.
+
+Maybe it's also good to add a 'sorted' pattern as that is both real world data and an interesting edge case for some
+algorithms.
+
+First finishing timsort though, but is a bit of a chore since it is *a lot* of code for sorting.
+
 
 # Updates
 
