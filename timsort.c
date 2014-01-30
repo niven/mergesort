@@ -490,7 +490,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 					say("Finding where right[0] (%d) belongs in left\n", *(int*)right);
 					// find where the first element of right should go in left
 					// that gives the number of items we can copy from left in 1 chunk
-					chunk_size_left = find_index( left, (left_end-left)/width, right, width, compare );
+					chunk_size_left = find_index( left, (left-left_start)/width, right, width, compare );
 
 					say("We can copy %zu elements from left in one chunk\n", chunk_size_left);
 					memcpy( to, left, chunk_size_left*width );
@@ -499,12 +499,12 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 				} else {
 					say("There are too many damn branches here.");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
-					chunk_size_right = find_index( right, (right_end-right)/width, left, width, compare );
+					chunk_size_right = find_index( right, (right-right_start)/width, left, width, compare );
 					say("We can copy %zu elements from right in one chunk\n", chunk_size_right);
 				}
 			} while( chunk_size_left >= MIN_GALLOP && chunk_size_right >= MIN_GALLOP );
 
-
+		}
 //		say("Merged so far:\n");
 //		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
 
