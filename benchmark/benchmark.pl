@@ -8,7 +8,7 @@ use POSIX qw( ceil );
 
 local $\ = "\n";
 
-my @distributions = qw( random saw_up );
+my @distributions = qw( random saw_up saw_down duplicates );
 
 my %opt = (
 	min => 10,
@@ -45,18 +45,6 @@ if( $opt{element_size} < 5 ) {
 	die "Elements can's be smaller than 5 since they are a struct of a 4 byte int and at minimum 1 char";
 }
 
-# first clean & make everything
-system "make clean";
-$opt{element_size} -= 4; # reduce by size of number member uint32_t
-my $make_cmd = "make all PAD_SIZE=$opt{element_size}";
-print "Compiling with: $make_cmd";
-system $make_cmd;
-
-if( $opt{max} > 10_000 ) {
-	print "Removing insertionsort since you probably don't want to wait forever";
-	unlink "bin/insertionsort";
-}
-
 my $testdata_dir = "testdata";
 my $sorters_dir = "bin";
 my $results_dir = "results";
@@ -70,10 +58,9 @@ my @sorters = glob("$sorters_dir/*");
 die "No sorters in $sorters_dir" if scalar @sorters == 0;
 
 # create results dir
-if( -e $results_dir ) {
-	remove_tree( $results_dir );
+if( !-e $results_dir ) {
+	make_path( $results_dir );
 }
-make_path( $results_dir );
 
 # create test files from scratch
 if( -e $testdata_dir ) {
@@ -115,36 +102,5 @@ while( $size <= $opt{max} ) {
 	$size += $opt{step};
 }
 
-# now munge results for averages and combine all of them in a nice CSV so we can have a spreadsheet make graphs
-# (this feels like a miniature bigdata setup :)
-my @results = glob("$results_dir/*.csv");
-my $data = {};
-my %names = (); # collect names inelegantly
-for my $result_csv (@results) {
-	my ($name) = $result_csv =~ m/$results_dir\/(.*)_results\.csv/; # more name extraction
-	$names{$name} = 1;
-	open(my $CSV, "<", $result_csv);
-	while( <$CSV> ) {
-		chomp;
-		my ($num_elements, $ticks, $memory) = split /,/;
-		# update the average for that count for the current name
-		my $param = $opt{mem} ? $memory : $num_elements;
-		my $value = $ticks/$num_elements;
-		$data->{ $param }->{ $name }->{num}++;
-		$data->{ $param }->{ $name }->{avg} += ($value-($data->{ $param }->{ $name }->{avg}||0)) / $data->{ $param }->{ $name }->{num};
-	}
-	close($CSV);
-}
-
-# now write a nice CSV
-open(my $OUT, ">", "$results_dir/overall.csv");
-my @all_names = sort keys %names;
-print $OUT ($opt{mem} ? "Memory," : "Elements,") . join(",", @all_names);
-
-for my $param ( sort { $a <=> $b } keys %$data ) {
-	print $OUT "$param," . join(",", map { $data->{$param}->{$_} ? $data->{$param}->{$_}->{avg} : "" } @all_names );
-}
-
-close($OUT);
 
 print "Done";
