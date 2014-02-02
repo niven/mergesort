@@ -2,6 +2,9 @@
 
 # Global settings for all benchmarks
 
-echo "Setting global settings, but I don't know how :)"
+echo "Setting global settings"
+
+set -x PAD_SIZE 4
+set -x RESULTS_DIR "results/"
 
 
