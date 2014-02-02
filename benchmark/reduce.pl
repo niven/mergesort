@@ -5,7 +5,7 @@ local $\ = "\n";
 
 my $results_dir = "results";
 
-# now munge results for averages and combine all of them in a nice CSV so we can have a spreadsheet make graphs
+# now munge results for averages and combine all of them in a nice CSV so we can have gnuplot make graphs
 # (this feels like a miniature bigdata setup :)
 my @results = glob("$results_dir/*.csv");
 my $data = {};
@@ -30,7 +30,7 @@ for my $result_csv (@results) {
 # now write a nice CSV
 open(my $OUT, ">", "$results_dir/overall.csv");
 my @all_names = sort keys %names;
-print $OUT "Elements," . join(",", @all_names);
+print $OUT "Elements," . join(",", map { my $n = $_; $n =~ s/_/ /; "\"$n\"" } @all_names);
 
 for my $param ( sort { $a <=> $b } keys %$data ) {
 	print $OUT "$param," . join(",", map { $data->{$param}->{$_} ? $data->{$param}->{$_}->{avg} : "" } @all_names );
