@@ -38,8 +38,8 @@ $opt{step} = ceil( ($opt{max}-$opt{min}) / $opt{num} );
 print "Running benchmark for $opt{min} to $opt{max} elements in $opt{num} steps of size $opt{step} with distribution $opt{distribution}";
 print "Element size $opt{element_size} bytes, $opt{iterations} iterations per sorter";
 
-die "SORTER_BLOCK_WIDTH not set for mergesorts (set it in the environment with set -x SORTER_BLOCK_WIDTH 32)" if !defined $ENV{SORTER_BLOCK_WIDTH};
-print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}";
+
+print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}" if defined $ENV{SORTER_BLOCK_WIDTH};
 
 if( $opt{element_size} < 5 ) {
 	die "Elements can's be smaller than 5 since they are a struct of a 4 byte int and at minimum 1 char";
