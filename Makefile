@@ -31,7 +31,7 @@ sort_functions: *sort.c
 	${CMD} -c *sort.c
 	
 clean:
-	rm -rf bin/* testdata/ gen_random_ints gen_random_structs ziggurat_test test_find_index *.o
+	rm -rf bin/* gen_random_ints gen_random_structs ziggurat_test test_find_index *.o
 
 tools: utils.* gen_random_ints.c gen_random_structs.c ziggurat.*
 	${CMD} -c utils.c
