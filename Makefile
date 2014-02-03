@@ -52,7 +52,7 @@ mergesort: main_template.c utils.o mergesort.o
 pyramid_mergesort: main_template.c utils.o pyramid_mergesort.o
 	${CMD} -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
 
-timsort: main_template.c utils.o timsort.o
+timsort: main_template.c utils.o timsort.o insertionsort
 	${CMD} -DSORT_FUNCTION=timsort utils.o insertionsort.o timsort.o main_template.c -o bin/timsort
 
 stdlib_qsort: main_template.c utils.o sort_functions
