@@ -342,25 +342,30 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		if( same_run_counter >= MIN_GALLOP ) {
 
 			say("Switching to Gallop Mode after copying %zu elements from %s\n", same_run_counter, (current_run==0?"left":"right"));
-			size_t chunk_size_left = 0, chunk_size_right = 0;
+			size_t chunk_length_left = 0, chunk_length_right = 0;
 			do {
 				if( current_run == 0 ) {
 					say("Finding where right[0] (%d) belongs in left\n", *(int*)right);
 					// find where the first element of right should go in left
 					// that gives the number of items we can copy from left in 1 chunk
-					chunk_size_left = find_index( left, (left_end-left)/width, right, width, compare );
-
-					say("We can copy %zu elements from left in one chunk\n", chunk_size_left);
-					memcpy( to, left, chunk_size_left*width );
-					to += chunk_size_left * width;
-					left += chunk_size_left * width;
+					chunk_length_left = find_index( left, (left_end-left)/width, right, width, compare );
+					say("right[0] comes after left[%zu] ( %d > %d )\n", chunk_length_left, *(int*)right, *((int*)left + chunk_length_left) );
+					assert( *(int*)right >= *((int*)left + chunk_length_left) );
+					
+					say("We can copy %zu elements from left in one chunk\n", chunk_length_left);
+					memcpy( to, left, chunk_length_left*width );
+					to += chunk_length_left * width;
+					left += chunk_length_left * width;
 				} else {
 					say("There are too many damn branches here.");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
-					chunk_size_right = find_index( right, (right_end-right)/width, left, width, compare );
-					say("We can copy %zu elements from right in one chunk\n", chunk_size_right);
+					chunk_length_right = find_index( right, (right_end-right)/width, left, width, compare );
+					say("left[0] comes after right[%zu] ( %d > %d )\n", chunk_length_right, *(int*)left, *((int*)right + chunk_length_right) );
+					assert( *(int*)left >= *((int*)right + chunk_length_right) );
+
+					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
 				}
-			} while( chunk_size_left >= MIN_GALLOP && chunk_size_right >= MIN_GALLOP );
+			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP );
 			
 		}
 //		say("Merged so far:\n");
@@ -484,25 +489,34 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 		if( same_run_counter >= MIN_GALLOP ) {
 
 			say("Switching to Backwards Gallop Mode after copying %zu elements from %s\n", same_run_counter, (current_run==0?"left":"right"));
-			size_t chunk_size_left = 0, chunk_size_right = 0;
+
+			size_t chunk_length_left = 0, chunk_length_right = 0;
 			do {
 				if( current_run == 0 ) {
 					say("Finding where right[0] (%d) belongs in left\n", *(int*)right);
 					// find where the first element of right should go in left
 					// that gives the number of items we can copy from left in 1 chunk
-					chunk_size_left = find_index( left, (left-left_start)/width, right, width, compare );
+					chunk_length_left = find_index( left, (left-left_start)/width, right, width, compare );
+					say("left[0] comes after right[%zu] ( %d > %d )\n", chunk_length_left, *(int*)left, *((int*)right + chunk_length_left) );
+					assert( *(int*)left >= *((int*)right + chunk_length_left) );
 
-					say("We can copy %zu elements from left in one chunk\n", chunk_size_left);
-					memcpy( to, left, chunk_size_left*width );
-					to += chunk_size_left * width;
-					left += chunk_size_left * width;
+					say("We can copy %zu elements from left in one chunk\n", chunk_length_left);
+					to -= chunk_length_left * width;
+					left -= chunk_length_left * width;
+					memcpy( to, left, chunk_length_left*width );
 				} else {
 					say("There are too many damn branches here.");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
-					chunk_size_right = find_index( right, (right-right_start)/width, left, width, compare );
-					say("We can copy %zu elements from right in one chunk\n", chunk_size_right);
+					chunk_length_right = find_index( right, (right-right_start)/width, left, width, compare );
+					say("right[0] comes after left[%zu] ( %d > %d )\n", chunk_length_right, *(int*)right, *((int*)left + chunk_length_right) );
+					assert( *(int*)left >= *((int*)right + chunk_length_left) );
+
+					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
+					to -= chunk_length_right * width;
+					right -= chunk_length_right * width;
+					memcpy( to, right, chunk_length_right*width );
 				}
-			} while( chunk_size_left >= MIN_GALLOP && chunk_size_right >= MIN_GALLOP );
+			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP );
 
 		}
 //		say("Merged so far:\n");
