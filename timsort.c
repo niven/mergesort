@@ -11,7 +11,7 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
-#define MIN_GALLOP 8
+#define MIN_GALLOP 4
 
 void merge_lo( run* a, run* b, size_t width, comparator compare );
 void merge_hi( run* a, run* b, size_t width, comparator compare );
@@ -497,8 +497,8 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 					// find where the first element of right should go in left
 					// that gives the number of items we can copy from left in 1 chunk
 					chunk_length_left = find_index( left, (left-left_start)/width, right, width, compare );
-					say("left[0] comes after right[%zu] ( %d > %d )\n", chunk_length_left, *(int*)left, *((int*)right + chunk_length_left) );
-					assert( *(int*)left >= *((int*)right + chunk_length_left) );
+					say("right[0] comes after left[%zu] ( %d > %d )\n", chunk_length_left, *(int*)right, *((int*)left + chunk_length_left) );
+					assert( *(int*)right >= *((int*)left + chunk_length_left) );
 
 					say("We can copy %zu elements from left in one chunk\n", chunk_length_left);
 					to -= chunk_length_left * width;
@@ -508,8 +508,8 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 					say("There are too many damn branches here.");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
 					chunk_length_right = find_index( right, (right-right_start)/width, left, width, compare );
-					say("right[0] comes after left[%zu] ( %d > %d )\n", chunk_length_right, *(int*)right, *((int*)left + chunk_length_right) );
-					assert( *(int*)left >= *((int*)right + chunk_length_left) );
+					say("left[0] comes after right[%zu] ( %d > %d )\n", chunk_length_right, *(int*)left, *((int*)right + chunk_length_right) );
+					assert( *(int*)left >= *((int*)right + chunk_length_right) );
 
 					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
 					to -= chunk_length_right * width;
