@@ -218,6 +218,68 @@ size_t find_index( const void* in, size_t nel, const void* value, size_t width, 
 
 }
 
+/* same as find_index(), but starting from the end and searching towards the beginning. */
+size_t find_index_reverse( const void* in, size_t nel, const void* value, size_t width, comparator compare ) {
+	
+	say("Find reverse index starting from value %d, %d elements\n", *(int*)in, nel);
+	
+	if( nel <= 1 ) {
+		say("Only 1 element left (%d)\n", *(int*)in);
+		return compare( in, value ) <= 0 ? 0 : 1; // equal values come after
+	}
+	
+	char* list = (char*)in;
+	// check where value belongs in "steps" of 2^i-1 (the -1 is to ensure we start at 0, the sequence is 0, 1, 3, 7, ...)
+	int pow = 0;
+	size_t index = (1 << pow) - 1;
+	say("About to compare values[%d] = %d with %d\n", index, *(int*) (list - index*width), *(int*)value );
+	while( index < nel && compare( list - index*width, value ) > 0 ) {
+		index = (1 << ++pow) -1;
+		say("Going to compare values[-%d] = %d with %d\n", index, *(int*) (list - index*width), *(int*)value ); 
+	}
+
+	// at this point we can have 3 possible situations:
+	// 1. Every element in list is > value
+	// 2. value falls somewhere in list
+	// 3. value > last index checked, but the next index > nel
+
+	// if we overshot we recurse on the sublist defined by the (previous, index) exclusive range
+	// if index == 0 we are smaller than the first element so just return
+	// this is #1
+	if( index == 0 ) {
+		say("Smaller than the first element, returning 0\n");
+		return 0;
+	}
+
+	// BUG is here somewhere, if the element we're looking for should be placed after the last element I think
+	
+	pow--;
+	size_t min_placement_index = MIN(1 << pow, nel-1); // the previous value of index+1 (since we already compared that one) unless index happened to be the last index of list;
+	
+	// if we have 10 elements and min=4 we continue searching at list[4], meaning list[4-9] = 6 elements remaining
+	size_t elements_remaining = nel - min_placement_index; 
+	
+	say("Elements remaining %zu, min_placement_index %zu\n", elements_remaining, min_placement_index);
+	
+	if( elements_remaining == 0 ) {
+		return min_placement_index;
+	}
+	
+	if( index >= nel ) { // case #3
+		// whatever remains is "the rest"
+		say("Recursing until end of list (%d elements)\n", elements_remaining);
+	} else { // case #2. list[index] > value
+		// we can exclude everything gte index. If we have 10 elements list[4] = 8 and value = 5 everthing in list[4-9] can be left out = 6 = 10-index
+		elements_remaining -= nel - index;
+	}
+	say("Recursing from index %d, elements remaining after removing tail: %d\n", min_placement_index, elements_remaining);
+		
+	// now find another index starting at previous, add that to previous and that's our index
+	return min_placement_index + find_index_reverse( list - min_placement_index*width, elements_remaining, value, width, compare ); 
+
+}
+
+
 /*
 merge_lo and merge_hi both merge 2 arrays, but to minimize the memory use
 we only allocate memory for the smaller run, and then use the original space
@@ -496,7 +558,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 					say("Finding where right[0] (%d) belongs in left\n", *(int*)right);
 					// find where the first element of right should go in left
 					// that gives the number of items we can copy from left in 1 chunk
-					chunk_length_left = find_index( left, (left-left_start)/width, right, width, compare );
+					chunk_length_left = find_index_reverse( left, (left-left_start)/width, right, width, compare );
 					say("right[0] comes after left[%zu] ( %d > %d )\n", chunk_length_left, *(int*)right, *((int*)left + chunk_length_left) );
 					assert( *(int*)right >= *((int*)left + chunk_length_left) );
 
@@ -507,7 +569,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 				} else {
 					say("There are too many damn branches here.");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
-					chunk_length_right = find_index( right, (right-right_start)/width, left, width, compare );
+					chunk_length_right = find_index_reverse( right, (right-right_start)/width, left, width, compare );
 					say("left[0] comes after right[%zu] ( %d > %d )\n", chunk_length_right, *(int*)left, *((int*)right + chunk_length_right) );
 					assert( *(int*)left >= *((int*)right + chunk_length_right) );
 

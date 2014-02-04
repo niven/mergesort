@@ -18,8 +18,6 @@ int main( int argc, char* argv[] ) {
 	
 	say("Running %zu tests of max length %zu\n", num_tests, max_length); 
 	
-	char buf[100];
-	
 	srand( time( NULL ) );
 	
 	for(size_t i=0; i<num_tests; i++ ) {
@@ -62,8 +60,11 @@ int main( int argc, char* argv[] ) {
 		}
 
 		size_t index = find_index( array, count, &target, sizeof(int), compare_int );
-
+		say("\n");
+		size_t index_from_end = find_index_reverse( array + count -1, count, &target, sizeof(int), compare_int );
+		
 		say("\nInsert index = %zu, displacing %d\n", index, array[index]);
+		say("Insert index_backwards = %zu, displacing %d\n", index_from_end, array[count-index_from_end]);
 
 		if( index > 0 ) { // check against left 
 			say("Check %d <= %d\n", array[index-1], target );
@@ -76,6 +77,7 @@ int main( int argc, char* argv[] ) {
 		}
 
 		assert( correct_index == index );
+		assert( correct_index == count - index_from_end );
 	
 		free( array );
 	}
