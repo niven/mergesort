@@ -411,8 +411,8 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					// find where the first element of right should go in left
 					// that gives the number of items we can copy from left in 1 chunk
 					chunk_length_left = find_index( left, (left_end-left)/width, right, width, compare );
-					say("right[0] comes after left[%zu] ( %d > %d )\n", chunk_length_left, *(int*)right, *((int*)left + chunk_length_left) );
-					assert( *(int*)right >= *((int*)left + chunk_length_left) );
+					say("right[0]=%d displaces left[%zu]=%d\n", *(int*)right, chunk_length_left, *(int*)(left + chunk_length_left*width) );
+					assert( *(int*)right <= *(int*)(left + chunk_length_left*width) );
 					
 					say("We can copy %zu elements from left in one chunk\n", chunk_length_left);
 					memcpy( to, left, chunk_length_left*width );
@@ -423,7 +423,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
 					chunk_length_right = find_index( right, (right_end-right)/width, left, width, compare );
 					say("left[0]=%d displaces right[%zu]=%d \n", *(int*)left, chunk_length_right, *(int*)(right + chunk_length_right*width) );
-					assert( *(int*)left <= *((int*)right + chunk_length_right*width) );
+					assert( *(int*)left <= *(int*)(right + chunk_length_right*width) );
 
 					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
 				}
