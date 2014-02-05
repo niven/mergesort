@@ -419,11 +419,11 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					to += chunk_length_left * width;
 					left += chunk_length_left * width;
 				} else {
-					say("There are too many damn branches here.");
+					say("There are too many damn branches here.\n");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
 					chunk_length_right = find_index( right, (right_end-right)/width, left, width, compare );
-					say("left[0] comes after right[%zu] ( %d > %d )\n", chunk_length_right, *(int*)left, *((int*)right + chunk_length_right) );
-					assert( *(int*)left >= *((int*)right + chunk_length_right) );
+					say("left[0]=%d displaces right[%zu]=%d \n", *(int*)left, chunk_length_right, *(int*)(right + chunk_length_right*width) );
+					assert( *(int*)left <= *((int*)right + chunk_length_right*width) );
 
 					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
 				}
