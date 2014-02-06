@@ -325,7 +325,6 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 	*/
 	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
-	print_array( (widget*)a->address, 0, a->nel, a->nel);
 	SUPPRESS_STDOUT
 	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
 	RETURN_STDOUT
@@ -337,7 +336,6 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)a->address, 0, a->nel, a->nel);
 
 	say("Finding index of A[%d]=%d in B:\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width) );
-	print_array( (widget*)b->address, 0, b->nel, b->nel);
 	// maybe search backwards here?
 	SUPPRESS_STDOUT
 	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + (a->nel-1)*width, width, compare );
@@ -345,7 +343,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	say("A[%d] (%d) should be placed at index %d in B (B[%d] = %d (could be out of bounds))\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width), last_a_in_b, last_a_in_b, *(int*) ( (char*)b->address + last_a_in_b*width) );
 	// this basically means B[last_a_in_b]-B[-1] are already sorted so we adjust B
 	b->nel -= b->nel - last_a_in_b;
-	say("B still starts with %d with %d elements:\n", *(int*)b->address, b->nel);
+	say("B still starts with %d but now with %d elements:\n", *(int*)b->address, b->nel);
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 
 	// allocate space for the smaller (a) array
@@ -363,7 +361,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	char* right = (char*)b->address;
 	char* right_end = right + b->nel*width;
 
-	memset( to, 0, (a->nel) * width ); // erase left for debug
+	memset( to, 0, (a->nel) * width ); // erase, left for debug
 
 	say("Merging bounded arrays:\n");
 	print_array( (widget*)left, 0, a->nel, a->nel );
@@ -402,6 +400,13 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		// in a chunk. Then the same for the opposite case.
 		// Do this until both have copied less than MIN_GALLOP elements
 		if( same_run_counter >= MIN_GALLOP ) {
+			// now we've moved to 1 element forward too far
+			to -= width;
+			if( current_run == 0 ) {
+				left -= width;
+			} else {
+				right -= width;
+			}
 
 			say("Switching to Gallop Mode after copying %zu elements from %s\n", same_run_counter, (current_run==0?"left":"right"));
 			size_t chunk_length_left = 0, chunk_length_right = 0;
@@ -436,12 +441,12 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 			same_run_counter = 0;
 			
 		}
-//		say("Merged so far:\n");
-//		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
 
 	}
 
 	// copy remainders
+	say("Merged so far:\n");
+	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
 	// TODO: I don't think both can have remainders
 	if( left < left_end ) {
 		say("Copying %d remaining elements from left:\n", (left_end-left)/width );
@@ -500,7 +505,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	// this basically means B[last_a_in_b]-B[-1] are already sorted so we adjust B
 	
 	b->nel -= b->nel - last_a_in_b;
-	say("B now starts at %d with %d elements:\n", *(int*)b->address, b->nel);
+	say("B still starts at %d but now with %d elements:\n", *(int*)b->address, b->nel);
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 
 	// allocate space for the smaller (b) array
