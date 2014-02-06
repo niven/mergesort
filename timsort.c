@@ -549,7 +549,14 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
 		// see merge_lo, but we go in reverse
 		if( same_run_counter >= MIN_GALLOP ) {
-
+			// now we've moved to 1 element back too far
+			to += width;
+			if( current_run == 0 ) {
+				left += width;
+			} else {
+				right += width;
+			}
+			
 			say("Switching to Backwards Gallop Mode after copying %zu elements from %s\n", same_run_counter, (current_run==0?"left":"right"));
 			say("Merge result so far:\n");
 			print_array( (widget*)(to+width), 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start)/width ) -1, 32 );
