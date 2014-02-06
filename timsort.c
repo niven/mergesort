@@ -473,7 +473,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
 	// yeah, this is essentially copied from merge_lo, but when compiled non-verbose reduces to 5 lines
 	say("Finding index of B[0]=%d in A:\n", *(int*)b->address);
-	print_array( (widget*)a->address, 0, a->nel, a->nel);
+//	print_array( (widget*)a->address, 0, a->nel, a->nel);
 	SUPPRESS_STDOUT
 	size_t first_b_in_a = find_index( a->address, a->nel, b->address, width, compare );
 	RETURN_STDOUT
@@ -485,7 +485,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)a->address, 0, a->nel, a->nel);
 
 	say("Finding index of A[%d]=%d in B:\n", a->nel-1, *(int*) ( (char*) a->address + (a->nel-1)*width) );
-	print_array( (widget*)b->address, 0, b->nel, b->nel);
+//	print_array( (widget*)b->address, 0, b->nel, b->nel);
 	// maybe search backwards here?
 	SUPPRESS_STDOUT
 	size_t last_a_in_b = find_index( b->address, b->nel, (char*)a->address + (a->nel-1)*width, width, compare );
@@ -494,7 +494,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	// this basically means B[last_a_in_b]-B[-1] are already sorted so we adjust B
 	
 	b->nel -= b->nel - last_a_in_b;
-	say("B still starts at %d with %d elements:\n", *(int*)b->address, b->nel);
+	say("B now starts at %d with %d elements:\n", *(int*)b->address, b->nel);
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 
 	// allocate space for the smaller (b) array
@@ -511,7 +511,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	char* left = (char*)a->address + (a->nel-1)*width;
 	char* right = right_start + (b->nel-1)*width;
 
-	memset( (char*)to - (b->nel-1) * width, 0, b->nel*width ); // erase right for debug (to already points at the end of left_right)
+	memset( (char*)to - (b->nel-1) * width, 0, b->nel*width ); // erase right for debug (to already points at the end of left_end)
 
 	say("Merging bounded arrays:\n");
 	print_array( (widget*)left_start, 0, a->nel, a->nel );
@@ -551,6 +551,8 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 		if( same_run_counter >= MIN_GALLOP ) {
 
 			say("Switching to Backwards Gallop Mode after copying %zu elements from %s\n", same_run_counter, (current_run==0?"left":"right"));
+			say("Merge result so far:\n");
+			print_array( (widget*)(to+width), 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start)/width ) -1, 32 );
 
 			size_t chunk_length_left = 0, chunk_length_right = 0;
 			do {
@@ -566,19 +568,25 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 					to -= chunk_length_left * width;
 					left -= chunk_length_left * width;
 					memcpy( to, left, chunk_length_left*width );
+					say("Merge result after chunk copy:\n");
+					print_array( (widget*)to, 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start) ), 32 );
+					//is_sorted( (widget*)to, 0, )
 				} else {
-					say("There are too many damn branches here.");
+					say("There are too many damn branches here.\n");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
 					chunk_length_right = find_index_reverse( right, (right-right_start)/width, left, width, compare );
-					say("left[0] comes after right[%zu] ( %d > %d )\n", chunk_length_right, *(int*)left, *((int*)right + chunk_length_right) );
-					assert( *(int*)left >= *((int*)right + chunk_length_right) );
+					say("left[0]=%d displaces right[%zu]=%d\n", *(int*)left, chunk_length_right, *(int*)(right + chunk_length_right*width) );
+					assert( *(int*)left <= *(int*)(right + chunk_length_right*width) );
 
 					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
 					to -= chunk_length_right * width;
 					right -= chunk_length_right * width;
 					memcpy( to, right, chunk_length_right*width );
 				}
-			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP );
+				say("Merge result after chunk copy:\n");
+				print_array( (widget*)to, 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start)/width ), 32 );
+
+			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP ); // needs a TERMINATOR!
 
 		}
 //		say("Merged so far:\n");
@@ -689,9 +697,9 @@ void timsort(void* base, size_t nel, size_t width, comparator compare) {
 		run* C = pop_run( &sorted_runs );
 		run* B = pop_run( &sorted_runs );
 		size_t total = B->nel + C->nel;
-		say("Merging 2 runs (B+C):\n");
-		print_array( (widget*)B->address, 0, B->nel, B->nel );
-		print_array( (widget*)C->address, 0, C->nel, C->nel );
+		say("Merging 2 runs (B+C)\n");
+//		print_array( (widget*)B->address, 0, B->nel, B->nel );
+//		print_array( (widget*)C->address, 0, C->nel, C->nel );
 
 		if( B->nel <= C->nel ) {
 			merge_lo( B, C, width, compare ); // don't like this name but it's what the jargon is
