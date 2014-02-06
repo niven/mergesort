@@ -428,6 +428,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
 				}
 			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP );
+			same_run_counter = 0;
 			
 		}
 //		say("Merged so far:\n");
@@ -523,7 +524,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	int current_run = 1; // 0 is a 1 is b
 	while( left >= left_start && right >= right_start ) {
 
-//		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
+				say("Comparing %d with %d\n", *(int*)left, *(int*)right );
 	
 		// too many damn branches (shakes fist)
 		if( compare( left, right ) > 0 ) {
@@ -593,8 +594,8 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 				say("Merge result after chunk copy:\n");
 				print_array( (widget*)to, 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start)/width ), 32 );
 
-			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP ); // needs a TERMINATOR!
-
+			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP );
+			same_run_counter = 0;
 		}
 //		say("Merged so far:\n");
 //		print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
