@@ -418,6 +418,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					memcpy( to, left, chunk_length_left*width );
 					to += chunk_length_left * width;
 					left += chunk_length_left * width;
+					current_run = 1;
 				} else {
 					say("There are too many damn branches here.\n");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
@@ -429,8 +430,9 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					memcpy( to, right, chunk_length_right*width );
 					to += chunk_length_right * width;
 					right += chunk_length_right * width;
+					current_run = 0;
 				}
-			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP );
+			} while( chunk_length_left >= MIN_GALLOP || chunk_length_right >= MIN_GALLOP );
 			same_run_counter = 0;
 			
 		}
@@ -581,7 +583,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 					memcpy( to, left, chunk_length_left*width );
 					say("Merge result after chunk copy:\n");
 					print_array( (widget*)to, 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start) ), 32 );
-					//is_sorted( (widget*)to, 0, )
+					current_run = 1;
 				} else {
 					say("There are too many damn branches here.\n");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
@@ -593,11 +595,12 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 					to -= chunk_length_right * width;
 					right -= chunk_length_right * width;
 					memcpy( to, right, chunk_length_right*width );
+					current_run = 0;
 				}
 				say("Merge result after chunk copy:\n");
 				print_array( (widget*)to, 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start)/width ), 32 );
 
-			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP );
+			} while( chunk_length_left >= MIN_GALLOP || chunk_length_right >= MIN_GALLOP );
 			same_run_counter = 0;
 		}
 //		say("Merged so far:\n");
