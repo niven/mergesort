@@ -191,7 +191,7 @@ void print_array( widget* widgets, int from, int to, int width ) {
 
 	say( "[%d - %d] [ ", from, MIN(from+width-1, to-1) );
 	for(int i=from; i<to; i++) {
-		say( "%3d:%s ", widgets[i].number, widgets[i].padding );
+		say( "%3d:%s ", widgets[i].number, widgets[i].padding[0] == '\0' ? "___" : widgets[i].padding );
 		if( i<to-1 && (i+1)%width==0 ) {
 			say( "]\n[%d - %d] [ ", i+1, MIN(i+width,to-1) );
 		}
