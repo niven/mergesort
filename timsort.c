@@ -426,6 +426,9 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					assert( *(int*)left <= *(int*)(right + chunk_length_right*width) );
 
 					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
+					memcpy( to, right, chunk_length_right*width );
+					to += chunk_length_right * width;
+					right += chunk_length_right * width;
 				}
 			} while( chunk_length_left >= MIN_GALLOP && chunk_length_right >= MIN_GALLOP );
 			same_run_counter = 0;
@@ -437,7 +440,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	}
 
 	// copy remainders
-	// TODO: I don't think both could have remainders
+	// TODO: I don't think both can have remainders
 	if( left < left_end ) {
 		say("Copying %d remaining elements from left:\n", (left_end-left)/width );
 		print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width );
@@ -445,7 +448,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	}
 	if( right < right_end ) {
 		say("Copying %d remaining elements from right:\n", (right_end-right)/width );
-		print_array( (widget*)left, 0, (right_end-right)/width, (right_end-right)/width );
+		print_array( (widget*)right, 0, (right_end-right)/width, (right_end-right)/width );
 		memcpy( to, right, right_end-right );
 	}
 
