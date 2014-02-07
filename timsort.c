@@ -437,7 +437,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					right += chunk_length_right * width;
 					current_run = 0;
 				}
-			} while( chunk_length_left >= MIN_GALLOP || chunk_length_right >= MIN_GALLOP );
+			} while( left < left_end && right < right_end && (chunk_length_left >= MIN_GALLOP || chunk_length_right >= MIN_GALLOP) );
 			same_run_counter = 0;
 			
 		}
@@ -478,7 +478,9 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 
 	say("Merging L+R:\n");
 	print_array( (widget*)a->address, 0, a->nel, a->nel );
+	is_sorted( (widget*)a->address, 0, a->nel );
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
+	is_sorted( (widget*)b->address, 0, b->nel );
 
 	const void* merged_array = a->address; // after doing this first_b_in_a business, we might start at an offset from A
 
@@ -509,7 +511,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 
 	// allocate space for the smaller (b) array
-	char* to = (char*)a->address + (a->nel+b->nel-1) * width; // we merge from the end, a+b elements
+	char* to = (char*)a->address + (a->nel+b->nel) * width; // we merge from the end, a+b elements
 	char* right_start = malloc( b->nel * width );
 	char* temp = right_start;
 	if( right_start == NULL ) {
@@ -522,19 +524,19 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	char* left = (char*)a->address + (a->nel-1)*width;
 	char* right = right_start + (b->nel-1)*width;
 
-	memset( (char*)to - (b->nel-1) * width, 0, b->nel*width ); // erase right for debug (to already points at the end of left_end)
+	memset( (char*)to - (b->nel) * width, 0, b->nel*width ); // erase right for debug (to already points at the end of left_end)
 
 	say("Merging bounded arrays:\n");
 	print_array( (widget*)left_start, 0, a->nel, a->nel );
 	print_array( (widget*)right_start, 0, b->nel, b->nel );
 	say("To target range:\n");
-	print_array( (widget*)(to - (a->nel+b->nel-1)*width), 0, a->nel+b->nel, a->nel+b->nel );
+	print_array( (widget*)(to - (a->nel+b->nel)*width), 0, a->nel+b->nel, a->nel+b->nel );
 
 	size_t same_run_counter = 0;
 	int current_run = 1; // 0 is a 1 is b
 	while( left >= left_start && right >= right_start ) {
 
-				say("Comparing %d with %d\n", *(int*)left, *(int*)right );
+		//say("Comparing %d with %d\n", *(int*)left, *(int*)right );
 	
 		// too many damn branches (shakes fist)
 		if( compare( left, right ) > 0 ) {
@@ -557,55 +559,59 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 			current_run = 1;
 		}
 		to -= width;
+		print_array( (widget*)a->address, 0, a->nel + b->nel + 1, a->nel + b->nel +1 );
 
 		// see merge_lo, but we go in reverse
 		if( same_run_counter >= MIN_GALLOP ) {
-			// now we've moved to 1 element back too far
-			to += width;
-			if( current_run == 0 ) {
-				left += width;
-			} else {
-				right += width;
-			}
 			
-			say("Switching to Backwards Gallop Mode after copying %zu elements from %s\n", same_run_counter, (current_run==0?"left":"right"));
-			say("Merge result so far:\n");
-			print_array( (widget*)(to+width), 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start)/width ) -1, 32 );
-
+			say("Switching to Backwards Gallop Mode after copying %zu elements from %s, merge result so far:\n", same_run_counter, (current_run==0?"left":"right"));
+			print_array( (widget*)a->address, 0, a->nel + b->nel + 1, a->nel + b->nel +1 );
+			say("Left/Right remaining:\n");
+			print_array( (widget*)left_start, 0, (left-left_start)/width +1, (left-left_start)/width +1 );
+			print_array( (widget*)right_start, 0, (right-right_start)/width +1, (right-right_start)/width +1 );
+			
 			size_t chunk_length_left = 0, chunk_length_right = 0;
 			do {
 				if( current_run == 0 ) {
+					current_run = 1;
 					say("Finding where right[0] (%d) belongs in left\n", *(int*)right);
 					// find where the first element of right should go in left
 					// that gives the number of items we can copy from left in 1 chunk
 					chunk_length_left = find_index_reverse( left, (left-left_start)/width, right, width, compare );
-					say("right[0] comes after left[%zu] ( %d > %d )\n", chunk_length_left, *(int*)right, *((int*)left + chunk_length_left) );
+					say("right[0] comes after left[-%zu] ( %d > %d )\n", chunk_length_left, *(int*)right, *(int*)(left - chunk_length_left*width) );
 					assert( *(int*)right >= *((int*)left + chunk_length_left) );
 
-					say("We can copy %zu elements from left in one chunk\n", chunk_length_left);
-					to -= chunk_length_left * width;
-					left -= chunk_length_left * width;
+					say("We can copy %zu elements from left in one chunk. Left:\n", chunk_length_left);
+					if( chunk_length_left == 0 ) {
+						continue;
+					}
+					
+					print_array( (widget*)left_start, 0, (left-left_start)/width +1, (left-left_start)/width +1 );
+					to -= chunk_length_left * width - width;
+					left -= chunk_length_left * width - width;
 					memcpy( to, left, chunk_length_left*width );
-					say("Merge result after chunk copy:\n");
-					print_array( (widget*)to, 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start) ), 32 );
-					current_run = 1;
 				} else {
+					current_run = 0;
 					say("There are too many damn branches here.\n");
 					say("Finding where left[0] (%d) belongs in right\n", *(int*)left);
 					chunk_length_right = find_index_reverse( right, (right-right_start)/width, left, width, compare );
 					say("left[0]=%d displaces right[%zu]=%d\n", *(int*)left, chunk_length_right, *(int*)(right + chunk_length_right*width) );
 					assert( *(int*)left <= *(int*)(right + chunk_length_right*width) );
 
-					say("We can copy %zu elements from right in one chunk\n", chunk_length_right);
-					to -= chunk_length_right * width;
-					right -= chunk_length_right * width;
+					say("We can copy %zu elements from right in one chunk. Right:\n", chunk_length_right);
+					if( chunk_length_right == 0 ) {
+						continue;
+					}
+					print_array( (widget*)right_start, 0, (right-right_start)/width +1, (right-right_start)/width +1 );
+					
+					to -= chunk_length_right * width - width;
+					right -= chunk_length_right * width - width;
 					memcpy( to, right, chunk_length_right*width );
-					current_run = 0;
 				}
 				say("Merge result after chunk copy:\n");
-				print_array( (widget*)to, 0, ( a->nel - (left-left_start)/width + b->nel - (right-right_start)/width ), 32 );
+				print_array( (widget*)a->address, 0, a->nel + b->nel + 1, a->nel + b->nel +1 );
 
-			} while( chunk_length_left >= MIN_GALLOP || chunk_length_right >= MIN_GALLOP );
+			} while( left > left_start && right > right_start && (chunk_length_left >= MIN_GALLOP || chunk_length_right >= MIN_GALLOP) );
 			same_run_counter = 0;
 		}
 //		say("Merged so far:\n");
@@ -614,7 +620,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	}
 
 	say("Merged runs, may have remainders:\n");
-	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+	print_array( (widget*)a->address, 0, a->nel+b->nel +1, a->nel+b->nel +1 );
 
 	// copy remainders, >= because we go RTL
 	// TODO: I don't think both could have remainders
@@ -631,13 +637,13 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 		memcpy( to, right_start, (right-right_start)+width );
 	}
 	say("Remainders copied:\n");
-	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+	print_array( (widget*)a->address, 0, a->nel+b->nel +1, a->nel+b->nel +1 );
 	
 
 	say("Merge hi result:\n");
 	a->address = merged_array;
 
-	print_array( (widget*)a->address, 0, total_elements, total_elements );
+	print_array( (widget*)a->address, 0, total_elements +1, total_elements +1 );
 
 	is_sorted( (widget*)a->address, 0, total_elements );
 
