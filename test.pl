@@ -27,7 +27,7 @@ my $opt_ok = GetOptions (
 	"ceil=s",
 	);
 	
-$opt_ok && $opt{target} or die "Usage: perl test.pl --min=NN --max=NN --ceil=NN --target=SSS";
+$opt_ok && $opt{target} or die "Usage: perl test.pl --min=NN --max=NN --ceil=NN --target=<sorter>";
 
 print "Running test for $opt{min} to $opt{max} for $opt{target}";
 
