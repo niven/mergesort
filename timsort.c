@@ -279,6 +279,14 @@ size_t find_index_reverse( const void* in, size_t nel, const void* value, size_t
 
 }
 
+void gallop_backwards( char* to, char* left, char* left_start, char* right, char* right_start, size_t width, comparator compare ) {
+	
+}
+
+void gallop_forwards( char* to, char* left, char* left_end, char* right, char* right_end, size_t width, comparator compare ) {
+	
+}
+
 
 /*
 merge_lo and merge_hi both merge 2 arrays, but to minimize the memory use
@@ -395,6 +403,12 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 			current_run = 1;
 		}
 		to += width;
+
+		if( same_run_counter >= MIN_GALLOP ) {
+			
+			gallop_forwards( to, left, left_start, right, right_start, width, compare );
+			
+		}
 
 	}
 
@@ -514,6 +528,12 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 		}
 		to -= width;
 		print_array( (widget*)a->address, 0, a->nel + b->nel + 1, a->nel + b->nel +1 );
+
+		if( same_run_counter >= MIN_GALLOP ) {
+			
+			gallop_backwards( to, left, left_start, right, right_start, width, compare );
+			
+		}
 
 	}
 
