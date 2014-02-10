@@ -285,6 +285,10 @@ void gallop_backwards( char* to, char* left, char* left_start, char* right, char
 
 void gallop_forwards( char* to, char* left, char* left_end, char* right, char* right_end, size_t width, comparator compare ) {
 	
+	say("Gallop Forwards with left/right:\n");
+	print_array( (wiget*)left, 0, (left_end-left)/width, (left_end-left)/width );
+	print_array( (wiget*)right, 0, (right_end-right)/width, (right_end-right)/width );
+	
 }
 
 
