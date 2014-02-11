@@ -283,11 +283,18 @@ void gallop_backwards( char* to, char* left, char* left_start, char* right, char
 	
 }
 
-void gallop_forwards( char* to, char* left, char* left_end, char* right, char* right_end, size_t width, comparator compare ) {
+static inline void gallop_forwards( char** to, char** left, char* left_end, char** right, char* right_end, size_t width, comparator compare ) {
 	
+	char* L = *left;
+	char* R = *right;
+	char* dest = *to;
+	 
 	say("Gallop Forwards with left/right:\n");
-	print_array( (wiget*)left, 0, (left_end-left)/width, (left_end-left)/width );
-	print_array( (wiget*)right, 0, (right_end-right)/width, (right_end-right)/width );
+	print_array( (widget*)L, 0, (left_end-L)/width, (left_end-L)/width );
+	print_array( (widget*)R, 0, (right_end-R)/width, (right_end-R)/width );
+
+	say("Dest:\n");
+	print_array( (widget*)dest, 0, (right_end-R + left_end-L)/width, (right_end-R + left_end-L)/width );
 	
 }
 
@@ -383,7 +390,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	int current_run = 1; // 0 is a 1 is b
 	while( left < left_end && right < right_end ) {
 
-//		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
+		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
 	
 		// too many damn branches (shakes fist)
 		// also copying elements 1 by one instead of while ( a<= b ){ count++}; memcpy( to, a, count ); a+=count
@@ -410,7 +417,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 		if( same_run_counter >= MIN_GALLOP ) {
 			
-			gallop_forwards( to, left, left_start, right, right_start, width, compare );
+			gallop_forwards( &to, &left, left_end, &right, right_end, width, compare );
 			
 		}
 
