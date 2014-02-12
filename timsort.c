@@ -283,22 +283,6 @@ void gallop_backwards( char* to, char* left, char* left_start, char* right, char
 	
 }
 
-static inline void gallop_forwards( char** to, char** left, char* left_end, char** right, char* right_end, size_t width, comparator compare ) {
-	
-	char* L = *left;
-	char* R = *right;
-	char* dest = *to;
-	 
-	say("Gallop Forwards with left/right:\n");
-	print_array( (widget*)L, 0, (left_end-L)/width, (left_end-L)/width );
-	print_array( (widget*)R, 0, (right_end-R)/width, (right_end-R)/width );
-
-	say("Dest:\n");
-	print_array( (widget*)dest, 0, (right_end-R + left_end-L)/width, (right_end-R + left_end-L)/width );
-	
-}
-
-
 /*
 merge_lo and merge_hi both merge 2 arrays, but to minimize the memory use
 we only allocate memory for the smaller run, and then use the original space
@@ -417,7 +401,12 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 		if( same_run_counter >= MIN_GALLOP ) {
 			
-			gallop_forwards( &to, &left, left_end, &right, right_end, width, compare );
+			say("Gallop Forwards with left/right:\n");
+			print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width );
+			print_array( (widget*)right, 0, (right_end-right)/width, (right_end-right)/width );
+
+			say("Dest:\n");
+			print_array( (widget*)to, 0, (right_end-right + left_end-left)/width, (right_end-right + left_end-left)/width );
 			
 		}
 
