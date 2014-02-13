@@ -384,32 +384,43 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		if( compare( left, right ) <= 0 ) {
 			memcpy( to, left, width );
 			left += width;
-			if( current_run == 0 ) {
+			if( current_run == LEFT ) {
 				same_run_counter++;
 			} else {
 				same_run_counter = 0;
 			}
-			current_run = 0;
+			current_run = LEFT;
 		} else {
 			memcpy( to, right, width );
 			right += width;
-			if( current_run == 1 ) {
+			if( current_run == RIGHT ) {
 				same_run_counter++;
 			} else {
 				same_run_counter = 0;
 			}
-			current_run = 1;
+			current_run = RIGHT;
 		}
 		to += width;
 
-		if( same_run_counter >= MIN_GALLOP ) {
+		if( same_run_counter >= MIN_GALLOP && 0 ) {
 			
-			say("Gallop Forwards with left/right:\n");
-			print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width );
-			print_array( (widget*)right, 0, (right_end-right)/width, (right_end-right)/width );
+			size_t gallop_index;
+			while( same_run_counter >= MIN_GALLOP && left <= left_end && right <= right_end ) {
+				say("Gallop Forwards with left/right:\n");
+				print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width );
+				print_array( (widget*)right, 0, (right_end-right)/width, (right_end-right)/width );
 
-			say("Dest:\n");
-			print_array( (widget*)to, 0, (right_end-right + left_end-left)/width, (right_end-right + left_end-left)/width );
+				say("Dest:\n");
+				print_array( (widget*)to, 0, (right_end-right + left_end-left)/width, (right_end-right + left_end-left)/width );
+				
+				if( current_run == LEFT ) {
+					gallop_index = find_index( left, left_end-left, right, width, compare );
+				} else {
+					gallop_index = find_index( right, right_end-right, left, width, compare );
+				}
+				say("Gallop index: %zu (index of %s[0]=%d in %s)", gallop_index, current_run==LEFT?"right":"left", current_run==LEFT?*(int*)right:*(int*)left, current_run==LEFT?"left":"right");
+				same_run_counter = 0;
+			}
 			
 		}
 
