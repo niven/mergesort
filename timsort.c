@@ -12,6 +12,9 @@
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
 #define MIN_GALLOP 4
+// convenient constants for keeping track of the current run
+#define LEFT 0
+#define RIGHT 1
 
 void merge_lo( run* a, run* b, size_t width, comparator compare );
 void merge_hi( run* a, run* b, size_t width, comparator compare );
