@@ -512,7 +512,9 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	print_array( (widget*)left_start, 0, a->nel, a->nel );
 	print_array( (widget*)right_start, 0, b->nel, b->nel );
 	say("To target range:\n");
-	print_array( (widget*)(to - (a->nel+b->nel)*width), 0, a->nel+b->nel, a->nel+b->nel );
+	print_array( (widget*)(to - total_elements*width), 0, total_elements, total_elements );
+	to -= width;
+	say("To currently points at %d\n", *(int*)to);
 
 	size_t same_run_counter = 0;
 	int current_run = 1; // 0 is a 1 is b
