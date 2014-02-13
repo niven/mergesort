@@ -306,6 +306,7 @@ Important to note A is always "left" in the enclosing array and B is alway "righ
 
 // assume a is smaller
 */
+
 void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 	size_t total_elements = a->nel + b->nel;
@@ -492,8 +493,10 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	say("B still starts at %d but now with %d elements:\n", *(int*)b->address, b->nel);
 	print_array( (widget*)b->address, 0, b->nel, b->nel);
 
+	// we merge from the end, a+b elements (not total_elements since we may have changed offsets)
+	char* to = (char*)a->address + (a->nel + b->nel)*width;
+
 	// allocate space for the smaller (b) array
-	char* to = (char*)a->address + (a->nel+b->nel) * width; // we merge from the end, a+b elements
 	char* right_start = malloc( b->nel * width );
 	char* temp = right_start;
 	if( right_start == NULL ) {
@@ -506,7 +509,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	char* left = (char*)a->address + (a->nel-1)*width;
 	char* right = right_start + (b->nel-1)*width;
 
-	memset( (char*)to - (b->nel) * width, 0, b->nel*width ); // erase right for debug (to already points at the end of left_end)
+//	memset( (char*)to - (b->nel) * width, 0, b->nel*width ); // erase right for debug (to already points at the end of left_end)
 
 	say("Merging bounded arrays:\n");
 	print_array( (widget*)left_start, 0, a->nel, a->nel );
@@ -520,7 +523,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	int current_run = 1; // 0 is a 1 is b
 	while( left >= left_start && right >= right_start ) {
 
-		//say("Comparing %d with %d\n", *(int*)left, *(int*)right );
+		say("Comparing %d with %d\n", *(int*)left, *(int*)right );
 	
 		// too many damn branches (shakes fist)
 		if( compare( left, right ) > 0 ) {
@@ -543,7 +546,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 			current_run = 1;
 		}
 		to -= width;
-		print_array( (widget*)a->address, 0, a->nel + b->nel + 1, a->nel + b->nel +1 );
+		print_array( (widget*)a->address, 0, total_elements, total_elements );
 
 		if( same_run_counter >= MIN_GALLOP ) {
 			
@@ -554,7 +557,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	}
 
 	say("Merged runs, may have remainders:\n");
-	print_array( (widget*)a->address, 0, a->nel+b->nel +1, a->nel+b->nel +1 );
+	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel);
 
 	// copy remainders, >= because we go RTL
 	// TODO: I don't think both could have remainders
@@ -571,13 +574,13 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 		memcpy( to, right_start, (right-right_start)+width );
 	}
 	say("Remainders copied:\n");
-	print_array( (widget*)a->address, 0, a->nel+b->nel +1, a->nel+b->nel +1 );
+	print_array( (widget*)a->address, 0, total_elements, total_elements);
 	
 
 	say("Merge hi result:\n");
 	a->address = merged_array;
 
-	print_array( (widget*)a->address, 0, total_elements +1, total_elements +1 );
+	print_array( (widget*)a->address, 0, total_elements, total_elements );
 
 	is_sorted( (widget*)a->address, 0, total_elements );
 
