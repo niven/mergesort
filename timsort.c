@@ -425,13 +425,19 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 					to += gallop_index * width;
 					left += gallop_index * width;
 					print_array( (widget*)merged_array, 0, total_elements, total_elements );
+					current_run = RIGHT;
 				} else {
 					gallop_index = find_index( right, (right_end-right)/width, left, width, compare );
 					say("Gallop index: %zu (index of left[0]=%d in right)\n", gallop_index, *(int*)left );
+					print_array( (widget*)right, 0, gallop_index, gallop_index );
+					memcpy( to, right, gallop_index * width );
+					to += gallop_index * width;
+					right += gallop_index * width;
+					print_array( (widget*)merged_array, 0, total_elements, total_elements );
+					current_run = LEFT;
 				}
 				
-				
-				same_run_counter = 0;
+				same_run_counter = gallop_index;
 			}
 			
 		}
