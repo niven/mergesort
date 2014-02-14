@@ -189,6 +189,10 @@ void say( const char* format, ... ) {
 
 void print_array( widget* widgets, int from, int to, int width ) {
 
+	if( to <= from ) {
+		say("[nothing]\n");
+		return;
+	}
 	say( "[%d - %d] [ ", from, MIN(from+width-1, to-1) );
 	for(int i=from; i<to; i++) {
 		say( "%3d:%s ", widgets[i].number, widgets[i].padding[0] == '\0' ? "___" : widgets[i].padding );

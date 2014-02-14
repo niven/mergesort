@@ -319,7 +319,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 	// Can we share this between hi/lo? Think so
 
-	const void* merged_array = a->address; // after doung this first_b_in_a business, we might start at an offset from A
+	const void* merged_array = a->address; // after doing this first_b_in_a business, we might start at an offset from A
 
 	/*
 	Imagine merging an array [A,B] where A = [1,3,5,7] and B = [4,6,8,10]
@@ -368,11 +368,13 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	char* right = (char*)b->address;
 	char* right_end = right + b->nel*width;
 
-	memset( to, 0, (a->nel) * width ); // erase, left for debug
+	memset( to, 0, (a->nel) * width ); // erase left for debug
 
 	say("Merging bounded arrays:\n");
 	print_array( (widget*)left, 0, a->nel, a->nel );
 	print_array( (widget*)right, 0, b->nel, b->nel);
+	say("To:\n");
+	print_array( (widget*)merged_array, 0, total_elements, total_elements );
 	
 	size_t same_run_counter = 0;
 	int current_run = 1; // 0 is a 1 is b
@@ -401,9 +403,10 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 			}
 			current_run = RIGHT;
 		}
+		strcpy( ((widget*)to)->padding, "---" );
 		to += width;
 
-		if( same_run_counter >= MIN_GALLOP && 0 ) {
+		if( same_run_counter >= MIN_GALLOP ) {
 			
 			size_t gallop_index;
 			while( same_run_counter >= MIN_GALLOP && left <= left_end && right <= right_end ) {
@@ -411,15 +414,16 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 				print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width );
 				print_array( (widget*)right, 0, (right_end-right)/width, (right_end-right)/width );
 
-				say("Dest:\n");
-				print_array( (widget*)to, 0, (right_end-right + left_end-left)/width, (right_end-right + left_end-left)/width );
+				say("To:\n");
+				print_array( (widget*)merged_array, 0, total_elements, total_elements );
 				
 				if( current_run == LEFT ) {
 					gallop_index = find_index( left, left_end-left, right, width, compare );
 				} else {
 					gallop_index = find_index( right, right_end-right, left, width, compare );
 				}
-				say("Gallop index: %zu (index of %s[0]=%d in %s)", gallop_index, current_run==LEFT?"right":"left", current_run==LEFT?*(int*)right:*(int*)left, current_run==LEFT?"left":"right");
+				
+				
 				same_run_counter = 0;
 			}
 			
@@ -429,7 +433,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 
 	// copy remainders
 	say("Merged so far:\n");
-	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel );
+	print_array( (widget*)merged_array, 0, total_elements, total_elements );
 	// TODO: I don't think both can have remainders
 	if( left < left_end ) {
 		say("Copying %d remaining elements from left:\n", (left_end-left)/width );
@@ -546,7 +550,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 			current_run = 1;
 		}
 		to -= width;
-		print_array( (widget*)a->address, 0, total_elements, total_elements );
+//		print_array( (widget*)a->address, 0, total_elements, total_elements );
 
 		if( same_run_counter >= MIN_GALLOP ) {
 			
