@@ -409,7 +409,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 		if( same_run_counter >= MIN_GALLOP ) {
 			
 			size_t gallop_index;
-			while( same_run_counter >= MIN_GALLOP && left <= left_end && right <= right_end ) {
+			while( same_run_counter >= MIN_GALLOP && left < left_end && right < right_end ) {
 				say("Gallop Forwards with left/right:\n");
 				print_array( (widget*)left, 0, (left_end-left)/width, (left_end-left)/width );
 				print_array( (widget*)right, 0, (right_end-right)/width, (right_end-right)/width );
