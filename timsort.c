@@ -418,9 +418,16 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 				print_array( (widget*)merged_array, 0, total_elements, total_elements );
 				
 				if( current_run == LEFT ) {
-					gallop_index = find_index( left, left_end-left, right, width, compare );
+					gallop_index = find_index( left, (left_end-left)/width, right, width, compare );
+					say("Gallop index: %zu (index of right[0]=%d in left)\nCopying:\n", gallop_index, *(int*)right );
+					print_array( (widget*)left, 0, gallop_index, gallop_index );
+					memcpy( to, left, gallop_index * width );
+					to += gallop_index * width;
+					left += gallop_index * width;
+					print_array( (widget*)merged_array, 0, total_elements, total_elements );
 				} else {
-					gallop_index = find_index( right, right_end-right, left, width, compare );
+					gallop_index = find_index( right, (right_end-right)/width, left, width, compare );
+					say("Gallop index: %zu (index of left[0]=%d in right)\n", gallop_index, *(int*)left );
 				}
 				
 				
