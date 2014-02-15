@@ -562,12 +562,43 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 			}
 			current_run = 1;
 		}
+		strcpy( ((widget*)to)->padding, "---" );
 		to -= width;
 //		print_array( (widget*)a->address, 0, total_elements, total_elements );
 
 		if( same_run_counter >= MIN_GALLOP ) {
 			
-			gallop_backwards( to, left, left_start, right, right_start, width, compare );
+			size_t gallop_index;
+			while( same_run_counter >= MIN_GALLOP && left > left_start && right > right_start ) {
+				say("\n*********************\nGallop Backwards with left/right:\n");
+				print_array( (widget*)left_start, 0, (left-left_start)/width + 1, (left-left_start)/width + 1 );
+				print_array( (widget*)right_start, 0, (right-right_start)/width + 1, (right-right_start)/width + 1 );
+
+				say("To:\n");
+				print_array( (widget*)merged_array, 0, total_elements, total_elements );
+				
+				if( current_run == LEFT ) {
+					gallop_index = find_index_reverse( left, (left-left_start)/width + 1, right, width, compare );
+					say("Gallop index: %zu (index of right[end]=%d in left)\nCopying:\n", gallop_index, *(int*)right );
+					print_array( (widget*)(left - gallop_index*width), 0, gallop_index, gallop_index );
+/*					memcpy( to, left, gallop_index * width );
+					to += gallop_index * width;
+					left += gallop_index * width;
+					print_array( (widget*)merged_array, 0, total_elements, total_elements );
+					current_run = RIGHT;
+*/				} else {
+/*					gallop_index = find_index( right, (right_end-right)/width, left, width, compare );
+					say("Gallop index: %zu (index of left[0]=%d in right)\n", gallop_index, *(int*)left );
+					print_array( (widget*)right, 0, gallop_index, gallop_index );
+					memcpy( to, right, gallop_index * width );
+					to += gallop_index * width;
+					right += gallop_index * width;
+					print_array( (widget*)merged_array, 0, total_elements, total_elements );
+					current_run = LEFT;
+*/				}
+				
+				same_run_counter = 0;
+			}
 			
 		}
 
