@@ -22,8 +22,8 @@ similar numbers.
 */
 
 // shared by saw_up and saw_down
-static uint32_t mean = 20;
-static uint32_t sd = 10;
+uint32_t mean = 0;
+uint32_t sd = 0;
 
 // max defines the maximum value which is helpful for debugging
 // since the values will just be smaller
@@ -123,10 +123,23 @@ int main(int argc, char* argv[]) {
 		exit( EXIT_FAILURE );
 	}
 	
+	// read some env things we might need
+	const char* env_mean = getenv( "GEN_STRUCTS_MEAN" );
+	if( env_mean != NULL ) {
+		mean = atoi( env_mean );
+	}
+	say("Using GEN_STRUCTS_MEAN %d\n", mean);
+	const char* env_sd = getenv( "GEN_STRUCTS_SD" );
+	if( env_sd != NULL ) {
+		sd = atoi( env_sd );
+	}
+	say("Using GEN_STRUCTS_SD %d\n", sd);
+	
+	
 	size_t count = atoi( argv[2] );
 	const char* filename = argv[3];
 
-	printf("Writing %ld random structs to %s\n", count, filename);
+	printf("Writing %ld %s structs to %s\n", count, distribution_str, filename);
 	
 	unsigned int max = INT_MAX;
 	if( argc > 4 ) {
