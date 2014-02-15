@@ -11,7 +11,7 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
-#define MIN_GALLOP 4
+#define MIN_GALLOP 2
 // convenient constants for keeping track of the current run
 #define LEFT 0
 #define RIGHT 1
@@ -225,13 +225,14 @@ size_t find_index( const void* in, size_t nel, const void* value, size_t width, 
 size_t find_index_reverse( const void* in, size_t nel, const void* value, size_t width, comparator compare ) {
 	
 	say("Find reverse index starting from value %d, %d elements\n", *(int*)in, nel);
-	
+
 	if( nel <= 1 ) {
 		say("Only 1 element left (%d)\n", *(int*)in);
 		return compare( in, value ) <= 0 ? 0 : 1; // equal values come after
 	}
 	
 	char* list = (char*)in;
+
 	// check where value belongs in "steps" of 2^i-1 (the -1 is to ensure we start at 0, the sequence is 0, 1, 3, 7, ...)
 	int pow = 0;
 	size_t index = (1 << pow) - 1;
@@ -280,10 +281,6 @@ size_t find_index_reverse( const void* in, size_t nel, const void* value, size_t
 	// now find another index starting at previous, add that to previous and that's our index
 	return min_placement_index + find_index_reverse( list - min_placement_index*width, elements_remaining, value, width, compare ); 
 
-}
-
-void gallop_backwards( char* to, char* left, char* left_start, char* right, char* right_start, size_t width, comparator compare ) {
-	
 }
 
 /*
@@ -368,7 +365,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 	char* right = (char*)b->address;
 	char* right_end = right + b->nel*width;
 
-	memset( to, 0, (a->nel) * width ); // erase left for debug
+//	memset( to, 0, (a->nel) * width ); // erase left for debug
 
 	say("Merging bounded arrays:\n");
 	print_array( (widget*)left, 0, a->nel, a->nel );
@@ -403,7 +400,7 @@ void merge_lo( run* a, run* b, size_t width, comparator compare ) {
 			}
 			current_run = RIGHT;
 		}
-		strcpy( ((widget*)to)->padding, "---" );
+//		strcpy( ((widget*)to)->padding, "---" );
 		to += width;
 
 		if( same_run_counter >= MIN_GALLOP ) {
@@ -562,7 +559,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 			}
 			current_run = 1;
 		}
-		strcpy( ((widget*)to)->padding, "---" );
+//		strcpy( ((widget*)to)->padding, "---" );
 		to -= width;
 //		print_array( (widget*)a->address, 0, total_elements, total_elements );
 
@@ -570,7 +567,8 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 			
 			size_t gallop_index;
 			while( same_run_counter >= MIN_GALLOP && left > left_start && right > right_start ) {
-				say("\n*********************\nGallop Backwards with left/right:\n");
+
+				say("Gallop Backwards with left/right:\n");
 				print_array( (widget*)left_start, 0, (left-left_start)/width + 1, (left-left_start)/width + 1 );
 				print_array( (widget*)right_start, 0, (right-right_start)/width + 1, (right-right_start)/width + 1 );
 
@@ -579,25 +577,31 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 				
 				if( current_run == LEFT ) {
 					gallop_index = find_index_reverse( left, (left-left_start)/width + 1, right, width, compare );
-					say("Gallop index: %zu (index of right[end]=%d in left)\nCopying:\n", gallop_index, *(int*)right );
-					print_array( (widget*)(left - gallop_index*width), 0, gallop_index, gallop_index );
-/*					memcpy( to, left, gallop_index * width );
-					to += gallop_index * width;
-					left += gallop_index * width;
-					print_array( (widget*)merged_array, 0, total_elements, total_elements );
+					say("Gallop index: -%zu (index of right[end]=%d in left)\nCopying:\n", gallop_index, *(int*)right );
+					if( gallop_index > 0 ) {
+						to -= gallop_index * width - width;
+						left -= gallop_index * width - width; // so left already points to an element
+						print_array( (widget*)left, 0, gallop_index, gallop_index );
+						memcpy( to, left, gallop_index * width );
+						print_array( (widget*)merged_array, 0, total_elements, total_elements );
+						is_sorted( (widget*)to, 0, gallop_index + 1);
+					}
 					current_run = RIGHT;
-*/				} else {
-/*					gallop_index = find_index( right, (right_end-right)/width, left, width, compare );
-					say("Gallop index: %zu (index of left[0]=%d in right)\n", gallop_index, *(int*)left );
-					print_array( (widget*)right, 0, gallop_index, gallop_index );
-					memcpy( to, right, gallop_index * width );
-					to += gallop_index * width;
-					right += gallop_index * width;
-					print_array( (widget*)merged_array, 0, total_elements, total_elements );
+				} else {
+					gallop_index = find_index_reverse( right, (right-right_start)/width + 1, left, width, compare );
+					say("Gallop index: -%zu (index of left[end]=%d in right)\nCopying:\n", gallop_index, *(int*)left );
+					if( gallop_index > 0 ) {
+						to -= gallop_index * width - width;
+						right -= gallop_index * width - width;
+						print_array( (widget*)right, 0, gallop_index, gallop_index );
+						memcpy( to, right, gallop_index * width );
+						print_array( (widget*)merged_array, 0, total_elements, total_elements );
+						is_sorted( (widget*)to, 0, gallop_index + 1);
+					}
 					current_run = LEFT;
-*/				}
+				}
 				
-				same_run_counter = 0;
+				same_run_counter = gallop_index;
 			}
 			
 		}
@@ -605,7 +609,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 	}
 
 	say("Merged runs, may have remainders:\n");
-	print_array( (widget*)a->address, 0, a->nel+b->nel, a->nel+b->nel);
+	print_array( (widget*)merged_array, 0, total_elements, total_elements );
 
 	// copy remainders, >= because we go RTL
 	// TODO: I don't think both could have remainders
@@ -622,7 +626,7 @@ void merge_hi( run* a, run* b, size_t width, comparator compare ) {
 		memcpy( to, right_start, (right-right_start)+width );
 	}
 	say("Remainders copied:\n");
-	print_array( (widget*)a->address, 0, total_elements, total_elements);
+	print_array( (widget*)merged_array, 0, total_elements, total_elements);
 	
 
 	say("Merge hi result:\n");
