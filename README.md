@@ -3,14 +3,19 @@
 I wanted to do some C for fun, and also finally implement a sort that uses another sort in it's inner loop. This was something that I've always read was a thing sorting algorithms do for performance. Then it got a bit out of hand. Now I'm implementing interesting sort algorithms and doing benchmarking. So yes, the internet is filled with benchmarks, sorting algorithms and the like, but I find that reading a high level description and looking at some graphs doesn't do it for me.
 
 # TODO
-- timsort doesn't have "Gallop Mode" for merge_hi() yet
+
 - stdlib merge/heap return -1 on error and apparently qsort can't fail :) So find some way to put that in the main_template.c
 - print_array could also be generic (maybe have a tostring somewere)
 - gen_random_structs should be able to generate data that is random (check),zigzag asc/desc(check), organ pipes, equal numbers(check), etc.
-- create a benchmark.conf file that specifies a series of benchmarks to run, and the parameters for each one
 
 
 # Sorting algorithms
+
+You can test with
+
+	perl test.pl --min=1 --max=1000 --target=timsort --ceil=255
+
+It creates sets of every size between min/max and runs the target sort on it. It aborts when a sort fails, but leaves the testdata around. This also makes this a convenient method of generating failing test cases. The optional _ceil_ option limits the integer value that is sorted on so your testcases don't include 12 digit ints.
 
 ## C Standard library sorts (qsort, mergesort, heapsort)
 
@@ -60,7 +65,13 @@ The problem with benchmarking on modern hardware is that CPUs can do more at the
 
 To run the benchmark:
 
-    perl benchmark.pl --min=100 --max=20000 --num=100 --element_size=8 --iterations=3
+		 ./benchmark/run.fsh
+
+Which will run all benchmarks and create nive SVG images using GNUplot. This requires GNUplot and the Fish Shell (fishshell.com).
+
+You can also run things by hand with
+
+	perl benchmark.pl --min=100 --max=20000 --num=100 --element_size=8 --iterations=3
 
 It will compile everything and generate files with randomly generated "Widgets". These are structs with a uint32_t number used for comparisons and a variable padding. You can set this with *element_size*. In practice Widgets may have different sizes due to struct alignment.
 
@@ -80,9 +91,6 @@ saw_up and saw_down are done. Organ pipes are next up. This is an interesting ca
 
 Maybe it's also good to add a 'sorted' pattern as that is both real world data and an interesting edge case for some
 algorithms.
-
-First finishing timsort though, but is a bit of a chore since it is *a lot* of code for sorting.
-
 
 # Updates
 
@@ -124,6 +132,11 @@ results_6.png
 
 Timsort (http://bugs.python.org/file4451/timsort.txt) is the sort used by Python. This sort purports to be fast on "Real World Data", on of which is a dataset that has internal order (subsets of it are already sorted). Performance is pretty good and beating out mergesort which is nice. It doesn't get better that qsort though. Maybe it'll get better with saw_down (which qsort should be bad at).
 
+So now it's all done, but it's not spectacular. Admittedly, I haven't tried it with all sorts of real world data yet, but as benchmarks stand for now:
+1. qsort
+2. mergesort
+3. pyramid_mergesort
+4. timsort
 
 
 # Building
