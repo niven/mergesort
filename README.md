@@ -43,7 +43,7 @@ Implemented this to have an alternative to shellsort for the inner loops.
 
 Apparently the standard sort in Python at the moment. It's basically mergesort with some tricks and optimizations. Instead of porting this from the Python source I'm going with the description form the author (Tim Peters) found here: bugs.python.org/file4451/timsort.txt
 
-This has sure been educational, so shoutout to him. I'm mostly done with this, except for Gallop Mode for merging runs.
+This has sure been educational, so shoutout to him.
 
 This algorithm supposedly has an advantage over others when sorting "Real World Data". Now I don't have any of that lying around, so this led me to implement some things that generate datasets with appropriate characteristics.
 
