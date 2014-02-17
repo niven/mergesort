@@ -70,6 +70,16 @@ uint32_t generator_saw_down(uint32_t max) {
 }
 
 /*
+Produce sequence like /\/\/\/\/\/\/\/\
+*/
+uint32_t generator_organ_pipes(uint32_t max) {
+	
+
+
+}
+
+
+/*
 Produce random sequence
 */
 uint32_t generator_random(uint32_t max) {
@@ -118,6 +128,8 @@ int main(int argc, char* argv[]) {
 		numbers_gen = generator_random;
 	} else if( strcmp( distribution_str, "duplicates" ) == 0 ) {
 		numbers_gen = generator_duplicates;
+	} else if( strcmp( distribution_str, "organ" ) == 0 ) {
+		numbers_gen = generator_organ_pipes;
 	} else {
 		printf("Don't know distribution type %s\n", distribution_str );
 		exit( EXIT_FAILURE );
