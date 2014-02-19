@@ -1,13 +1,6 @@
-#include "stdlib.h"
-#include "stdio.h"
-#include "string.h"
-#include "errno.h"
-#include "assert.h"
-#include "time.h"
-#include "unistd.h"
-#include "sys/stat.h"
-
-#include "mach/mach_time.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "utils.h"
 
