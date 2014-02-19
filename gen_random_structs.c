@@ -139,14 +139,22 @@ int main(int argc, char* argv[]) {
 	const char* env_mean = getenv( "GEN_STRUCTS_MEAN" );
 	if( env_mean != NULL ) {
 		mean = atoi( env_mean );
+	} else {
+		printf("GEN_STRUCTS_MEAN not defined in environment.\n");
+		exit( EXIT_FAILURE );
 	}
+
 	say("Using GEN_STRUCTS_MEAN %d\n", mean);
 	const char* env_sd = getenv( "GEN_STRUCTS_SD" );
 	if( env_sd != NULL ) {
 		sd = atoi( env_sd );
+	} else {
+		printf("GEN_STRUCTS_SD not defined in environment.\n");
+		exit( EXIT_FAILURE );
 	}
 	say("Using GEN_STRUCTS_SD %d\n", sd);
 	
+
 	
 	size_t count = atoi( argv[2] );
 	const char* filename = argv[3];
