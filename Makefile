@@ -7,6 +7,7 @@ all: clean tools sort_functions
 	${CMD} -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} -DSORT_FUNCTION=qsort utils.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DSORT_FUNCTION=mergesort utils.o main_template.c -o bin/stdlib_mergesort
+	${CMD} -DSORT_FUNCTION=inplace_mergesort utils.o inplace_mergesort.o main_template.c -o bin/inplace_mergesort
 	${CMD} -DSORT_FUNCTION=heapsort utils.o main_template.c -o bin/stdlib_heapsort
 	${CMD} -DSORT_FUNCTION=shellsort utils.o shellsort.o main_template.c -o bin/shellsort
 	${CMD} -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort.o main_template.c -o bin/mergesort
@@ -21,6 +22,7 @@ verbose: clean *.c
 	${CMD} -DVERBOSE -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=qsort utils.o main_template.c -o bin/stdlib_qsort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=mergesort utils.o main_template.c -o bin/stdlib_mergesort
+	${CMD} -DVERBOSE -DSORT_FUNCTION=inplace_mergesort utils.o inplace_mergesort.o main_template.c -o bin/inplace_mergesort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=heapsort utils.o main_template.c -o bin/stdlib_heapsort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=shellsort utils.o shellsort.o main_template.c -o bin/shellsort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort.o main_template.c -o bin/mergesort
@@ -48,6 +50,9 @@ shellsort: main_template.c utils.o shellsort.o
 
 mergesort: main_template.c utils.o mergesort.o
 	${CMD} -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort.o main_template.c -o bin/mergesort
+
+inplace_mergesort: main_template.c utils.o inplace_mergesort.o
+	${CMD} -DSORT_FUNCTION=inplace_mergesort utils.o inplace_mergesort.o main_template.c -o bin/inplace_mergesort
 
 pyramid_mergesort: main_template.c utils.o pyramid_mergesort.o
 	${CMD} -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort

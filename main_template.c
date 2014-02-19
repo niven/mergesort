@@ -15,6 +15,7 @@
 #include "mergesort.h"
 #include "pyramid_mergesort.h"
 #include "timsort.h"
+#include "inplace_mergesort.h"
 
 
 size_t working_set_size( size_t element_size, size_t nel );
