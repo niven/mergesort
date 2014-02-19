@@ -74,7 +74,7 @@ Produce sequence like /\/\/\/\/\/\/\/\
 */
 uint32_t generator_organ_pipes(uint32_t max) {
 	
-
+	return 0;
 
 }
 
