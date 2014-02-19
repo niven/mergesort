@@ -28,10 +28,10 @@ void inplace_mergesort(void* base, size_t nel, size_t width, comparator compare)
 	char* first;
 	for( size_t i=0; i<2*pairs; i+=2 ) {
 		first = list + i*width; // first element of the pair
-		if( compare( first + width, first ) == 1 ) { // if the second is bigger than the first
+		if( compare( first, first + width ) == 1 ) { // if the first is bigger than the second
 			memcpy( temp, first + width, width ); // save second
 			memcpy( first + width, first, width ); // overwrite second with first
-			memcpy( first, first + width, width ); // copy second to first	
+			memcpy( first, temp, width ); // copy second to first	
 		}
 	}
 	free( temp );
