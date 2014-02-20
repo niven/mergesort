@@ -38,5 +38,37 @@ void inplace_mergesort(void* base, size_t nel, size_t width, comparator compare)
 	say("Merge step 1 done, all pairs now sorted\n");
 	print_array( (widget*)base, 0, nel, 16 );
 
+//--- Second: perform the merge
+
+	size_t merge_width = 2; // start with the pairs that are sorted
+
+	while( merge_width < length ) {
+	   
+		say("Merge width %zu\n", merge_width);
+		
+		// merge k pairs of size mergeLength
+		for( size_t start=0; start<length; start += 2*merge_width ) {
+			// use indices for the Left of the pair and the Right of the pair
+			L := start
+			L_end := min(start + mergeLength - 1, length - 1)
+			R := min(L_end + 1, length - 1)
+			R_end := min(R + mergeLength - 1, length - 1)
+
+            // if we're merging chunks of size 8, but we're at the end of the array and have like 5 elements left
+            // it means we're done :)
+            if L_end >= R {
+                continue
+            }
+
+            if debug {
+    	      fmt.Printf("Merging subarray (%v,%v)-(%v,%v) = %v\n", L, L_end,R, R_end )
+            }
+    	   // now merge in place, and since we're slicing we need to offset the midpoint
+            merge_slice_in_place( n, L, R_end, R )
+		}
+		
+		mergeLength *= 2;
+	}
+
 
 }
