@@ -6,15 +6,273 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
+void print_slices(const char* msg, void* base, size_t al, size_t ah, size_t ml, size_t mh, size_t bl, size_t bh) {
 
-void merge_in_place( void* base, size_t start, size_t end, size_t midpoint ) {
+	// TODO just make some resizing strcat type function
+    char out1[1024];
+    char out2[1024];
+    char out3[1024];
+    
+/*	 memset( out1, 0, 1024);
+	 memset( out2, 0, 1024);
+	 memset( out3, 0, 1024);
+	 
+	 const char* fmt_number = "%02d ";
+	 char* fmt[10];
+	 
+    size_t i;
+    
+    // all the done things on the left
+    for( i=0; i<al; i++) {
+       strcat( out1, "-- " );
+       strcat( out2, "   " );
+       strcat( out3, "   " );
+    }      
+    
+    // do A
+    if( al < ah ) {
+	 	 strcpy( fmt[0], fmt_number );
+		 sprintf(fmt[0], ((widget*)base)->number );
+		 strcat( out1, fmt[0]);
+       strcat( out2, "^^ " );
+       strcat( out3, "al " );
+    } else if( al==ah ) {
+	 	 strcpy( fmt[0], fmt_number );
+		 sprintf(fmt[0], ((widget*)base)->number );
+		 strcat( out1, fmt[0]);
+       strcat( out2, "^^ " );
+       strcat( out3, "alh" );
+    } else {
+        // don't show any a
+    }
+ /*   
+    for i=al+1; i<ah; i++ {
+        out1 += fmt.Sprintf("%02d ", numbers[i] )
+        out2 += "   "
+        out3 += "   "
+    }
+    
+    if al < ah {
+        out1 += fmt.Sprintf("%02d ", numbers[ah] )
+        out2 += "^^ "
+        out3 += "ah "
+    }
+
+    // maybe mid
+    if ml < mh {
+        out1 += fmt.Sprintf(" ( %02d ", numbers[ml] )
+        out2 += "   ^^ "
+        out3 += "   ml "
+        for i=ml+1; i<mh; i++ {
+            out1 += fmt.Sprintf("%02d ", numbers[i] )
+            out2 += "   "
+            out3 += "   "
+            
+        }
+        out1 += fmt.Sprintf("%02d  ) ", numbers[mh] )
+        out2 += "^^    "
+        out3 += "mh    "
+    }
+
+    // do B
+    if bl < bh {
+        out1 += fmt.Sprintf("%02d ", numbers[bl] )
+        out2 += "^^ "
+        out3 += "bl "
+    } else if bl == bh {
+        out1 += fmt.Sprintf("%02d ", numbers[bl] )
+        out2 += "^^ "
+        out3 += "blh"
+    }
+        
+    for i=bl+1; i<bh; i++ {
+        out1 += fmt.Sprintf("%02d ", numbers[i] )
+        out2 += "   "
+        out3 += "   "
+    }
+    
+    if bl < bh {
+        out1 += fmt.Sprintf("%02d ", numbers[bh] )
+        out2 += "^^ "
+        out3 += "bh "
+    }
+        
+    // done things on the right
+    for i=bh; i<len(numbers)-1; i++ {
+        out1 += "-- "
+        out2 += "   "
+        out3 += "   "
+    } 
+
+fmt.Printf( "\n%v - a: [%v,%v], m: [%v,%v], b: [%v,%v]\n", msg, al, ah, ml, mh, bl, bh )
+fmt.Println(out1)
+fmt.Println(out2)
+fmt.Println(out3)
+*/
+}
+
+void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size_t width, comparator compare ) {
 
 	size_t al = start, ah = midpoint - 1, bl = midpoint, bh = end; 
 	
 	say("Merging [%zu,%zu] - [%zu,%zu]\n", al, ah, bl, bh);
 	
 	// initially empty
-//	size_t ml = 0, mh = -1;
+	size_t ml = 0, mh = -1;
+	
+   print_slices( base, al, ah, ml, mh, bl, bh);
+/*	
+   done := false
+   sortMid := false
+for !done {
+   
+       // 0. if |a|==0 or |b|==0, reset (a takes m or b takes m)
+       //      (or a and b are empty -> done (since m is also sorted)
+       // 1. shift a
+       // 2. shift b
+       // 3. if max is mh or min is ml
+       //      swap out, resort ml/mh
+       // 4. (now ah is max and bl is min)
+       //      swap4
+       //      if ml>mh, swap them
+       //      |m| > 2 ? -> move ml to correct spot, move mh to correct spot
+       
+       if al>ah {
+           // mid also empty?
+           if ml>mh {
+               current2("a and m empty, thus done", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               break // we're done (whatever is left in b is sorted)
+           } else {
+               // mid is now a
+               al = ml
+               ah = mh
+               // set mid to empty
+               ml = 0
+               mh = -1
+               current2("a was empty, mid now a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+           }
+       } else 
+       
+       if bl>bh {
+           if ml>mh {
+               current2("b and m empty, thus done", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               break // we're done (whatever is left in a is sorted)
+           } else {
+               // mid is now b
+               bl = ml
+               bh = mh
+               // set mid to empty
+               ml = 0
+               mh = -1
+               current2("b was empty, mid now b", n.(IntSlice), al, ah, ml, mh, bl, bh)
+           }
+       } else
+       
+       // as long as al points to the lowest item, it is sorted
+       // a lower than b or if we have mid also lower than mid
+       if n.LessEqual( al, bl ) && ( ml>mh || (ml<=mh && n.LessEqual( al, ml ) ) ) {
+           al++
+           current2("Shifted a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+       } else
+       
+       // as long as bl points to the highest item, it is sorted
+       if n.LessEqual( ah, bh ) && ( ml>mh || (ml<=mh && n.LessEqual( mh, bh ) ) ) {
+           bh--
+           current2("Shifted b", n.(IntSlice), al, ah, ml, mh, bl, bh)
+       } else
+       
+       // try to get rid of mid (step 3)
+       if ml<mh && n.Less( ml, al) && n.LessEqual( ml, bl ) {
+           // we just swap it out with a
+           n.Swap( al, ml )
+           sortMid = true // might have to resort mid
+           current2("Swapped mid with a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+       } else
+       if ml<mh && n.Less(ah, mh) && n.LessEqual( bh, mh ){
+           // we just swap it out with b
+           n.Swap( bh, mh )
+           sortMid = true // might have to resort mid
+           current2("Swapped mid with b", n.(IntSlice), al, ah, ml, mh, bl, bh)
+       } else
+               
+       // now bl points to min AND ah points to max
+       {
+           // only 1 left in a and b
+           if bh-bl == 0 && ah-al == 0 {
+               n.Swap( al, bh )
+               current2("Swap - single", n.(IntSlice), al, ah, ml, mh, bl, bh)
+           } else if bh-bl == 0 {
+               n.Swap( al, ah )
+               n.Swap( ah, bl )
+               ml = ah
+               mh = bl
+               bl++
+               ah--
+               sortMid = true
+               current2("Swap - Rot3 b", n.(IntSlice), al, ah, ml, mh, bl, bh)
+           } else if ah-al == 0 {
+               n.Swap( al, bl )
+               n.Swap( bl, bh )
+               ml = ah
+               mh = bl
+               bl++
+               ah--
+               sortMid = true
+               current2("Swap - Rot3 a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+           } else {
+               n.Swap( ah, bl )
+               current2("Swap4a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               n.Swap( al, ah )
+               current2("Swap4b", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               n.Swap( bl, bh )
+               current2("Swap4c", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               ml = ah
+               mh = bl
+               ah--
+               bl++
+               sortMid = true
+               current2("Swap4", n.(IntSlice), al, ah, ml, mh, bl, bh)
+           }
+       }                
+
+       if sortMid {
+           if mh-ml == 1 && n.LessEqual( mh, ml ) {
+               n.Swap( ml, mh )
+               current2("SortMid 2", n.(IntSlice), al, ah, ml, mh, bl, bh)
+           } else if mh-ml > 1 {
+               // first swap these, could be a nice speedup
+               if n.LessEqual( mh, ml ) {
+                   n.Swap( ml, mh )
+                   current2("SortMid - swapped L/H", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               }
+               // now swap up the low one
+               cur := ml
+               for cur<mh && n.LessEqual( cur+1, cur ) {
+                   n.Swap( cur+1, cur )
+                   cur++
+                   current2("SortMid - swapping L up", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               }
+               // now swap down the high one
+               cur = mh
+               for cur>ml && n.LessEqual( cur, cur-1) {
+                   n.Swap( cur-1, cur )
+                   cur--
+                   current2("SortMid - swapping H down", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               }
+               // so yes, we did (potentially a lot of) sorting here, but a max of 2 items, so max ~2n swaps
+           }
+       }
+       
+       done = al==ah && ml==mh && bl==bh // all "empty"
+
+}
+
+   if debug {
+       fmt.Println("Done", n, debug)
+   }
+	
+	*/
+	
 }
 
 
@@ -75,7 +333,7 @@ void inplace_mergesort(void* base, size_t nel, size_t width, comparator compare)
          }
 
     	   // now merge in place, and since we're slicing we need to offset the midpoint
-         merge_in_place( base, L, R_end, R );
+         merge_in_place( base, L, R_end, R, width, compare );
 		}
 		
 		merge_width *= 2;
