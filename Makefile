@@ -1,6 +1,6 @@
 CC=clang
 PAD_SIZE=4
-CFLAGS=-Wall -O3 -pedantic -DNDEBUG -DPAD_SIZE=${PAD_SIZE}
+CFLAGS=-Wall -Wunreachable-code -O3 -pedantic -DNDEBUG -DPAD_SIZE=${PAD_SIZE}
 CMD=${CC} ${CFLAGS}
 
 all: clean tools sort_functions
