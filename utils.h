@@ -125,4 +125,10 @@ run* peek_run( run_node* stack, size_t index );
 
 void print_stack( run_node* stack );
 
+/*
+Conveniently append strings, with optional printf style formatting.
+This makes sure the resulting string is big enough.
+*/
+char* append_str( char* prefix, const char* format, ... );
+
 #endif

@@ -383,3 +383,27 @@ void print_stack( run_node* stack ) {
 	}
 	
 }
+
+char* append_str( char* prefix, const char* format, ... ) {
+	
+	char* formatted_string;
+	
+	va_list argslist;
+	va_start( argslist, format );
+	vasprintf( &formatted_string, format, argslist );
+	va_end( argslist );
+	
+	size_t len = strlen( formatted_string );
+	char* temp = realloc( prefix, strlen(prefix) + len + 1 ); // length of both + NUL
+	if( temp == NULL ) {
+		free( prefix );
+		perror("realloc()");
+		exit( EXIT_FAILURE );
+	}
+	
+	temp = strcat( temp, formatted_string );
+	free( formatted_string );
+	
+	return temp;
+}
+
