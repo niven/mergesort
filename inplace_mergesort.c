@@ -23,29 +23,29 @@ void print_slices(const char* msg, widget* list, size_t al, size_t ah, size_t ml
     
     // do A
     if( al < ah ) {
-		 out1 = append_str( out1, "% 3d ", (list + al)->number );
-		 out2 = append_str( out2, "^^^^" );
+		 out1 = append_str( out1, "%3d ", (list + al)->number );
+		 out2 = append_str( out2, " ^^ " );
 		 out3 = append_str( out3, " al " );
     } else if( al==ah ) {
-		 out1 = append_str( out1, "% 3d ", (list + al)->number );
+		 out1 = append_str( out1, "%3d ", (list + al)->number );
 		 out2 = append_str( out2, "^^^^" );
-		 out3 = append_str( out3, "alh " );
+		 out3 = append_str( out3, "al+h" );
     } else {
         // don't show any a
     }
- /*   
-    for i=al+1; i<ah; i++ {
-        out1 += fmt.Sprintf("%02d ", numbers[i] )
-        out2 += "   "
-        out3 += "   "
+   
+    for( i=al+1; i<ah; i++ ) {
+        out1 = append_str( out1, "%3d ", (list + i)->number );
+        out2 = append_str( out2, "    " );
+        out3 = append_str( out3, "    " );
     }
     
-    if al < ah {
-        out1 += fmt.Sprintf("%02d ", numbers[ah] )
-        out2 += "^^ "
-        out3 += "ah "
+    if( al < ah ) {
+        out1 = append_str( out1, "%3d ", (list + ah)->number );
+        out2 = append_str( out2, " ^^ " );
+        out3 = append_str( out3, " ah " );
     }
-
+	 /*
     // maybe mid
     if ml < mh {
         out1 += fmt.Sprintf(" ( %02d ", numbers[ml] )
