@@ -92,19 +92,37 @@ void print_slices(const char* msg, widget* list, size_t al, size_t ah, ssize_t m
 
 void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size_t width, comparator compare ) {
 
+	char* list = (char*)base;
+	
 	size_t al = start, ah = midpoint - 1, bl = midpoint, bh = end; 
 	
 	say("Merging [%zu,%zu] - [%zu,%zu]\n", al, ah, bl, bh);
 	
 	// initially empty
+	// TODO: this would be nicer has a m_start + m_offset so both can be size_t's
 	ssize_t ml = 0, mh = -1;
 	
    print_slices( "Current", (widget*)base, al, ah, ml, mh, bl, bh);
-/*	
-   done := false
-   sortMid := false
-for !done {
-   
+
+   int done = 0;
+   int sort_mid = 0;
+
+	/*
+	The way this works is having 3 conceptual subarrays: A, M and B.
+	M is initally empty, so the list is AB.
+	Then we move off elements from the start of A and the end of B until we can't do that anymore.
+	Then we swap the first and last of A and of B, creating M (which is then either sorted or reverse sorted)
+	Then we can do a 4-way-swap witht the A[0], M[0], M[end], B[end] so that we can take elements off
+	the start of A and the end of B again.
+	The only remaining thing is to resort M to maintain the invariant. 
+	*/
+	char* temp = malloc( width );
+	if( temp == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+	while( !done ) {
+
        // 0. if |a|==0 or |b|==0, reset (a takes m or b takes m)
        //      (or a and b are empty -> done (since m is also sorted)
        // 1. shift a
@@ -116,141 +134,159 @@ for !done {
        //      if ml>mh, swap them
        //      |m| > 2 ? -> move ml to correct spot, move mh to correct spot
        
-       if al>ah {
+       if( al>ah ) {
            // mid also empty?
-           if ml>mh {
-               current2("a and m empty, thus done", n.(IntSlice), al, ah, ml, mh, bl, bh)
-               break // we're done (whatever is left in b is sorted)
+           if( ml>mh ) {
+               print_slices("a and m empty, thus done", (widget*)base, al, ah, ml, mh, bl, bh);
+               break; // we're done (whatever is left in b is sorted)
            } else {
                // mid is now a
-               al = ml
-               ah = mh
+               al = ml;
+               ah = mh;
                // set mid to empty
-               ml = 0
-               mh = -1
-               current2("a was empty, mid now a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               ml = 0;
+               mh = -1;
+               print_slices("a was empty, mid now a", (widget*)base, al, ah, ml, mh, bl, bh);
            }
        } else 
        
-       if bl>bh {
-           if ml>mh {
-               current2("b and m empty, thus done", n.(IntSlice), al, ah, ml, mh, bl, bh)
-               break // we're done (whatever is left in a is sorted)
+       if( bl>bh ) {
+           if( ml>mh ) {
+               print_slices("b and m empty, thus done", (widget*)base, al, ah, ml, mh, bl, bh);
+               break; // we're done (whatever is left in a is sorted)
            } else {
                // mid is now b
-               bl = ml
-               bh = mh
+               bl = ml;
+               bh = mh;
                // set mid to empty
-               ml = 0
-               mh = -1
-               current2("b was empty, mid now b", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               ml = 0;
+               mh = -1;
+               print_slices("b was empty, mid now b", (widget*)base, al, ah, ml, mh, bl, bh);
            }
        } else
        
        // as long as al points to the lowest item, it is sorted
        // a lower than b or if we have mid also lower than mid
-       if n.LessEqual( al, bl ) && ( ml>mh || (ml<=mh && n.LessEqual( al, ml ) ) ) {
-           al++
-           current2("Shifted a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+       if( compare( (list+width*al), (list+width*bl) ) < 1 && ( ml>mh || (ml<=mh && compare( (list+width*al), (list+width*ml) ) < 1 ) ) ) {
+           al++;
+           print_slices("Shifted a", (widget*)base, al, ah, ml, mh, bl, bh);
        } else
        
        // as long as bl points to the highest item, it is sorted
-       if n.LessEqual( ah, bh ) && ( ml>mh || (ml<=mh && n.LessEqual( mh, bh ) ) ) {
-           bh--
-           current2("Shifted b", n.(IntSlice), al, ah, ml, mh, bl, bh)
+       if( compare( (list+width*ah), (list+width*bh) ) < 1  && ( ml>mh || (ml<=mh && compare( (list+width*mh), (list+width*bh) ) < 1 ) ) ) {
+           bh--;
+           print_slices("Shifted b", (widget*)base, al, ah, ml, mh, bl, bh);
        } else
        
-       // try to get rid of mid (step 3)
-       if ml<mh && n.Less( ml, al) && n.LessEqual( ml, bl ) {
-           // we just swap it out with a
-           n.Swap( al, ml )
-           sortMid = true // might have to resort mid
-           current2("Swapped mid with a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+		// try to get rid of mid (step 3)
+		if( ml<mh && compare( (list+width*ml), (list+width*al) ) < 0 && compare( (list+width*ml), (list+width*bl) ) < 1 ) {
+			// we just swap it out with a
+			memcpy( temp, list + width*al, width );
+			memcpy( list + width*al, list + width*ml, width );
+			memcpy( list + width*ml, temp, width );
+
+			sort_mid = 1; // might have to resort mid
+			print_slices("Swapped mid with a", (widget*)base, al, ah, ml, mh, bl, bh);
        } else
-       if ml<mh && n.Less(ah, mh) && n.LessEqual( bh, mh ){
-           // we just swap it out with b
-           n.Swap( bh, mh )
-           sortMid = true // might have to resort mid
-           current2("Swapped mid with b", n.(IntSlice), al, ah, ml, mh, bl, bh)
+       if( ml<mh && compare( (list+width*ah), (list+width*bh) ) < 0 && compare( (list+width*bh), (list+width*mh) ) < 1 ) {
+			// we just swap it out with b
+			memcpy( temp, list + width*bh, width );
+			memcpy( list + width*bh, list + width*mh, width );
+			memcpy( list + width*mh, temp, width );
+
+			sort_mid = 1; // might have to resort mid
+			print_slices("Swapped mid with b", (widget*)base, al, ah, ml, mh, bl, bh);
        } else
                
        // now bl points to min AND ah points to max
        {
-           // only 1 left in a and b
-           if bh-bl == 0 && ah-al == 0 {
-               n.Swap( al, bh )
-               current2("Swap - single", n.(IntSlice), al, ah, ml, mh, bl, bh)
-           } else if bh-bl == 0 {
-               n.Swap( al, ah )
-               n.Swap( ah, bl )
-               ml = ah
-               mh = bl
-               bl++
-               ah--
-               sortMid = true
-               current2("Swap - Rot3 b", n.(IntSlice), al, ah, ml, mh, bl, bh)
-           } else if ah-al == 0 {
-               n.Swap( al, bl )
-               n.Swap( bl, bh )
-               ml = ah
-               mh = bl
-               bl++
-               ah--
-               sortMid = true
-               current2("Swap - Rot3 a", n.(IntSlice), al, ah, ml, mh, bl, bh)
+			// only 1 left in a and b
+			if( bh-bl == 0 && ah-al == 0 ) {
+					memcpy( temp, list + width*al, width );
+					memcpy( list + width*al, list + width*bh, width );
+					memcpy( list + width*bh, temp, width );
+					print_slices("Swap - single", (widget*)base, al, ah, ml, mh, bl, bh);
+			} else if( bh-bl == 0 ) {
+				
+					memcpy( temp, list + width*bl, width ); // save bl
+					memcpy( list + width*bl, list + width*al, width ); // copy al->bl
+					memcpy( list + width*al, list + width*ah, width ); // copy ah->al
+					memcpy( list + width*ah, temp, width ); // copy temp->ah
+
+					ml = ah;
+					mh = bl;
+					bl++;
+					ah--;
+					sort_mid = 1;
+					print_slices("Swap - Rot3 b", (widget*)base, al, ah, ml, mh, bl, bh);
+           } else if( ah-al == 0 ) {
+
+					memcpy( temp, list + width*bh, width ); // save bh
+					memcpy( list + width*bh, list + width*al, width ); // copy al->bh
+					memcpy( list + width*al, list + width*bl, width ); // copy bl->al
+					memcpy( list + width*bl, temp, width ); // copy temp(bh)->bl
+
+					ml = ah;
+					mh = bl;
+					bl++;
+					ah--;
+					sort_mid = 1;
+					print_slices("Swap - Rot3 a", (widget*)base, al, ah, ml, mh, bl, bh);
            } else {
-               n.Swap( ah, bl )
-               current2("Swap4a", n.(IntSlice), al, ah, ml, mh, bl, bh)
-               n.Swap( al, ah )
-               current2("Swap4b", n.(IntSlice), al, ah, ml, mh, bl, bh)
-               n.Swap( bl, bh )
-               current2("Swap4c", n.(IntSlice), al, ah, ml, mh, bl, bh)
-               ml = ah
-               mh = bl
-               ah--
-               bl++
-               sortMid = true
-               current2("Swap4", n.(IntSlice), al, ah, ml, mh, bl, bh)
+
+					memcpy( temp, list + width*al, width ); // save al
+					memcpy( list + width*al, list + width*ah, width ); // copy ah->al
+					memcpy( list + width*ah, list + width*bl, width ); // copy bl->ah
+					memcpy( list + width*bl, list + width*bh, width ); // copy bh->bl
+					memcpy( list + width*bh, temp, width ); // copy temp(al)->bl
+
+					ml = ah;
+					mh = bl;
+					ah--;
+					bl++;
+					sort_mid = 1;
+					print_slices("Swap4", (widget*)base, al, ah, ml, mh, bl, bh);
            }
        }                
 
-       if sortMid {
-           if mh-ml == 1 && n.LessEqual( mh, ml ) {
-               n.Swap( ml, mh )
-               current2("SortMid 2", n.(IntSlice), al, ah, ml, mh, bl, bh)
-           } else if mh-ml > 1 {
+       if( sort_mid ){
+           if( mh-ml == 1 && compare( (list+width*ml), (list+width*mh) ) > 0 ) {
+					memcpy( temp, list + width*ml, width );
+					memcpy( list + width*ml, list + width*mh, width );
+					memcpy( list + width*mh, temp, width );
+					print_slices("SortMid 2", (widget*)base, al, ah, ml, mh, bl, bh);
+           } else if( mh-ml > 1 ) {
                // first swap these, could be a nice speedup
-               if n.LessEqual( mh, ml ) {
-                   n.Swap( ml, mh )
-                   current2("SortMid - swapped L/H", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               if( compare( (list+width*mh), (list+width*mh) ) < 1 ) {
+						memcpy( temp, list + width*ml, width );
+						memcpy( list + width*ml, list + width*mh, width );
+						memcpy( list + width*mh, temp, width );
+						print_slices("SortMid - swapped L/H", (widget*)base, al, ah, ml, mh, bl, bh);
                }
                // now swap up the low one
-               cur := ml
-               for cur<mh && n.LessEqual( cur+1, cur ) {
-                   n.Swap( cur+1, cur )
-                   cur++
-                   current2("SortMid - swapping L up", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               size_t cur = ml;
+               while( cur<mh && compare( (list+width*cur+1), (list+width*cur) ) < 1 ) {
+						memcpy( temp, list + width*cur + width, width );
+						memcpy( list + width*cur + width, list + width*cur, width );
+						memcpy( list + width*cur, temp, width );
+						cur++;
+						print_slices("SortMid - swapping L up", (widget*)base, al, ah, ml, mh, bl, bh);
                }
                // now swap down the high one
-               cur = mh
-               for cur>ml && n.LessEqual( cur, cur-1) {
-                   n.Swap( cur-1, cur )
-                   cur--
-                   current2("SortMid - swapping H down", n.(IntSlice), al, ah, ml, mh, bl, bh)
+               cur = mh;
+               while( cur>ml && compare( (list+width*cur), (list+width*cur-1) ) < 1 ){
+						memcpy( temp, list + width*cur - width, width );
+						memcpy( list + width*cur - width, list + width*cur, width );
+						memcpy( list + width*cur, temp, width );
+						cur--;
+						print_slices("SortMid - swapping H down", (widget*)base, al, ah, ml, mh, bl, bh);
                }
                // so yes, we did (potentially a lot of) sorting here, but a max of 2 items, so max ~2n swaps
            }
        }
        
-       done = al==ah && ml==mh && bl==bh // all "empty"
-
-}
-
-   if debug {
-       fmt.Println("Done", n, debug)
-   }
-	
-	*/
+       done = al==ah && ml==mh && bl==bh; // all "empty"
+	 }
 	
 }
 
