@@ -13,14 +13,7 @@ void print_slices(const char* msg, widget* list, size_t al, size_t ah, ssize_t m
    char* out3 = malloc( 1 ); *out3 = '\0';
  	 
 	size_t i;
-
-	// all the done things on the left
-	for( i=0; i<al; i++ ) {
-		out1 = append_str( out1, "--- " );
-		out2 = append_str( out2, "    " );
-		out3 = append_str( out3, "    " );
-	}      
-    
+	    
     // do A
     if( al < ah ) {
 		 out1 = append_str( out1, "%3d ", (list + al)->number );
@@ -62,38 +55,30 @@ void print_slices(const char* msg, widget* list, size_t al, size_t ah, ssize_t m
         out3 = append_str( out3, "mh     " );
     }
 
-	 /*
 
     // do B
-    if bl < bh {
-        out1 += fmt.Sprintf("%02d ", numbers[bl] )
-        out2 += "^^ "
-        out3 += "bl "
-    } else if bl == bh {
-        out1 += fmt.Sprintf("%02d ", numbers[bl] )
-        out2 += "^^ "
-        out3 += "blh"
+    if( bl < bh ) {
+        out1 = append_str( out1, "%3d ", (list + bl)->number );
+        out2 = append_str( out2, " ^^ " );
+        out3 = append_str( out3, " bl " );
+    } else if( bl == bh ) {
+        out1 = append_str( out1, "%3d ", (list + bl)->number );
+        out2 = append_str( out2, " ^^ " );
+        out3 = append_str( out3, "bl+h" );
     }
         
-    for i=bl+1; i<bh; i++ {
-        out1 += fmt.Sprintf("%02d ", numbers[i] )
-        out2 += "   "
-        out3 += "   "
+    for( i=bl+1; i<bh; i++ ) {
+        out1 = append_str( out1, "%3d ", (list + i)->number );
+        out2 = append_str( out2, "    " );
+        out3 = append_str( out3, "    " );
     }
     
-    if bl < bh {
-        out1 += fmt.Sprintf("%02d ", numbers[bh] )
-        out2 += "^^ "
-        out3 += "bh "
+    if( bl < bh ) {
+        out1 = append_str( out1, "%3d ", (list + bh)->number );
+        out2 = append_str( out2, " ^^ " );
+        out3 = append_str( out3, " bh " );
     }
-        
-    // done things on the right
-    for i=bh; i<len(numbers)-1; i++ {
-        out1 += "-- "
-        out2 += "   "
-        out3 += "   "
-    } 
-*/
+
 	 printf("\n%s - a: [%zu,%zu], m: [%zd,%zd], b: [%zu,%zu]\n", msg, al, ah, ml, mh, bl, bh );
 	 puts(out1);
 	 puts(out2);
