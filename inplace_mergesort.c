@@ -6,42 +6,30 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
-void print_slices(const char* msg, void* base, size_t al, size_t ah, size_t ml, size_t mh, size_t bl, size_t bh) {
+void print_slices(const char* msg, widget* list, size_t al, size_t ah, size_t ml, size_t mh, size_t bl, size_t bh) {
 
-	// TODO just make some resizing strcat type function
-    char out1[1024];
-    char out2[1024];
-    char out3[1024];
-    
-/*	 memset( out1, 0, 1024);
-	 memset( out2, 0, 1024);
-	 memset( out3, 0, 1024);
-	 
-	 const char* fmt_number = "%02d ";
-	 char* fmt[10];
-	 
-    size_t i;
-    
-    // all the done things on the left
-    for( i=0; i<al; i++) {
-       strcat( out1, "-- " );
-       strcat( out2, "   " );
-       strcat( out3, "   " );
-    }      
+   char* out1 = malloc( 1 ); *out1 = '\0';
+   char* out2 = malloc( 1 ); *out2 = '\0';
+   char* out3 = malloc( 1 ); *out3 = '\0';
+ 	 
+	size_t i;
+
+	// all the done things on the left
+	for( i=0; i<al; i++ ) {
+		out1 = append_str( out1, "--- " );
+		out2 = append_str( out2, "    " );
+		out3 = append_str( out3, "    " );
+	}      
     
     // do A
     if( al < ah ) {
-	 	 strcpy( fmt[0], fmt_number );
-		 sprintf(fmt[0], ((widget*)base)->number );
-		 strcat( out1, fmt[0]);
-       strcat( out2, "^^ " );
-       strcat( out3, "al " );
+		 out1 = append_str( out1, "% 3d ", (list + al)->number );
+		 out2 = append_str( out2, "^^^^" );
+		 out3 = append_str( out3, " al " );
     } else if( al==ah ) {
-	 	 strcpy( fmt[0], fmt_number );
-		 sprintf(fmt[0], ((widget*)base)->number );
-		 strcat( out1, fmt[0]);
-       strcat( out2, "^^ " );
-       strcat( out3, "alh" );
+		 out1 = append_str( out1, "% 3d ", (list + al)->number );
+		 out2 = append_str( out2, "^^^^" );
+		 out3 = append_str( out3, "alh " );
     } else {
         // don't show any a
     }
@@ -103,12 +91,16 @@ void print_slices(const char* msg, void* base, size_t al, size_t ah, size_t ml, 
         out2 += "   "
         out3 += "   "
     } 
-
-fmt.Printf( "\n%v - a: [%v,%v], m: [%v,%v], b: [%v,%v]\n", msg, al, ah, ml, mh, bl, bh )
-fmt.Println(out1)
-fmt.Println(out2)
-fmt.Println(out3)
 */
+	 printf("\n%s - a: [%zu,%zu], m: [%zu,%zu], b: [%zu,%zu]\n", msg, al, ah, ml, mh, bl, bh );
+	 puts(out1);
+	 puts(out2);
+	 puts(out3);
+
+	 free( out1 );
+	 free( out2 );
+	 free( out3 );
+
 }
 
 void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size_t width, comparator compare ) {
@@ -120,7 +112,7 @@ void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size
 	// initially empty
 	size_t ml = 0, mh = -1;
 	
-   print_slices( base, al, ah, ml, mh, bl, bh);
+   print_slices( "Current", (widget*)base, al, ah, ml, mh, bl, bh);
 /*	
    done := false
    sortMid := false
