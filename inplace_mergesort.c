@@ -6,7 +6,7 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
-void print_slices(const char* msg, widget* list, size_t al, size_t ah, size_t ml, size_t mh, size_t bl, size_t bh) {
+void print_slices(const char* msg, widget* list, size_t al, size_t ah, ssize_t ml, ssize_t mh, size_t bl, size_t bh) {
 
    char* out1 = malloc( 1 ); *out1 = '\0';
    char* out2 = malloc( 1 ); *out2 = '\0';
@@ -45,22 +45,24 @@ void print_slices(const char* msg, widget* list, size_t al, size_t ah, size_t ml
         out2 = append_str( out2, " ^^ " );
         out3 = append_str( out3, " ah " );
     }
-	 /*
+
     // maybe mid
-    if ml < mh {
-        out1 += fmt.Sprintf(" ( %02d ", numbers[ml] )
-        out2 += "   ^^ "
-        out3 += "   ml "
-        for i=ml+1; i<mh; i++ {
-            out1 += fmt.Sprintf("%02d ", numbers[i] )
-            out2 += "   "
-            out3 += "   "
+    if( ml < mh ) {
+        out1 = append_str( out1, " ( %02d ", (list + ml )->number );
+        out2 = append_str( out2, "   ^^ " );
+        out3 = append_str( out3, "   ml " );
+        for( i=ml+1; i<mh; i++ ) {
+            out1 = append_str( out1, "%3d ", (list + i)->number );
+            out2 = append_str( out2, "    " );
+            out3 = append_str( out3, "    " );
             
         }
-        out1 += fmt.Sprintf("%02d  ) ", numbers[mh] )
-        out2 += "^^    "
-        out3 += "mh    "
+        out1 = append_str( out1, "%3d  ) ", (list + mh)->number );
+        out2 = append_str( out2, "^^^    " );
+        out3 = append_str( out3, "mh     " );
     }
+
+	 /*
 
     // do B
     if bl < bh {
@@ -92,7 +94,7 @@ void print_slices(const char* msg, widget* list, size_t al, size_t ah, size_t ml
         out3 += "   "
     } 
 */
-	 printf("\n%s - a: [%zu,%zu], m: [%zu,%zu], b: [%zu,%zu]\n", msg, al, ah, ml, mh, bl, bh );
+	 printf("\n%s - a: [%zu,%zu], m: [%zd,%zd], b: [%zu,%zu]\n", msg, al, ah, ml, mh, bl, bh );
 	 puts(out1);
 	 puts(out2);
 	 puts(out3);
@@ -110,7 +112,7 @@ void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size
 	say("Merging [%zu,%zu] - [%zu,%zu]\n", al, ah, bl, bh);
 	
 	// initially empty
-	size_t ml = 0, mh = -1;
+	ssize_t ml = 0, mh = -1;
 	
    print_slices( "Current", (widget*)base, al, ah, ml, mh, bl, bh);
 /*	
