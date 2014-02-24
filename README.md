@@ -4,6 +4,8 @@ I wanted to do some C for fun, and also finally implement a sort that uses anoth
 
 # TODO
 
+- inplace mergesort is super slow. No idea why yet.
+- investigate what stdlib mergesort does to make it so fast
 - stdlib merge/heap return -1 on error and apparently qsort can't fail :) So find some way to put that in the main_template.c
 - print_array could also be generic (maybe have a tostring somewere)
 - gen_random_structs should be able to generate data that is random (check),zigzag asc/desc(check), organ pipes, equal numbers(check), etc.
