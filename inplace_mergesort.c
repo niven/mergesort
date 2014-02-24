@@ -291,7 +291,7 @@ void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size
                }
                // now swap up the low one
                size_t cur = ml;
-               while( cur<mh && compare( (list+width*cur+1), (list+width*cur) ) < 1 ) {
+               while( cur<mh && compare( (list + width*cur + width), (list + width*cur) ) < 1 ) {
 						memcpy( temp, list + width*cur + width, width );
 						memcpy( list + width*cur + width, list + width*cur, width );
 						memcpy( list + width*cur, temp, width );
