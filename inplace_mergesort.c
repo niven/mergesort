@@ -6,6 +6,8 @@
 
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
+#ifdef VERBOSE
+
 void print_slices(const char* msg, widget* list, size_t al, size_t ah, ssize_t ml, ssize_t mh, size_t bl, size_t bh) {
 
    char* out1 = malloc( 1 ); *out1 = '\0';
@@ -89,6 +91,12 @@ void print_slices(const char* msg, widget* list, size_t al, size_t ah, ssize_t m
 	 free( out3 );
 
 }
+
+#else
+
+#define print_slices(...) //nop
+
+#endif
 
 void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size_t width, comparator compare ) {
 
@@ -209,9 +217,9 @@ void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size
 			} else if( bh-bl == 0 ) {
 				
 					memcpy( temp, list + width*bl, width ); // save bl
-					memcpy( list + width*bl, list + width*al, width ); // copy al->bl
-					memcpy( list + width*al, list + width*ah, width ); // copy ah->al
-					memcpy( list + width*ah, temp, width ); // copy temp->ah
+					memcpy( list + width*bl, list + width*ah, width ); // copy ah->bl
+					memcpy( list + width*ah, list + width*al, width ); // copy al->ah
+					memcpy( list + width*al, temp, width ); // copy temp(bl)->al
 
 					ml = ah;
 					mh = bl;
