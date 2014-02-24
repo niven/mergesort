@@ -233,12 +233,38 @@ void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size
 					sort_mid = 1;
 					print_slices("Swap - Rot3 a", (widget*)base, al, ah, ml, mh, bl, bh);
            } else {
+				  /* Example:
+					146 237 103 212
+					 ^^  ^^  ^^  ^^
+					 al  ah  bl  bh
+				  
+				  	bl is lowest, must end up in al (103)
+				  	ah is highest, must end up in bh (237)
+				   ah,bl becomes ml,mh so we'd like that to be (146,212) (might be not right since al could be > bh, but we trigger sort_mid anyway)
 
+					103 237 103 212 		(1) bl->al
+					 ^^  ^^  ^^  ^^
+					 al  ah  bl  bh
+
+					103 237 212 212 		(2) bh->bl
+					 ^^  ^^  ^^  ^^
+					 al  ah  bl  bh
+				  
+					103 237 212 237 		(3) ah->bh
+					 ^^  ^^  ^^  ^^
+					 al  ah  bl  bh
+				  
+					103 146 212 237 		(4) temp(al)->ah
+					 ^^  ^^  ^^  ^^
+					 al  ah  bl  bh
+				  
+				  
+				  */
 					memcpy( temp, list + width*al, width ); // save al
-					memcpy( list + width*al, list + width*ah, width ); // copy ah->al
-					memcpy( list + width*ah, list + width*bl, width ); // copy bl->ah
-					memcpy( list + width*bl, list + width*bh, width ); // copy bh->bl
-					memcpy( list + width*bh, temp, width ); // copy temp(al)->bl
+					memcpy( list + width*al, list + width*bl, width ); // copy bl->al since bl must be the lowest
+					memcpy( list + width*bl, list + width*bh, width ); // copy bh->bl since bh is high (but noy highest) and becomes mh)
+					memcpy( list + width*bh, list + width*ah, width ); // copy ah->bh since ah is highest
+					memcpy( list + width*ah, temp, width ); // copy temp(al)->ah since ah becomes ml
 
 					ml = ah;
 					mh = bl;
@@ -257,7 +283,7 @@ void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size
 					print_slices("SortMid 2", (widget*)base, al, ah, ml, mh, bl, bh);
            } else if( mh-ml > 1 ) {
                // first swap these, could be a nice speedup
-               if( compare( (list+width*mh), (list+width*mh) ) < 1 ) {
+               if( compare( (list + width*ml), (list + width*mh) ) > 0 ) {
 						memcpy( temp, list + width*ml, width );
 						memcpy( list + width*ml, list + width*mh, width );
 						memcpy( list + width*mh, temp, width );
@@ -274,7 +300,7 @@ void merge_in_place( void* base, size_t start, size_t end, size_t midpoint, size
                }
                // now swap down the high one
                cur = mh;
-               while( cur>ml && compare( (list+width*cur), (list+width*cur-1) ) < 1 ){
+               while( cur>ml && compare( (list + width*cur), (list + width*cur - width) ) < 1 ){
 						memcpy( temp, list + width*cur - width, width );
 						memcpy( list + width*cur - width, list + width*cur, width );
 						memcpy( list + width*cur, temp, width );
