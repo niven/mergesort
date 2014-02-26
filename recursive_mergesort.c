@@ -9,7 +9,7 @@
 
 void _mergesort( char* from, char* to, char* buf, size_t width, comparator compare ) {
 
-	say("Merging %d elements\n", (to-from)/width );
+	say("\nSorting %d elements\n", (to-from)/width );
 	print_array( (widget*)from, 0, (to-from)/width, (to-from)/width );
 
 	char* mid = from + ((to-from) / (2*width))*width; // ugly
@@ -25,7 +25,37 @@ void _mergesort( char* from, char* to, char* buf, size_t width, comparator compa
 	}
 
 	// left and right ranges are now sorted, merge them
+	char* left = from;
+	char* right = mid;
+	char* b = buf;
+	say("Merging %d elements\n", (to-from)/width );
+	print_array( (widget*)from, 0, (to-from)/width, (to-from)/width );
+	say("Starting merge with L=%d and R=%d\n", ((widget*)left)->number, ((widget*)right)->number );
+	while( left < mid && right < to ) {
+		
+		if( compare( left, right ) <= 0 ) {
+			memcpy( b, left, width );
+			left += width;
+		} else {
+			memcpy( b, right, width );
+			right += width;
+		}
+		
+		b += width;
+	}
 	
+	// copy remainders
+	if( left < mid ) {
+		memcpy( b, left, mid-left );
+	}
+	if( right < to ) {
+		memcpy( b, right, to-right );
+	}
+	
+	// copy from buf back to base
+	memcpy( from, buf, to-from );
+	say("Result:\n");
+	print_array( (widget*)from, 0, (to-from)/width, (to-from)/width );
 	
 	
 }
