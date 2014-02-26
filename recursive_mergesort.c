@@ -7,20 +7,38 @@
 #define MIN(a,b) ( ((a)<(b)) ? (a) : (b) )
 
 
-void recursive_mergesort( void* base, size_t nel, size_t width, comparator compare ) {
+void _mergesort( char* from, char* to, char* buf, size_t width, comparator compare ) {
 
-	if( nel < 2 ) {
-		return;
+	say("Merging %d elements\n", (to-from)/width );
+	print_array( (widget*)from, 0, (to-from)/width, (to-from)/width );
+
+	char* mid = from + ((to-from) / (2*width))*width; // ugly
+	say("from-mid-to = 0 - %d - %d\n", (mid-from)/width, (to-from)/width );
+
+	// only sort the smaller chunks if there is at least 1 element
+	if( mid - width > from ) {
+		_mergesort( from, mid, buf, width, compare );
 	}
 
-	char* list = (char*)base;
-	size_t mid = nel / 2;
-	
-	// allocate buf etc.
-	
-	recursive_mergesort( list, mid, width, comparator );
-	recursive_mergesort( list + mid*width, nel - mid, width, comparator );
+	if( mid + width < to ) {
+		_mergesort( mid, to, buf, width, compare );
+	}
 
+	// left and right ranges are now sorted, merge them
 	
+	
+	
+}
 
+void recursive_mergesort( void* base, size_t nel, size_t width, comparator compare ) {
+
+	char* buf = malloc( nel*width );
+	if( buf == NULL ) {
+		perror("malloc()");
+		exit( EXIT_FAILURE );
+	}
+
+	_mergesort( (char*)base, (char*)base + nel*width, buf, width, compare );
+
+	free( buf );
 }
