@@ -63,7 +63,7 @@ void _mergesort( char* from, char* to, char* buf, size_t width, comparator compa
 		memcpy( b, left, mid-left );
 	}
 	if( right < to ) {
-		memcpy( b, right, to-right );
+		to -= to-right;
 	}
 	
 	// copy from buf back to base
