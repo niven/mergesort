@@ -17,6 +17,7 @@ make all PAD_SIZE=$PAD_SIZE
 make tools
 
 rm bin/insertionsort
+rm bin/inplace_mergesort
 
 set -x NUM_SORTS (count bin/*)
 
