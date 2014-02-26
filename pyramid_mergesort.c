@@ -110,7 +110,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 			to = to + start*width; // offset is always the same as left
 
 			say("remaining left %d, remaining right %d\n", (L_end-L)/width, (R_end-R)/width);
-			while( L<L_end || R<R_end ) { // until left and right run out
+			while( L<L_end && R<R_end ) { // until left and right run out
 
 				say("\t L=%d\t R=%d\t to=%d\n", (L-from)/width, (R-from)/width, (to-buf)/width);
 
@@ -118,7 +118,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 				// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 				// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
 				m = 0;
-				while( (L+m) < L_end && (R >= R_end || compare( L+m, R ) <= 0 ) ) {
+				while( (L+m) < L_end && compare( L+m, R ) <= 0 ) {
 
 					say("\tto[%d] = L[%d] (%3d)\n", (to-buf+m)/width, (L-from+m)/width, *(int*) (L+m) );
 					m += width;
@@ -128,9 +128,13 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 				to += m;
 				L += m;
 				
+				if( L >= L_end ) { // don't overshoot
+					break;
+				}
+				
 				// copy items from right array as long as they are lte
 				m = 0;
-				while( (R+m) < R_end && (L >= L_end || compare( R+m, L ) <= 0 ) ) {
+				while( (R+m) < R_end && compare( R+m, L ) <= 0 ) {
 
 					say("\tto[%d] = R[%d] (%3d)\n", (to-buf+m)/width, (R-from+m)/width, *(int*) (R+m) );
 					m += width;
@@ -141,6 +145,13 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 				R += m;
 				
 				say("remaining left %d, remaining right %d\n", (L_end-L)/width, (R_end-R)/width);
+			}
+			
+			if( L < L_end ) {
+				memcpy( to, L, L_end-L );
+			}
+			if( R < R_end ) {
+				memcpy( to, R, R_end-R );
 			}
 
 			say("Postmerge [%d - %d] (%p):\n", start, index_end-1, to);
