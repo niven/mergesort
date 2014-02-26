@@ -44,6 +44,10 @@ void _mergesort( char* from, char* to, char* buf, size_t width, comparator compa
 		b += offset - left;
 		left = offset;
 		
+		if( left == mid ) {
+			break;
+		}
+		
 		offset = right;
 		while( offset < to && compare( left, offset ) > 0 ) {
 			offset += width;
