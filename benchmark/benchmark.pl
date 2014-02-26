@@ -15,7 +15,6 @@ my %opt = (
 	max => 1000,
 	num => 50,
 	iterations => 1,
-	element_size => 8,
 	mem => 0,
 	distribution => $distributions[0],
 );
@@ -26,22 +25,22 @@ GetOptions (
 	"max=i",
 	"num=i",
 	"iterations=i",
-	"element_size=i",
 	"distribution=s"
 	)
-or die "Usage: perl benchmark.pl --min=NN --max=NN --num=NN --iterations=NN --element_size_bytes=NN --distribution=" . join("|", @distributions);
+or die "Usage: perl benchmark.pl --min=NN --max=NN --num=NN --iterations=NN --distribution=" . join("|", @distributions);
 
 die "Not a valid distribution '$opt{distribution}'. Choose one of " . join(", ", @distributions) if grep { $_ eq $opt{distribution} } @distributions == 0;
 
 $opt{step} = ceil( ($opt{max}-$opt{min}) / $opt{num} ); 
 
+my $element_size = 4 + $ENV{PAD_SIZE}; # uint32_t + padsize (actual struct size could be differenet)
 print "Running benchmark for $opt{min} to $opt{max} elements in $opt{num} steps of size $opt{step} with distribution $opt{distribution}";
-print "Element size $opt{element_size} bytes, $opt{iterations} iterations per sorter";
+print "Element size $element_size bytes, $opt{iterations} iterations per sorter";
 
 
 print "Inner sort width for mergesorts: $ENV{SORTER_BLOCK_WIDTH}" if defined $ENV{SORTER_BLOCK_WIDTH};
 
-if( $opt{element_size} < 5 ) {
+if( $element_size < 5 ) {
 	die "Elements can's be smaller than 5 since they are a struct of a 4 byte int and at minimum 1 char";
 }
 
