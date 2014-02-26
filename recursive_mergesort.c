@@ -28,20 +28,30 @@ void _mergesort( char* from, char* to, char* buf, size_t width, comparator compa
 	char* left = from;
 	char* right = mid;
 	char* b = buf;
+	char* offset;
+
+	
 	say("Merging %d elements\n", (to-from)/width );
 	print_array( (widget*)from, 0, (to-from)/width, (to-from)/width );
 	say("Starting merge with L=%d and R=%d\n", ((widget*)left)->number, ((widget*)right)->number );
 	while( left < mid && right < to ) {
 		
-		if( compare( left, right ) <= 0 ) {
-			memcpy( b, left, width );
-			left += width;
-		} else {
-			memcpy( b, right, width );
-			right += width;
+		offset = left;
+		while( offset < mid && compare( offset, right ) <= 0 ) {
+			offset += width;
 		}
+		memcpy( b, left, offset-left ); // could be 0 but that is fine
+		b += offset - left;
+		left = offset;
 		
-		b += width;
+		offset = right;
+		while( offset < to && compare( left, offset ) > 0 ) {
+			offset += width;
+		}
+		memcpy( b, right, offset-right );
+		b += offset - right;
+		right = offset;
+
 	}
 	
 	// copy remainders
