@@ -13,6 +13,7 @@ all: clean tools sort_functions
 	${CMD} -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort.o main_template.c -o bin/mergesort
 	${CMD} -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
 	${CMD} -DSORT_FUNCTION=timsort utils.o insertionsort.o timsort.o main_template.c -o bin/timsort
+	${CMD} -DSORT_FUNCTION=recursive_mergesort utils.o recursive_mergesort.o main_template.c -o bin/recursive_mergesort
 
 verbose: clean *.c
 	${CMD} -DVERBOSE -c utils.c
@@ -28,6 +29,7 @@ verbose: clean *.c
 	${CMD} -DVERBOSE -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort.o main_template.c -o bin/mergesort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
 	${CMD} -DVERBOSE -DSORT_FUNCTION=timsort utils.o insertionsort.o timsort.o main_template.c -o bin/timsort
+	${CMD} -DVERBOSE -DSORT_FUNCTION=recursive_mergesort utils.o recursive_mergesort.o main_template.c -o bin/recursive_mergesort
 
 sort_functions: *sort.c
 	${CMD} -c *sort.c
