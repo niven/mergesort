@@ -1,5 +1,4 @@
 CC=clang
-PAD_SIZE=4
 CFLAGS=-Wall -Wunreachable-code -O3 -pedantic -DNDEBUG -DPAD_SIZE=${PAD_SIZE}
 CMD=${CC} ${CFLAGS}
 
