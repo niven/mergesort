@@ -4,7 +4,7 @@
 
 echo "Setting global settings"
 
-set -x PAD_SIZE 4
+set -x PAD_SIZE 7
 set -x RESULTS_DIR "results/"
 set -x NUM_ELEMENTS 200000
 
