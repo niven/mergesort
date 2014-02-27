@@ -80,7 +80,7 @@ int main( int argc, char* argv[] ) {
 
 #ifdef TESTING
 
-	for( int i=0; i<count; i++ ) {
+	for( int i=0; i<count-1; i++ ) {
 		if( widgets[i].number > widgets[i+1].number ) {
 			printf("Not sorted at %d/%d (%d/%d)\n", i, i+1, widgets[i].number, widgets[i+1].number);
 			exit( EXIT_FAILURE );
