@@ -9,7 +9,7 @@
 
 rm -rf results/
 
-set -x WIDTHS 8 16 24 32 40 48 56 64
+set -x WIDTHS 2 8 16 32 64 128 256
 set -x NUM_WIDTHS (count $WIDTHS +1) # count is actually lastindex I think
 
 make clean
@@ -21,7 +21,7 @@ for ISW in $WIDTHS
 	echo "Setting inner sort width to $ISW"
 	set -x SORTER_BLOCK_WIDTH $ISW
 	
-	perl benchmark/benchmark.pl --min=100 --max=$NUM_ELEMENTS --num=100 --iterations=10 --distribution=random
+	perl benchmark/benchmark.pl --min=100 --max=$NUM_ELEMENTS --num=50 --iterations=$ITERATIONS --distribution=random
 	mv {$RESULTS_DIR}mergesort_results.csv {$RESULTS_DIR}mergesort_{$ISW}_results.csv # results dir is global
 	
 end
