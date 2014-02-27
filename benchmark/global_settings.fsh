@@ -6,6 +6,10 @@ echo "Setting global settings"
 
 set -x PAD_SIZE 7
 set -x RESULTS_DIR "results/"
-set -x NUM_ELEMENTS 200000
 
+# for mergesorts with inner sort
+set -X SORTER_BLOCK_WIDTH 16
 
+# benchmark controls
+set -x NUM_ELEMENTS 50000
+set -x ITERATIONS 3
