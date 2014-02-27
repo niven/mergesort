@@ -83,7 +83,7 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 	
 		uint32_t mergecounter = blocks_done;
 		uint32_t merge_width = elements_per_block;
-		uint32_t m = 0;
+		char* current; // used for iterating the left and right parts of the merge arrays
 		// now merge 2 subsections of the array, and if the number of blocks is even, it means we can do more merges
 
 		// always read from in and merge to buf for the first merge pass
@@ -117,32 +117,32 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 				// copy items from left array as long as they are lte
 				// (short-circuit evaluation means we never acces list[R] if R is out of bounds)
 				// of course R is not modified here, but R might have "ran out" so here we need to copy the rest of L
-				m = 0;
-				while( (L+m) < L_end && compare( L+m, R ) <= 0 ) {
+				current = L;
+				while( current < L_end && compare( current, R ) <= 0 ) {
 
-					say("\tto[%d] = L[%d] (%3d)\n", (to-buf+m)/width, (L-from+m)/width, *(int*) (L+m) );
-					m += width;
+					say("\tto[%d] = L[%d] (%3d)\n", (to-buf+m)/width, (current-from+m)/width, *(int*)current );
+					current += width;
 				}
-				say("Copying %d bytes (%d elements)\n", m, m/width);
-				memcpy( to, L, m );
-				to += m;
-				L += m;
+				say("Copying %d bytes (%d elements)\n", current-L, (current-L)/width);
+				memcpy( to, L, current-L );
+				to += current-L;
+				L = current;
 				
 				if( L >= L_end ) {
 					continue;
 				}
 				
 				// copy items from right array as long as they are lte
-				m = 0;
-				while( (R+m) < R_end && compare( R+m, L ) <= 0 ) {
+				current = R;
+				while( current < R_end && compare( current, L ) <= 0 ) {
 
-					say("\tto[%d] = R[%d] (%3d)\n", (to-buf+m)/width, (R-from+m)/width, *(int*) (R+m) );
-					m += width;
+					say("\tto[%d] = R[%d] (%3d)\n", (to-buf+m)/width, (current-from+m)/width, *(int*)current );
+					current += width;
 				}
-				say("Copying %d bytes (%d elements)\n", m, m/width);
-				memcpy( to, R, m );
-				to += m;
-				R += m;
+				say("Copying %d bytes (%d elements)\n", current-R, (current-R)/width);
+				memcpy( to, R, current-R );
+				to += current-R;
+				R = current;
 				
 				say("remaining left %d, remaining right %d\n", (L_end-L)/width, (R_end-R)/width);
 			}
