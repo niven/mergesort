@@ -73,11 +73,11 @@ while( $size <= $opt{max} ) {
 	
 	print "Benchmarking $size elements";
 	
-	# random numbers
-	my $datafile = "$testdata_dir/data_$size.dat";
-	system "./gen_random_structs $opt{distribution} $size $datafile > /dev/null";
-	
 	for (1..$opt{iterations}) {
+
+		# random numbers
+		my $datafile = "$testdata_dir/data_$size.dat";
+		system "./gen_random_structs $opt{distribution} $size $datafile > /dev/null";
 		
 		# sorters write their count/nano to stderr so we have them append that to a results file
 		for my $sorter (@sorters) {
