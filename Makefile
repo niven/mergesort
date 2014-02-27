@@ -1,5 +1,10 @@
+ifeq (${MODE},)
+else
+	MODEFLAG=-D${MODE}
+endif
+
 CC=clang
-CFLAGS=-Wall -Wunreachable-code -O3 -pedantic -DNDEBUG -DPAD_SIZE=${PAD_SIZE}
+CFLAGS=-Wall -Wunreachable-code -O3 -pedantic -DNDEBUG -DPAD_SIZE=${PAD_SIZE} ${MODEFLAG}
 CMD=${CC} ${CFLAGS}
 
 all: clean tools sort_functions
@@ -13,22 +18,7 @@ all: clean tools sort_functions
 	${CMD} -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
 	${CMD} -DSORT_FUNCTION=timsort utils.o insertionsort.o timsort.o main_template.c -o bin/timsort
 	${CMD} -DSORT_FUNCTION=recursive_mergesort utils.o recursive_mergesort.o main_template.c -o bin/recursive_mergesort
-
-verbose: clean *.c
-	${CMD} -DVERBOSE -c utils.c
-	${CMD} -DVERBOSE -c ziggurat.c
-	${CMD} -DVERBOSE -c *sort.c
-	${CMD} -DVERBOSE utils.o ziggurat.o gen_random_structs.c -o gen_random_structs
-	${CMD} -DVERBOSE -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=qsort utils.o main_template.c -o bin/stdlib_qsort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=mergesort utils.o main_template.c -o bin/stdlib_mergesort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=inplace_mergesort utils.o inplace_mergesort.o main_template.c -o bin/inplace_mergesort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=heapsort utils.o main_template.c -o bin/stdlib_heapsort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=shellsort utils.o shellsort.o main_template.c -o bin/shellsort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort.o main_template.c -o bin/mergesort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=timsort utils.o insertionsort.o timsort.o main_template.c -o bin/timsort
-	${CMD} -DVERBOSE -DSORT_FUNCTION=recursive_mergesort utils.o recursive_mergesort.o main_template.c -o bin/recursive_mergesort
+	${CMD} -DSORT_FUNCTION=jsf_mergesort utils.o jsf_mergesort.o main_template.c -o bin/jsf_mergesort
 
 sort_functions: *sort.c
 	${CMD} -c *sort.c
@@ -41,7 +31,7 @@ tools: utils.* gen_random_ints.c gen_random_structs.c ziggurat.*
 	${CMD} -c ziggurat.c
 	${CMD} ziggurat_test.c ziggurat.o -o ziggurat_test
 	${CMD} gen_random_ints.c -o gen_random_ints
-	${CMD} gen_random_structs.c ziggurat.o -o gen_random_structs
+	${CMD} gen_random_structs.c utils.o ziggurat.o -o gen_random_structs
 
 insertionsort: main_template.c utils.o insertionsort.o
 	${CMD} -DSORT_FUNCTION=insertionsort utils.o insertionsort.o main_template.c -o bin/insertionsort

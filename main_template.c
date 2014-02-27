@@ -17,6 +17,7 @@
 #include "timsort.h"
 #include "inplace_mergesort.h"
 #include "recursive_mergesort.h"
+#include "jsf_mergesort.h"
 
 
 size_t working_set_size( size_t element_size, size_t nel );
@@ -38,6 +39,7 @@ int main( int argc, char* argv[] ) {
 	say("widgets premerge %p\n", widgets);
 	print_array( widgets, 0, count, PAD_SIZE );
 
+#if defined(TESTING) || defined (VERBOSE)
 	// copy for comparing later
 	widget* widgets_copy = malloc( sizeof(widget)*count );
 	if( widgets_copy == NULL ) {
@@ -45,6 +47,7 @@ int main( int argc, char* argv[] ) {
 		exit( EXIT_FAILURE );
 	}
 	memcpy( widgets_copy, widgets, sizeof(widget)*count );
+#endif
 
 #ifdef __APPLE__
 	uint64_t start, ticks;
@@ -72,21 +75,37 @@ int main( int argc, char* argv[] ) {
 	fprintf( stderr, "%zu,%llu\n", count, nanos );
 #endif
 	
-	// print working set size
-//	fprintf( stderr, "%zu\n", working_set_size( sizeof(widget), count ) );
-
 	say( "widgets postmerge %p\n", widgets );
 	print_array( widgets, 0, count, PAD_SIZE );
 
+#ifdef TESTING
+
+	for( int i=0; i<count; i++ ) {
+		if( widgets[i].number > widgets[i+1].number ) {
+			printf("Not sorted at %d/%d (%d/%d)\n", i, i+1, widgets[i].number, widgets[i+1].number);
+			exit( EXIT_FAILURE );
+		}
+	}
+
+#endif
+
+#ifdef VERBOSE
+
 	is_sorted( widgets, 0, count );
+
+#endif
 	
+#if defined(TESTING) || defined(VERBOSE)
+
 	contains_same_elements( widgets_copy, widgets, count );
 	say( "widgets postmerge contain same elements as premerge.\n" );
+	free( widgets_copy );
+
+#endif
 
 	write_widgets( widgets, count, filename_out );
 	
 	free( widgets );
-	free( widgets_copy );
 	
 	exit( EXIT_SUCCESS );
 }
