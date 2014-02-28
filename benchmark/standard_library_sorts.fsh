@@ -10,12 +10,12 @@
 rm -rf results/
 
 make clean
-make stdlib_qsort PAD_SIZE=$PAD_SIZE
-make stdlib_heapsort PAD_SIZE=$PAD_SIZE
-make stdlib_mergesort PAD_SIZE=$PAD_SIZE
+make stdlib_qsort
+make stdlib_heapsort
+make stdlib_mergesort
 make tools
 	
-perl benchmark/benchmark.pl --min=100 --max=$NUM_ELEMENTS --num=100 --iterations=10 --distribution=random
+perl benchmark/benchmark.pl --min=100 --max=$NUM_ELEMENTS --num=100 --iterations=$ITERATIONS --distribution=random
 	
 perl benchmark/reduce.pl
 gnuplot -e "COUNT=4; OUTPUT_FILE='benchmark/standard_library_sorts.svg'; PLOT_TITLE='Standard Library sorts'; PLOT_NUM_ELEMENTS=$NUM_ELEMENTS" benchmark/create_plot.gnuplot

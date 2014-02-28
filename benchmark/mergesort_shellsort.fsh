@@ -13,7 +13,7 @@ set -x WIDTHS 2 8 16 32 64 128 256
 set -x NUM_WIDTHS (count $WIDTHS +1) # count is actually lastindex I think
 
 make clean
-make mergesort PAD_SIZE=$PAD_SIZE
+make mergesort
 make tools
 
 for ISW in $WIDTHS

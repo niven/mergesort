@@ -13,7 +13,7 @@ set -x GEN_STRUCTS_SD 20
 rm -rf results/
 
 make clean
-make all PAD_SIZE=$PAD_SIZE
+make all
 make tools
 
 rm bin/insertionsort
@@ -24,7 +24,7 @@ set -x NUM_SORTS (count bin/*)
 echo "Benchmarking $NUM_SORTS sorts"
 set -x NUM_COLUMNS $NUM_SORTS + 1
 
-perl benchmark/benchmark.pl --min=100 --max=$NUM_ELEMENTS --num=100 --iterations=10 --distribution=saw_up
+perl benchmark/benchmark.pl --min=100 --max=$NUM_ELEMENTS --num=100 --iterations=$ITERATIONS --distribution=saw_up
 	
 perl benchmark/reduce.pl
 gnuplot -e "COUNT=$NUM_COLUMNS; OUTPUT_FILE='benchmark/all_sorts_saw_up.svg'; PLOT_TITLE='All sorts, saw up distribution'; PLOT_NUM_ELEMENTS=$NUM_ELEMENTS" benchmark/create_plot.gnuplot

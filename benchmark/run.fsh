@@ -13,7 +13,8 @@ make clean
 fish benchmark/standard_library_sorts.fsh
 fish benchmark/mergesort_shellsort.fsh
 fish benchmark/all_sorts.fsh
-fish benchmark/all_sorts_sawp_up.fsh
-fish benchmark/all_sorts_sawp_down.fsh
+fish benchmark/all_sorts_saw_up.fsh
+fish benchmark/all_sorts_saw_down.fsh
+fish benchmark/mergesort_showdown.fsh
 
 make clean
