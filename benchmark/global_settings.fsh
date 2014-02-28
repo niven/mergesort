@@ -8,8 +8,8 @@ set -x PAD_SIZE 7
 set -x RESULTS_DIR "results/"
 
 # for mergesorts with inner sort
-set -X SORTER_BLOCK_WIDTH 16
+set -x SORTER_BLOCK_WIDTH 16
 
 # benchmark controls
 set -x NUM_ELEMENTS 50000
-set -x ITERATIONS 3
+set -x ITERATIONS 10
