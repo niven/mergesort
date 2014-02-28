@@ -12,7 +12,7 @@ set -x NUM_ELEMENTS 20000
 rm -rf results/
 
 make clean
-make all PAD_SIZE=$PAD_SIZE
+make all
 make tools
 
 rm bin/insertionsort
