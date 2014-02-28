@@ -62,6 +62,8 @@ void _mergesort( char* from, char* to, char* buf, size_t width, comparator compa
 	if( left < mid ) {
 		memcpy( b, left, mid-left );
 	}
+	// instead of copying the trailing right hand array to the buffer and then copying everything back
+	// we can just shorten the entire array, saving on copying to and then back.
 	if( right < to ) {
 		to -= to-right;
 	}
