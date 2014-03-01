@@ -48,6 +48,43 @@
 	<object data="mergesort_showdown.svg" type="image/svg+xml">
 	</object>
 
+	<h1>Optimizations</h1>
+	<h2>Copy-after-loop</h2>
+	<p>
+		If we're doing a merge, our code looks like:
+		<pre>
+		<code>
+			while( current < R_end && compare( current, L ) <= 0 ) {
+				current += width;
+			}
+			memcpy( to, R, current-R );
+			to += current-R;
+			R = current;
+		</code>
+		</pre>
+		This copies a chunk of elements from R. Now after this loop L[0] must be <= R[0], so we could just immediately copy that.
+		<pre>
+		<code>
+			while( current < R_end && compare( current, L ) <= 0 ) {
+				current += width;
+			}
+			memcpy( to, R, current-R );
+			to += current-R;
+			R = current;
+
+			<span style="color: green;">/* copy first element of L, this saves a compare() call */</span>
+			memcpy( to, L, width );
+			L += width;
+			to += width;
+		</code>
+		</pre>
+		Unfortunately this doesn't actually improve the speed of the merge as you can see in image below.
+	</p>
+	<object data="mergesort_optimization1.svg" type="image/svg+xml">
+	</object>
+
+
+
 </body>
 
 </html>

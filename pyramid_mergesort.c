@@ -133,6 +133,11 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 				}
 				
 				// copy items from right array as long as they are lte
+				/* Not a good optimization :(
+					memcpy( to, R, width );
+					R += width;
+					to += width;
+				*/
 				current = R;
 				while( current < R_end && compare( current, L ) <= 0 ) {
 
@@ -143,7 +148,12 @@ void pyramid_mergesort(void* base, size_t nel, size_t width, comparator compare,
 				memcpy( to, R, current-R );
 				to += current-R;
 				R = current;
-				
+
+				/* Not a good optimization :(
+					memcpy( to, L, width );
+					L += width;
+					to += width;
+				*/
 				say("remaining left %d, remaining right %d\n", (L_end-L)/width, (R_end-R)/width);
 			}
 			
