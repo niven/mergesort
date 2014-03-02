@@ -17,10 +17,6 @@
 #include "timsort.h"
 #include "inplace_mergesort.h"
 #include "recursive_mergesort.h"
-#include "jsf_mergesort.h"
-
-
-size_t working_set_size( size_t element_size, size_t nel );
 
 int main( int argc, char* argv[] ) {
 

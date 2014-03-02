@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-// TODO: make sure suppress macros are empty when VERBOSE is not defined
-
 #ifdef VERBOSE
 
 int SUPPRESS_bak, SUPPRESS_new;
