@@ -12,7 +12,7 @@
 #include "utils.h"
 
 #include "insertionsort.h"
-#include "mergesort.h"
+#include "mergesort_inner_shellsort.h"
 #include "pyramid_mergesort.h"
 #include "timsort.h"
 #include "inplace_mergesort.h"

@@ -14,11 +14,10 @@ all: clean tools sort_functions
 	${CMD} -DSORT_FUNCTION=inplace_mergesort utils.o inplace_mergesort.o main_template.c -o bin/inplace_mergesort
 	${CMD} -DSORT_FUNCTION=heapsort utils.o main_template.c -o bin/stdlib_heapsort
 	${CMD} -DSORT_FUNCTION=shellsort utils.o shellsort.o main_template.c -o bin/shellsort
-	${CMD} -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort.o main_template.c -o bin/mergesort
+	${CMD} -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort_inner_shellsort.o main_template.c -o bin/mergesort_inner_shellsort
 	${CMD} -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
 	${CMD} -DSORT_FUNCTION=timsort utils.o insertionsort.o timsort.o main_template.c -o bin/timsort
 	${CMD} -DSORT_FUNCTION=recursive_mergesort utils.o recursive_mergesort.o main_template.c -o bin/recursive_mergesort
-	${CMD} -DSORT_FUNCTION=jsf_mergesort utils.o jsf_mergesort.o main_template.c -o bin/jsf_mergesort
 
 sort_functions: *sort.c
 	${CMD} -c *sort.c
@@ -39,8 +38,8 @@ insertionsort: main_template.c utils.o insertionsort.o
 shellsort: main_template.c utils.o shellsort.o
 	${CMD} -DSORT_FUNCTION=shellsort utils.o shellsort.o main_template.c -o bin/shellsort
 
-mergesort: main_template.c utils.o mergesort.o
-	${CMD} -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort.o main_template.c -o bin/mergesort
+mergesort_inner_shellsort: main_template.c utils.o mergesort_inner_shellsort.o
+	${CMD} -DSORT_FUNCTION=merge_sort_wrapper utils.o mergesort_inner_shellsort.o main_template.c -o bin/mergesort_inner_shellsort
 
 inplace_mergesort: main_template.c utils.o inplace_mergesort.o
 	${CMD} -DSORT_FUNCTION=inplace_mergesort utils.o inplace_mergesort.o main_template.c -o bin/inplace_mergesort
