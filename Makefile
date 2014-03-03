@@ -18,6 +18,7 @@ all: clean tools sort_functions
 	${CMD} -DSORT_FUNCTION=pyramid_mergesort_wrapper utils.o pyramid_mergesort.o main_template.c -o bin/pyramid_mergesort
 	${CMD} -DSORT_FUNCTION=timsort utils.o insertionsort.o timsort.o main_template.c -o bin/timsort
 	${CMD} -DSORT_FUNCTION=recursive_mergesort utils.o recursive_mergesort.o main_template.c -o bin/recursive_mergesort
+	${CMD} -DSORT_FUNCTION=iterative_mergesort utils.o iterative_mergesort.o main_template.c -o bin/iterative_mergesort
 
 sort_functions: *sort.c
 	${CMD} -c *sort.c
@@ -58,3 +59,11 @@ stdlib_mergesort: main_template.c utils.o sort_functions
 
 stdlib_heapsort: main_template.c utils.o sort_functions
 	${CMD} -DSORT_FUNCTION=heapsort utils.o main_template.c -o bin/stdlib_heapsort
+
+recursive_mergesort: main_template.c utils.o recursive_mergesort.o
+	${CMD} -DSORT_FUNCTION=recursive_mergesort utils.o recursive_mergesort.o main_template.c -o bin/recursive_mergesort
+
+iterative_mergesort: main_template.c utils.o iterative_mergesort.o
+	${CMD} -DSORT_FUNCTION=iterative_mergesort utils.o iterative_mergesort.o main_template.c -o bin/iterative_mergesort
+
+

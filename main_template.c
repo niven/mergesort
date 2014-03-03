@@ -17,6 +17,7 @@
 #include "timsort.h"
 #include "inplace_mergesort.h"
 #include "recursive_mergesort.h"
+#include "iterative_mergesort.h"
 
 int main( int argc, char* argv[] ) {
 
