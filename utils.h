@@ -88,6 +88,11 @@ void is_sorted( widget* widgets, int from, int to );
 
 #endif
 
+// returns a string representing the widget
+// since we usually just want to print this, defer free() until later.
+// Don't forget to call free_allocated_strings() later.
+const char* sfw( char* is_a_widget );
+
 void contains_same_elements( widget* a, widget* b, size_t count);
 
 int compare_int(const void* a, const void* b);
@@ -128,5 +133,12 @@ Conveniently append strings, with optional printf style formatting.
 This makes sure the resulting string is big enough.
 */
 char* append_str( char* prefix, const char* format, ... );
+
+typedef struct allocated_string_node {
+	const char* allocated_string;
+	struct allocated_string_node* next;
+} allocated_string_node;
+
+void free_allocated_strings();
 
 #endif

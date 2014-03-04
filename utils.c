@@ -217,6 +217,65 @@ void is_sorted(widget* widgets, int from, int to) {
 
 #endif	
 
+/********** linked list of char* so we can just make strings and save them for free()ing later ***********/
+
+static allocated_string_node* _root_allocated_strings = NULL;
+static allocated_string_node* _tail_allocated_strings = NULL;
+
+void save_allocated_string( const char* str ) {
+	
+	if( _tail_allocated_strings == NULL ) {
+		_root_allocated_strings = (allocated_string_node*)malloc( sizeof(allocated_string_node) );
+		if( _root_allocated_strings == NULL ) {
+			perror("malloc()");
+			exit( EXIT_FAILURE );
+		}
+
+		_tail_allocated_strings = _root_allocated_strings;
+		_tail_allocated_strings->next = NULL;
+		_tail_allocated_strings->allocated_string = str;
+	} else {
+		_tail_allocated_strings->next = (allocated_string_node*)malloc( sizeof(allocated_string_node) );
+		if( _tail_allocated_strings->next == NULL ) {
+			perror("malloc()");
+			exit( EXIT_FAILURE );
+		}
+		_tail_allocated_strings->next->allocated_string = str;
+		_tail_allocated_strings = _tail_allocated_strings->next;
+	}
+	
+}
+
+void free_allocated_strings() {
+	
+	allocated_string_node* temp;
+	while( _root_allocated_strings != NULL ) {
+		temp = _root_allocated_strings;
+
+		_root_allocated_strings = _root_allocated_strings->next;
+
+		say("free_allocated_strings: freeing [%s]\n", temp->allocated_string );
+		free( (void*)temp->allocated_string );
+		free( temp );
+		
+	}
+	
+}
+
+/********** linked list of char* so we can just make strings and save them for free()ing later ***********/
+
+
+const char* sfw( char* is_a_widget ) {
+	
+	char* formatted_string;
+	
+	asprintf( &formatted_string, "%3d:%.1s", ((widget*)is_a_widget)->number, ((widget*)is_a_widget)->padding );
+	
+	save_allocated_string( formatted_string );
+	
+	return formatted_string;
+}
+
 // as a check to see if the original numbers array contains the same elements
 // as the sorted one
 void contains_same_elements( widget* a, widget* b, size_t count) {
@@ -406,4 +465,5 @@ char* append_str( char* prefix, const char* format, ... ) {
 	
 	return temp;
 }
+
 
