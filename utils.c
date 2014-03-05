@@ -242,6 +242,7 @@ void save_allocated_string( const char* str ) {
 		}
 		_tail_allocated_strings->next->allocated_string = str;
 		_tail_allocated_strings = _tail_allocated_strings->next;
+		_tail_allocated_strings->next = NULL;
 	}
 	
 }
