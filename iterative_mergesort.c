@@ -74,7 +74,7 @@ void iterative_mergesort( void* base, size_t nel, size_t width, comparator compa
 				b += offset - left;
 				left = offset;
 
-				say("\nLC l=[%s] m=[%s] r=[%s] e=[%s]\n", sfw(left), sfw(mid), sfw(right), sfw(end));
+				say("\nLC l=[%s] m=[%s] r=[%s] e=[%s]\n", sfw(left), sfw(mid), sfw(right), end>=to?"END":sfw(end));
 				print_array( (widget*)buf, 0, (end-from)/width, merge_range );
 		
 				if( left == mid ) {
