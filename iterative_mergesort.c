@@ -60,7 +60,7 @@ void iterative_mergesort( void* base, size_t nel, size_t width, comparator compa
 			b = buf;
 			say("start-mid/right-end = %d - %d/%d - %d = [%d, %d, %d]\n", (from-(char*)base)/width, (mid-(char*)base)/width, (right-(char*)base)/width, (end-(char*)base)/width, *(int*)left, *(int*)mid, *(int*)end );
 			print_array( (widget*)from, 0, (end-from)/width, merge_range );
-			memset( buf, 0, merge_range*2*width );
+			memset( buf, 0, end-left );
 			while( left < mid && right < end ) {
 
 				offset = left;
