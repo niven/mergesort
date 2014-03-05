@@ -89,11 +89,11 @@ void iterative_mergesort( void* base, size_t nel, size_t width, comparator compa
 				b += offset - right;
 				right = offset;
 
-				say("\nRC l:%p m:%p r:%p e:%p\n", left, mid, right, end);
+				say("\nRC l:[%s] m:[%s] r:[%s] e:[%s]\n", sfw(left), sfw(mid), sfw(right), end>=to?"END":sfw(end));
 				print_array( (widget*)buf, 0, (end-from)/width, merge_range );
 
 			}
-			say("\nXW l:%p m:%p r:%p e:%p\n", left, mid, right, end);
+
 			// copy remainders
 			if( left < mid ) {
 				memcpy( b, left, mid-left );
