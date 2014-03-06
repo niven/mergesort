@@ -82,7 +82,7 @@ void iterative_mergesort( void* base, size_t nel, size_t width, comparator compa
 				}
 		
 				offset = right;
-				while( offset < to && compare( left, offset ) > 0 ) {
+				while( offset < end && compare( left, offset ) > 0 ) {
 					offset += width;
 				}
 				memcpy( b, right, offset-right );
