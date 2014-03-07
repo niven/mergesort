@@ -58,9 +58,10 @@ void iterative_mergesort( void* base, size_t nel, size_t width, comparator compa
 			right = mid;
 			left = from;
 			b = buf;
-			say("start-mid/right-end = %d - %d/%d - %d = [%d, %d, %d->]\n", 
+			say("start-mid/right-end = %d - %d/%d - %d = [%d, %d, %d->] (from=%p)\n", 
 				(from-(char*)base)/width, (mid-(char*)base)/width, (right-(char*)base)/width, (end-(char*)base)/width, 
 				*(int*)left, *(int*)mid, *(int*)(end-width)
+				, from	
 			);
 			print_array( (widget*)from, 0, (end-from)/width, merge_range );
 			memset( buf, 0, end-left );
@@ -105,9 +106,12 @@ void iterative_mergesort( void* base, size_t nel, size_t width, comparator compa
 			}
 			
 			// copy the buffer back to the original array
-			memcpy( from, buf, end-from );
-			say("Result:\n");
+			say("Result (buf):\n");
 			print_array( (widget*)buf, 0, (end-from)/width, merge_range );
+
+			memcpy( from, buf, end-from );
+			say("Result (array):\n");
+			print_array( (widget*)from, 0, nel, nel );
 			
 		}
 	
