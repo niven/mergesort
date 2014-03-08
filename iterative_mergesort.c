@@ -111,7 +111,7 @@ void iterative_mergesort( void* base, size_t nel, size_t width, comparator compa
 
 			memcpy( from, buf, end-from );
 			say("Result (array):\n");
-			print_array( (widget*)from, 0, nel, nel );
+			print_array( (widget*)base, 0, nel, nel );
 			
 		}
 	
