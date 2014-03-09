@@ -53,10 +53,11 @@ void iterative_mergesort( void* base, size_t nel, size_t width, comparator compa
 	
 		for( from = base; from < to; from += 2*merge_range*width ) { // go over the entire array with a window of 2*merge_range
 			
-			end = MIN(from + 2*merge_range*width, to);
-			mid = from + ((end-from) / (2*width))*width ; // ugly
-			right = mid;
 			left = from;
+			mid = from + merge_range*width; // always safe since from increments in 2*m_r
+			right = mid;
+			end = MIN(mid + merge_range*width, to);
+
 			b = buf;
 			say("start-mid/right-end = %d - %d/%d - %d = [%d, %d, %d->] (from=%p)\n", 
 				(from-(char*)base)/width, (mid-(char*)base)/width, (right-(char*)base)/width, (end-(char*)base)/width, 
