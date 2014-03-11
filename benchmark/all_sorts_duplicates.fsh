@@ -9,9 +9,6 @@
 
 set -x GEN_STRUCTS_MEAN 100
 set -x GEN_STRUCTS_SD 20
-set -x ITERATIONS 2
-set -x NUM_ELEMENTS 2000
-
 
 rm -rf results/
 
