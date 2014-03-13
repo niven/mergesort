@@ -1,3 +1,21 @@
+#ifndef SORT_UTILS
+#define SORT_UTILS
+
+#ifdef VERBOSE
+
+// check if a list is sorted in ascending order
+void is_sorted( widget* widgets, int from, int to );
+
+void print_array( widget* widgets, int from, int to, int width );
+
+#else
+
+#define is_sorted(...) // nop
+
+#define print_array(...) // nop
+
+#endif
+
 /*
 Shellsort the numbers using the Marcin Ciura sequence.
 
@@ -46,3 +64,27 @@ int compare_int(const void* a, const void* b);
 
 int compare_widget(const void* a, const void* b);
 
+
+typedef struct {
+	const void* address;
+	size_t nel;
+} run;
+
+// our stack is a linked list
+typedef struct run_node {
+	run* item;
+	struct run_node* next;
+} run_node;
+
+
+run* new_run( const void* address, const size_t nel );
+
+void push_run( run_node** stack, run* element );
+
+run* pop_run( run_node** stack );
+
+run* peek_run( run_node* stack, size_t index );
+
+void print_stack( run_node* stack );
+
+#endif
