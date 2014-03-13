@@ -26,8 +26,10 @@ sort_functions: *sort.c
 clean:
 	rm -rf bin/* gen_random_ints gen_random_structs ziggurat_test test_find_index *.o
 
-tools: utils.* gen_random_ints.c gen_random_structs.c ziggurat.*
+tools: utils.* sort_utils.* gen_random_ints.c gen_random_structs.c ziggurat.*
 	${CMD} -c utils.c
+	${CMD} -c widget.c
+	${CMD} -c sort_utils.c
 	${CMD} -c ziggurat.c
 	${CMD} ziggurat_test.c ziggurat.o -o ziggurat_test
 	${CMD} gen_random_ints.c -o gen_random_ints

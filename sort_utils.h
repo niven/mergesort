@@ -1,21 +1,6 @@
 #ifndef SORT_UTILS
 #define SORT_UTILS
 
-#ifdef VERBOSE
-
-// check if a list is sorted in ascending order
-void is_sorted( widget* widgets, int from, int to );
-
-void print_array( widget* widgets, int from, int to, int width );
-
-#else
-
-#define is_sorted(...) // nop
-
-#define print_array(...) // nop
-
-#endif
-
 /*
 Shellsort the numbers using the Marcin Ciura sequence.
 
@@ -35,15 +20,6 @@ typedef int (*comparator)(const void* a, const void* b);
 
 typedef void (*sorter)( void* base, size_t nel, size_t width, comparator compare );
 
-// just a thing we can set to (almost) any size so we can pick any working set
-// we're going to sort these by number, but the padding size is pickable (-DPAD_SIZE=N)
-// Well, that would of course be naive :)
-// Due to structure alignment (http://c-faq.com/struct/align.esr.html) it's most likely going to be bigger
-typedef struct {
-	uint32_t number;
-	char padding[PAD_SIZE];
-} widget;
-
 void shellsort( void* base, size_t nel, size_t width, comparator compare );
 
 
@@ -52,18 +28,9 @@ void shellsort( void* base, size_t nel, size_t width, comparator compare );
 // should maybe return negative numbers and set errno instead
 size_t read_numbers( const char* filename, int** numbers );
 
-size_t read_widgets( const char* filename, widget** widgets );
-
 int write_numbers( int* numbers, size_t count, const char* filename_out );
 
-int write_widgets( widget* widgets, size_t count, const char* filename_out );
-
-void contains_same_elements( widget* a, widget* b, size_t count);
-
 int compare_int(const void* a, const void* b);
-
-int compare_widget(const void* a, const void* b);
-
 
 typedef struct {
 	const void* address;

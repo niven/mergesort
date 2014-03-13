@@ -7,7 +7,7 @@
 # command should be called 'source' but hasn't been renamed yet (or my fish shell is old)
 . benchmark/global_settings.fsh
 
-set -x NUM_ELEMENTS 20000
+set -x NUM_ELEMENTS 2000
 
 rm -rf results/
 

@@ -6,6 +6,7 @@
 #include <limits.h>
 
 #include "utils.h"
+#include "widget.h"
 #include "ziggurat.h"
 
 // to produce these sequences we have a common signature
